@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "531634420897",
+    "project_id": "mozai-1a065",
+    "storage_bucket": "mozai-1a065.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:531634420897:android:182694834a3194841484e0",
+        "android_client_info": {
+          "package_name": "com.cosmak.mozaiExpo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "531634420897-ajoahvsugsr00kelq6ppjhrqik3un0e2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.cosmak.mozaiExpo",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "531634420897-1m4es3uhh876rq44hqps6oeore4bubq2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBe5jygm4g-3LEUMa37FWj47PoUtBuKBdQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "531634420897-1m4es3uhh876rq44hqps6oeore4bubq2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
