@@ -1,6 +1,7 @@
 {
   "expo": {
     "name": "mozaiExpo",
+    "owner": "mozai",
     "slug": "mozaiExpo",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -21,7 +22,6 @@
       "package": "com.cosmak.mozaiExpo",
       "googleServicesFile": "./google-services.json"
     },
-    
     "web": {
       "bundler": "metro",
       "output": "static",
@@ -51,6 +51,14 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "c0e6396d-6258-4dc1-9a94-4657e44d5581"
+      }
     }
   }
 }
