@@ -8,7 +8,7 @@ export default function Index() {
   auth.languageCode = 'it';
 
   return (<View>
-    <Text>Test</Text>
+    <Text style={{ fontFamily: "SF-Pro-Display-Medium" }}>Test</Text>
     <Link href="/tests">
       <Button title="Test Connexion"/>
       </Link>
