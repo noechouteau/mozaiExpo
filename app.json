@@ -47,6 +47,12 @@
             "useFrameworks": "static"
           }
         }
+      ],
+      [
+        "expo-font",
+        {
+          "fonts": ["./assets/fonts/SFPRODISPLAYMEDIUM.otf"]
+        }
       ]
     ],
     "experiments": {
