@@ -10,6 +10,8 @@ export const uploadPicture = async (imageUri: any, key:string) => {
         
     const blob = await fetch(imageUri).then((response) => response.blob());
 
+
+    console.log("Blob", blob);
     const params = {
         Bucket: albumBucketName,
         Key: key, // The key name for the uploaded object (e.g., "folder/image.jpg")

@@ -1,5 +1,5 @@
 import { db } from "@/db-configs/firebase";
-import { collection, doc, getDoc, getDocs } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, query, where } from "firebase/firestore";
 
 export const getDbDoc = async ({
   collectionId,
@@ -17,7 +17,7 @@ export const getDbDoc = async ({
     console.log("No such document!");
     return null;
   }
-};  
+}; 
 
 export const getDbDocs = async ({ collectionId }: { collectionId: string }) => {
   const collectionRef = collection(db, collectionId);
@@ -35,4 +35,31 @@ export const getDbDocs = async ({ collectionId }: { collectionId: string }) => {
     return [];
   }
   return datas;
+};
+
+export const queryDbDocsByField = async ({
+  collectionId,
+  field,
+  value,
+}: {
+  collectionId: string;
+  field: string;
+  value: any;
+}) => {
+  try {
+    const q = query(collection(db, collectionId), where(field, "==", value));
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+      const results = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      console.log("Matching documents:", results);
+      return results;
+    } else {
+      console.log("No matching documents found!");
+      return [];
+    }
+  } catch (error) {
+    console.error("Error querying documents by field:", error);
+    throw error;
+  }
 };

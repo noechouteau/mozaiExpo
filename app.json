@@ -3,6 +3,7 @@
     "name": "mozaiExpo",
     "owner": "mozai",
     "slug": "mozaiExpo",
+    "backgroundColor": "#000000",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -47,7 +48,14 @@
             "useFrameworks": "static"
           }
         }
-      ]
+      ],
+      [
+        "expo-font",
+        {
+          "fonts": ["./assets/fonts/SFPRODISPLAYMEDIUM.otf"]
+        }
+      ],
+      "expo-video"
     ],
     "experiments": {
       "typedRoutes": true

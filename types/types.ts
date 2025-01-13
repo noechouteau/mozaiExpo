@@ -3,6 +3,7 @@ import { DocumentReference, Timestamp } from "@firebase/firestore";
 type User = {
     id?: string;
     name: string;
+    phone: string;
     picture: string;
     mosaiques: DocumentReference[];
     archived?: [];
@@ -24,11 +25,10 @@ type Image = {
 }
 type Mosaique = {
     id?: string;
-    imageLifetime: number;
+    icon: string;
     images: Image[];
     name: string;
-    theme: string;
-    user: DocumentReference;
+    users: DocumentReference[];
 }
   
   export { User, Mosaique, Image, Reactions };
