@@ -8,11 +8,13 @@ import { useEffect, useState } from 'react';
 import { queryDbDocsByField } from '@/database/firebase/read';
 import LightButton from '@/components/LightButton';
 import GraytButton from '@/components/GrayButton';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 export default function Mosaic() {
 
     const [initializing, setInitializing] = useState(true);
+    const [activeMosaic, setActiveMosaic] = useState<string | null>("");
     const [user, setUser]:any = useState();
     const [loaded, error] = useFonts({
     'SFPRO': require('../assets/fonts/SFPRODISPLAYMEDIUM.otf'),
@@ -21,22 +23,19 @@ export default function Mosaic() {
 
     // Handle user state changes
     async function onAuthStateChanged(user:any) {
-        console.log(user);
         if (initializing) setInitializing(false);
-        queryDbDocsByField({ collectionId: "users", field:"uid", value: user.uid }).then((res) => {
-            console.log(res);
-        })
         setUser(user);
     }
       
       useEffect(() => {
+        getActiveMosaic();
         const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
         return subscriber; // unsubscribe on unmount
       }, []);
 
-    function onLogout() {
-        auth().signOut();
-        router.replace("/");
+    const getActiveMosaic = async () => {
+        const tempActiveMosaic = await AsyncStorage.getItem("activeMosaic");
+        setActiveMosaic(tempActiveMosaic);
     }
 
 

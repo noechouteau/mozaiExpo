@@ -9,7 +9,7 @@ import { queryDbDocsByField } from '@/database/firebase/read';
 import LightButton from '@/components/LightButton';
 import GraytButton from '@/components/GrayButton';
 import CreateModal from '@/components/CreateModal';
-
+import JoinModal from '@/components/JoinModal';
 
 export default function Home() {
 
@@ -20,15 +20,16 @@ export default function Home() {
     "SFPROBOLD": require('../assets/fonts/SFPRODISPLAYBOLD.otf'),
     });
     const [isCreateModalVisible, setCreateModalVisible] = useState<boolean>(false);
+    const [isJoinModalVisible, setJoinModalVisible] = useState<boolean>(false);
 
     // Handle user state changes
     async function onAuthStateChanged(user:any) {
         console.log(user);
         if (initializing) setInitializing(false);
-        queryDbDocsByField({ collectionId: "users", field:"uid", value: user.uid }).then((res) => {
+        await queryDbDocsByField({ collectionId: "users", field:"uid", value: user.uid }).then((res) => {
             console.log(res);
+            setUser(res[0]);
         })
-        setUser(user);
     }
       
       useEffect(() => {
@@ -49,14 +50,25 @@ export default function Home() {
       setCreateModalVisible(false);
     };
 
+    const onJoinMosaic = () => {
+      setJoinModalVisible(true);
+    }
+
+    const onJoinModalClose = () => {
+      setJoinModalVisible(false);
+    }
+
 
   return (<View style={styles.container}>
     <CreateModal isVisible={isCreateModalVisible} onClose={onCreateModalClose} user={user}>
         {/* A list of emoji component will go here */}
       </CreateModal>
+    <JoinModal isVisible={isJoinModalVisible} onClose={onJoinModalClose} user={user}>
+        {/* A list of emoji component will go here */}
+      </JoinModal>
     <Text>Mosaic</Text>
     {user && <LightButton title="Create a mosaic" onPress={onCreateMosaic}/>}
-    <LightButton title="Join a mosaic" onPress={() => console.log("Join a mosaic")}/>
+    <LightButton title="Join a mosaic" onPress={onJoinMosaic}/>
     {user && <GraytButton title="Logout" onPress={onLogout}/>}
   </View>
     // <WebView

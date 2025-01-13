@@ -7,7 +7,8 @@ import CustomTextInput from './CustomTextInput';
 import { uploadPicture } from '@/database/aws/set';
 import { updateDoc } from '@/database/firebase/set';
 import { Asset } from 'expo-asset';
-import { DocumentReference } from 'firebase/firestore';
+import { DocumentReference, doc } from 'firebase/firestore';
+import { db } from '@/db-configs/firebase';
 
 type Props = PropsWithChildren<{
   isVisible: boolean;
@@ -52,10 +53,11 @@ export default function CreateModal({ isVisible, onClose, user }: Props) {
             while(id == "0000000" || id == "1111111" || id == "2222222" || id == "3333333" || id == "4444444" || id == "5555555" || id == "6666666" || id == "7777777" || id == "8888888" || id == "9999999") {
                 id = Math.random().toString(36).substring(2, 9);
             }
-            await updateDoc({collectionId:"mosaiques", newDatas: {
+            await updateDoc({collectionId:"mosaiques",docId:id, newDatas: {
                 id: id,
                 name: mosaicName,
-                users: [user.uid],
+                images : [],
+                users: [doc(db, "users", user.uid)],
                 icon: res.Location,
             }}).then(() => {    
                 console.log("Mosaic created");
