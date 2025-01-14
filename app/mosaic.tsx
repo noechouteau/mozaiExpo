@@ -41,6 +41,7 @@ export default function Mosaic() {
 
   return (<View style={styles.container}>
     <Text>Mosaic</Text>
+    <LightButton onPress={() => router.replace("/home")} title="Home" />
   </View>
     // <WebView
     //   source={{ uri: 'https://mozai-gallery.vercel.app/' }}

@@ -31,7 +31,7 @@ export default function JoinModal({ isVisible, onClose, user }: Props) {
                     return;
                 }
             }
-            await updateDoc({collectionId:"users", docId: user.id, newDatas: {
+            await updateDoc({collectionId:"users", docId: user.uid, newDatas: {
                 mosaiques: [...user.mosaiques, doc(db, "mosaiques", res[0].id)],
             }}).then(() => {
                 console.log("Successfully joined the mosaic - user side");
