@@ -8,6 +8,7 @@ import { useVideoPlayer, VideoSource, VideoView } from 'expo-video';
 import auth from '@react-native-firebase/auth';
 import { Redirect, usePathname, useRouter } from 'expo-router';
 import GraytButton from '@/components/GrayButton';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const {width: screenWidth, height: screenHeight} = Dimensions.get('window');
 const videoBG = require('../assets/noir_BG.mp4');
@@ -65,7 +66,6 @@ export default function Animation() {
     try {
       console.log(confirm);
         await confirm.confirm(code);
-        console.log("test")
         router.replace("/home");
     } catch (error) {
         console.log('Invalid code.');

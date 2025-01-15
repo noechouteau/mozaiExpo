@@ -2,20 +2,17 @@ import { Modal, View, Text, Pressable, StyleSheet, TextInput,Image } from 'react
 import React, { PropsWithChildren, useState } from 'react';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import LightButton from './LightButton';
-import { queryDbDocsByField } from '@/database/firebase/read';
-import { updateDoc } from '@/database/firebase/set';
-import { db } from '@/db-configs/firebase';
-import { doc } from 'firebase/firestore';
+
 import { useRouter } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type Props = PropsWithChildren<{
   isVisible: boolean;
+  text: string;
   onClose: (confirm: boolean) => void;
   user: any;
 }>;
 
-export default function ConfirmDeleteModal({ isVisible, onClose, user }: Props) {
+export default function ConfirmModal({ isVisible,text, onClose, user }: Props) {
     const [mosaicId, setMosaicId] = useState<string>("");
     const router = useRouter();
 
@@ -29,7 +26,7 @@ export default function ConfirmDeleteModal({ isVisible, onClose, user }: Props) 
                 <MaterialIcons name="close" color="#fff" size={22} />
             </Pressable>
             </View>
-            <Text>Are you sure you want to delete this mosaic?</Text>
+            <Text>{text}</Text>
             <LightButton title="Yes" onPress={()=>(onClose(true))} />
             <LightButton title="No" onPress={()=>(onClose(false))} />
         </View>

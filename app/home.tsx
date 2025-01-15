@@ -11,9 +11,10 @@ import GraytButton from '@/components/GrayButton';
 import CreateModal from '@/components/CreateModal';
 import JoinModal from '@/components/JoinModal';
 import { HoldItem, HoldMenuProvider } from 'react-native-hold-menu';
-import ConfirmDeleteModal from '@/components/ConfirmDeleteModal';
+import ConfirmModal from '@/components/ConfirmModal';
 import { deleteDbDoc } from '@/database/firebase/delete';
 import { updateDoc } from '@/database/firebase/set';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Home() {
     const [initializing, setInitializing] = useState(true);
@@ -45,6 +46,7 @@ export default function Home() {
 
         await queryDbDocsByField({ collectionId: "users", field: "uid", value: newUserAuth.uid }).then(async (res: any) => {
             console.log(res);
+            await AsyncStorage.setItem("activeUser", res[0].uid);
 
             const mosaicPromises = res[0].mosaiques.map((mosaique: any) =>
                 getDbDoc({ collectionId: "mosaiques", docId: mosaique.id })
@@ -96,7 +98,7 @@ export default function Home() {
         <View style={styles.container}>
             <CreateModal isVisible={isCreateModalVisible} onClose={() => setCreateModalVisible(false)} user={user} />
             <JoinModal isVisible={isJoinModalVisible} onClose={() => setJoinModalVisible(false)} user={user} />
-            <ConfirmDeleteModal isVisible={isConfirmDeleteModalVisible} onClose={(confirmation)=>(confirmDelete(confirmation))} user={user} />
+            <ConfirmModal isVisible={isConfirmDeleteModalVisible} text={"Are you sure you want to delete this mosaic?"} onClose={(confirmation)=>(confirmDelete(confirmation))} user={user} />
             <Text>Mosaic</Text>
 
             {user?.mosaiques && user.mosaiques.length > 0 ? (
@@ -106,15 +108,15 @@ export default function Home() {
                   .map((mosaique: any) => (
                     <HoldItem items={MenuItems} hapticFeedback="Heavy" key={mosaique?.id} 
                     actionParams={{
-                      Delete: [mosaique.id],
+                      Quit: [mosaique.id],
                     }}>
-                      <View style={styles.mosaicTag}  key={mosaique?.id}>
+                      <Pressable style={styles.mosaicTag}  key={mosaique?.id} onPress={() => router.replace("/mosaic")}>
                         <Image
                           source={{ uri: mosaique?.icon || 'https://placehold.co/100x100' }}
                           style={{ width: 50, height: 50 }}
                         />
                         <Text style={styles.mosaicText}>{mosaique?.name || 'Unnamed Mosaic'}</Text>
-                      </View>
+                      </Pressable>
                     </HoldItem>
                   ))}
               </View>
