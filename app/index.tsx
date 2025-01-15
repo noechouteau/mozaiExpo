@@ -2,6 +2,9 @@ import { StyleSheet, View,Text, Button, TextInput,Pressable } from 'react-native
 import { Link } from 'expo-router';
 import { useFonts } from 'expo-font';
 import Animated from 'react-native-reanimated';
+import { HoldMenuProvider } from 'react-native-hold-menu';
+import { HoldItem } from 'react-native-hold-menu';
+import { useState } from 'react';
 
 
 export default function Index() {
@@ -11,7 +14,26 @@ export default function Index() {
     "SFPROBOLD": require('../assets/fonts/SFPRODISPLAYBOLD.otf'),
   });
 
-  return (<View style={styles.container}>
+  const MenuItems = [
+    { text: 'Actions', icon: 'home', isTitle: true, onPress: () => {} },
+    { text: 'Action 1', icon: 'edit', onPress: () => {} },
+    { text: 'Action 2', icon: 'map-pin', withSeparator: true, onPress: () => {} },
+    { text: 'Action 3', icon: 'trash', isDestructive: true, onPress: () => {} },
+  ];
+
+  const [data, setData] = useState([
+    { id: '1', name: 'Item 1' },
+    { id: '2', name: 'Item 2' },
+    { id: '3', name: 'Item 3' },
+  ]);
+
+  return (<HoldMenuProvider theme='dark' safeAreaInsets={{
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0
+  }}>
+  <View style={styles.container}>
     <Text style={styles.text}>Join or create a room</Text>
     <TextInput style={styles.homeTextInput} placeholder='Room code'></TextInput>
 
@@ -27,10 +49,16 @@ export default function Index() {
     <Link href="/phone" asChild>
       <Button title="Phone"/>
     </Link>
+
+    {data.map((item) => (
+          <HoldItem key={item.id} items={MenuItems}>
+            <View style={styles.item}>
+              <Text style={styles.text}>{item.name}</Text>
+            </View>
+          </HoldItem>
+    ))}
   </View>
-    // <WebView
-    //   source={{ uri: 'https://mozai-gallery.vercel.app/' }}
-    // /> 
+  </HoldMenuProvider>
   );
 }
 
@@ -62,5 +90,11 @@ const styles = StyleSheet.create({
     width: "50%",
     textAlign: "center",
     borderRadius: 5,
-  }
+  },
+  item: {
+    width: 50,
+    height: 50,
+    backgroundColor: 'blue',
+    margin: 10,
+  },
 });

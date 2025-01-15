@@ -10,16 +10,34 @@ import LightButton from '@/components/LightButton';
 import GraytButton from '@/components/GrayButton';
 import CreateModal from '@/components/CreateModal';
 import JoinModal from '@/components/JoinModal';
+import { HoldItem, HoldMenuProvider } from 'react-native-hold-menu';
+import ConfirmDeleteModal from '@/components/ConfirmDeleteModal';
+import { deleteDbDoc } from '@/database/firebase/delete';
+import { updateDoc } from '@/database/firebase/set';
 
 export default function Home() {
     const [initializing, setInitializing] = useState(true);
     const [user, setUser]: any = useState();
+    const [userMosaics, setUserMosaics] = useState([
+      { id: '1', name: 'Item 1',icon:"" },
+      { id: '2', name: 'Item 2',icon:"" },
+      { id: '3', name: 'Item 3',icon:"" },
+    ]);
+  
     const [loaded, error] = useFonts({
         'SFPRO': require('../assets/fonts/SFPRODISPLAYMEDIUM.otf'),
         "SFPROBOLD": require('../assets/fonts/SFPRODISPLAYBOLD.otf'),
     });
     const [isCreateModalVisible, setCreateModalVisible] = useState<boolean>(false);
     const [isJoinModalVisible, setJoinModalVisible] = useState<boolean>(false);
+    const [isConfirmDeleteModalVisible, setConfirmDeleteModalVisible] = useState<boolean>(false);
+    const [mosaiqueToDelete, setMosaiqueToDelete] = useState("");
+
+    const MenuItems = [
+      { text: 'Actions', icon: 'home', isTitle: true, onPress: () => {} },
+      { text: 'Rename', icon: 'edit', onPress: () => {} },
+      { text: 'Quit', icon: 'trash', isDestructive: true, onPress: (mosaiqueId:any) => {setMosaiqueToDelete(mosaiqueId);setConfirmDeleteModalVisible(true)} },
+    ];
 
     // Handle user state changes
     async function onAuthStateChanged(newUserAuth: any) {
@@ -27,17 +45,14 @@ export default function Home() {
 
         await queryDbDocsByField({ collectionId: "users", field: "uid", value: newUserAuth.uid }).then(async (res: any) => {
             console.log(res);
-            setUser(res[0]);
 
             const mosaicPromises = res[0].mosaiques.map((mosaique: any) =>
                 getDbDoc({ collectionId: "mosaiques", docId: mosaique.id })
             );
 
             const allMosaiques = await Promise.all(mosaicPromises);
-            setUser((prevUser: any) => ({
-                ...prevUser,
-                mosaiques: allMosaiques,
-            }));
+            setUserMosaics(allMosaiques);
+            setUser(res[0]);
         });
     }
 
@@ -51,30 +66,68 @@ export default function Home() {
         router.replace("/");
     }
 
-    return (
+    async function confirmDelete(confirmation: boolean){
+      setConfirmDeleteModalVisible(false)
+      if(confirmation){
+        console.log(mosaiqueToDelete)
+        await deleteDbDoc({ collection: "mosaiques", docId: mosaiqueToDelete }).then(async () => {
+          user.mosaiques = user.mosaiques.filter((mosaique: any) => mosaique.id !== mosaiqueToDelete);
+          setUser(user);
+          setUserMosaics(userMosaics.filter((mosaique: any) => mosaique.id !== mosaiqueToDelete));
+          if(user.uid == "1qcL9cle0mXLbPfWHQtCAVCdww63") {
+            user.uid = "0"
+          }
+          await updateDoc({ collectionId: "users", docId: user.uid, newDatas: {
+            mosaiques: user.mosaiques
+          }}).then(() => {
+            console.log("User updated");
+            user.uid = "1qcL9cle0mXLbPfWHQtCAVCdww63"
+          });
+        });
+        }
+    }
+
+    return (<HoldMenuProvider theme='dark' safeAreaInsets={{
+      top: 0,
+      right: 0,
+      bottom: 0,
+      left: 0
+    }}>
         <View style={styles.container}>
             <CreateModal isVisible={isCreateModalVisible} onClose={() => setCreateModalVisible(false)} user={user} />
             <JoinModal isVisible={isJoinModalVisible} onClose={() => setJoinModalVisible(false)} user={user} />
+            <ConfirmDeleteModal isVisible={isConfirmDeleteModalVisible} onClose={(confirmation)=>(confirmDelete(confirmation))} user={user} />
             <Text>Mosaic</Text>
 
-            {user?.mosaiques && (
-                <View style={styles.mosaiquesContainer}>
-                    {user.mosaiques
-                        .filter((mosaique: any) => mosaique !== null) // Filter out null values
-                        .map((mosaique: any) => (
-                            <View key={mosaique.id} style={styles.mosaicTag}>
-                                <Image source={{ uri: mosaique.icon }} style={{ width: 50, height: 50 }} />
-                                <Text style={styles.mosaicText}>{mosaique.name}</Text>
-                            </View>
-                        ))}
-                </View>
-            )}
+            {user?.mosaiques && user.mosaiques.length > 0 ? (
+              <View style={styles.mosaiquesContainer}>
+                {userMosaics
+                  .filter((mosaique: any) => mosaique !== null && mosaique !== undefined) // Avoid null/undefined
+                  .map((mosaique: any) => (
+                    <HoldItem items={MenuItems} hapticFeedback="Heavy" key={mosaique?.id} 
+                    actionParams={{
+                      Delete: [mosaique.id],
+                    }}>
+                      <View style={styles.mosaicTag}  key={mosaique?.id}>
+                        <Image
+                          source={{ uri: mosaique?.icon || 'https://placehold.co/100x100' }}
+                          style={{ width: 50, height: 50 }}
+                        />
+                        <Text style={styles.mosaicText}>{mosaique?.name || 'Unnamed Mosaic'}</Text>
+                      </View>
+                    </HoldItem>
+                  ))}
+              </View>
+            ) : (
+              <Text style={{ color: '#FFF', marginTop: 20 }}>No mosaics found. Create or join one!</Text>
+            )} 
 
 
             {user && <LightButton title="Create a mosaic" onPress={() => setCreateModalVisible(true)} />}
             <LightButton title="Join a mosaic" onPress={() => setJoinModalVisible(true)} />
             {user && <GraytButton title="Logout" onPress={onLogout} />}
         </View>
+    </HoldMenuProvider>
     );
 }
 
