@@ -8,6 +8,7 @@ const albumBucketName: any = process.env.EXPO_PUBLIC_BUCKET_NAME;
 
 export const uploadPicture = async (imageUri: any, key:string) => {
         
+    console.log(imageUri);
     const blob = await fetch(imageUri).then((response) => response.blob());
 
 

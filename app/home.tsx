@@ -110,7 +110,7 @@ export default function Home() {
                     actionParams={{
                       Quit: [mosaique.id],
                     }}>
-                      <Pressable style={styles.mosaicTag}  key={mosaique?.id} onPress={() => router.replace("/mosaic")}>
+                      <Pressable style={styles.mosaicTag}  key={mosaique?.id} onPress={async() => {await AsyncStorage.setItem("activeMosaic", mosaique?.id);router.replace("/mosaic")}}>
                         <Image
                           source={{ uri: mosaique?.icon || 'https://placehold.co/100x100' }}
                           style={{ width: 50, height: 50 }}
