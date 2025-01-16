@@ -60,7 +60,7 @@ export default function CreateModal({ isVisible, onClose, user }: Props) {
           user.name = "Test";
         }
 
-        await uploadPicture(localUri, user.name+ "/"+id+"-icon").then(async (res) => {
+        await uploadPicture(localUri, user.uid+ "/"+id+"-icon").then(async (res) => {
             console.log(res);
 
             await updateDoc({collectionId:"mosaiques",docId:id, newDatas: {

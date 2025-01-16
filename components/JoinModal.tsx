@@ -25,25 +25,32 @@ export default function JoinModal({ isVisible, onClose, user }: Props) {
             return;
         }
        await queryDbDocsByField({ collectionId: "mosaiques", field:"id", value: mosaicId }).then(async (res:any) => {
-            for(const mosaique of user.mosaiques) {
-                if(mosaique.id == res[0].id) {
-                    alert("You are already in this mosaic");
-                    return;
+            if(user) {
+                for(const mosaique of user.mosaiques) {
+                    if(mosaique.id == res[0].id) {
+                        alert("You are already in this mosaic");
+                        return;
+                    }
                 }
+                await updateDoc({collectionId:"users", docId: user.uid, newDatas: {
+                    mosaiques: [...user.mosaiques, doc(db, "mosaiques", res[0].id)],
+                }}).then(() => {
+                    console.log("Successfully joined the mosaic - user side");
+                })
+                await updateDoc({collectionId:"mosaiques", docId: res[0].id, newDatas: {
+                    users: [...res[0].users, doc(db, "users", user.uid)],
+                }}).then(async () => {
+                    console.log("Successfully joined the mosaic - mosaic side");
+                    router.replace("/mosaic");
+                    await AsyncStorage.setItem("activeMosaic", res[0].id);
+                    onClose();
+                })
             }
-            await updateDoc({collectionId:"users", docId: user.uid, newDatas: {
-                mosaiques: [...user.mosaiques, doc(db, "mosaiques", res[0].id)],
-            }}).then(() => {
-                console.log("Successfully joined the mosaic - user side");
-            })
-            await updateDoc({collectionId:"mosaiques", docId: res[0].id, newDatas: {
-                users: [...res[0].users, doc(db, "users", user.uid)],
-            }}).then(async () => {
-                console.log("Successfully joined the mosaic - mosaic side");
+            else {
                 router.replace("/mosaic");
                 await AsyncStorage.setItem("activeMosaic", res[0].id);
                 onClose();
-            })
+            }
         })
     } 
 

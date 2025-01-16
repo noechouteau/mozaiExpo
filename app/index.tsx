@@ -1,11 +1,14 @@
-import { StyleSheet, View,Text, Button, TextInput,Pressable } from 'react-native';
+import { StyleSheet, View,Text, Button, TextInput,Pressable, ImageBackground, Dimensions } from 'react-native';
 import { Link } from 'expo-router';
 import { useFonts } from 'expo-font';
 import Animated from 'react-native-reanimated';
 import { HoldMenuProvider } from 'react-native-hold-menu';
 import { HoldItem } from 'react-native-hold-menu';
 import { useState } from 'react';
+import { StatusBar } from 'expo-status-bar';
 
+const {width: screenWidth, height: screenHeight} = Dimensions.get('window');
+const backgroundImage = require('../assets/images/bg_login_2.png');
 
 export default function Index() {
 
@@ -33,6 +36,9 @@ export default function Index() {
     bottom: 0,
     left: 0
   }}>
+  <StatusBar translucent/>
+  <ImageBackground source={backgroundImage} resizeMode="cover" style={{ flex: 1, justifyContent: 'center', alignItems: 'center', width: screenWidth, height: screenHeight+45 }}>
+  
   <View style={styles.container}>
     <Text style={styles.text}>Join or create a room</Text>
     <TextInput style={styles.homeTextInput} placeholder='Room code'></TextInput>
@@ -51,13 +57,14 @@ export default function Index() {
     </Link>
 
     {data.map((item) => (
-          <HoldItem key={item.id} items={MenuItems}>
+          <HoldItem key={item.id} items={MenuItems} menuAnchorPosition="bottom-left">
             <View style={styles.item}>
               <Text style={styles.text}>{item.name}</Text>
             </View>
           </HoldItem>
     ))}
   </View>
+  </ImageBackground>
   </HoldMenuProvider>
   );
 }
@@ -65,7 +72,6 @@ export default function Index() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#262626',
     alignItems: 'center',
     justifyContent: 'center',
     textAlign: 'center',

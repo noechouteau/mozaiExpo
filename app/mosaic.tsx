@@ -15,6 +15,7 @@ import ConfirmModal from '@/components/ConfirmModal';
 import { uploadPicture } from '@/database/aws/set';
 import { updateDoc } from '@/database/firebase/set';
 import { Timestamp } from 'firebase/firestore';
+import Environnement from '@/components/Environnement';
 
 type Props = PropsWithChildren<{
   user: any;
@@ -61,7 +62,18 @@ export default function Mosaic({ user, mosaicId }: Props) {
         if (!result.canceled) {
           setAssetsNumber(result.assets.length);
           
-          const assetPromises = result.assets.map(asset => Asset.loadAsync(asset.uri));
+          const assetPromises = result.assets.map(async asset => {
+            const loadedAsset:any = await Asset.loadAsync(asset.uri);
+            console.log(loadedAsset);
+
+            const { width, height } = asset;
+            return {
+              uri: loadedAsset[0].uri,
+              localUri: loadedAsset[0].localUri,
+              width: width || 0,
+              height: height || 0,
+            };
+            });
           const images = await Promise.all(assetPromises);
           images.forEach(image => console.log(image));
           setImagesToUpload(images);
@@ -72,19 +84,21 @@ export default function Mosaic({ user, mosaicId }: Props) {
         }
       };
 
-      const confirmDelete = async (confirmation:boolean) => {
+      const confirmUpload = async (confirmation:boolean) => {
         console.log(confirmation);
         setConfirmVisible(false);
         if(!confirmation) return;
-        const assetPromises = imagesToUpload.map((asset: any) => uploadPicture(asset[0].localUri, activeMosaic.id + "/"+activeUser+ "/"+ asset[0].uri.split("/").pop()));
+        const assetPromises = imagesToUpload.map((asset: any) => uploadPicture(asset.localUri, activeMosaic.id + "/"+activeUser+ "/"+ asset.uri.split("/").pop()));
         await Promise.all(assetPromises).then(async (res) => {
           console.log(res);
-          const newImages = res.map((image: any) => ({
+          const newImages = res.map((image: any, index:number) => ({
             date: new Timestamp(new Date().getTime() / 1000, 0),
             informations: "",
             reactions: [],
             url: image.Location,
             user: activeUser,
+            width: imagesToUpload[index].width,
+            height: imagesToUpload[index].height,
           }));
           await updateDoc({collectionId:"mosaiques",docId:activeMosaic.id, newDatas: {
             images: [...activeMosaic.images, ...newImages],
@@ -99,18 +113,21 @@ export default function Mosaic({ user, mosaicId }: Props) {
       }
 
   return (<View style={styles.container}>
-    <ConfirmModal isVisible={isConfirmVisible} text={`Do you want to add ${assetsNumber} images to the mosaic ?`} onClose={(confirmation)=>(confirmDelete(confirmation))} user={user} />
-    {/* <Text>{activeMosaic}</Text> */}
-    {activeMosaic && activeMosaic.images ?
+    <ConfirmModal isVisible={isConfirmVisible} text={`Do you want to add ${assetsNumber} images to the mosaic ?`} onClose={(confirmation)=>(confirmUpload(confirmation))} user={user} />
+    
+    <Text>{activeMosaic.id}</Text>
+    {/* {activeMosaic?.images ?
       activeMosaic.images.map((image: any) => (
-        <View key={image.url+Math.random()*100}>
+        <View key={image.url+image.date.seconds}>
           <Image source={{ uri: image.url }} style={{ width: 50, height: 50 }} />
         </View>
       )) : null
-    }
+    } */}
 
-    <LightButton onPress={() => router.replace("/home")} title="Home" />
-    <LightButton onPress={pickImageAsync} title="+" />
+    <Environnement/>
+
+    <LightButton onPress={() => activeUser!="guest" ? router.replace("/home") : router.replace("/animation")} title="Home" />
+    {activeUser!="guest" &&<LightButton onPress={pickImageAsync} title="+" /> }
     
   </View>
     // <WebView

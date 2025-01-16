@@ -9,7 +9,7 @@ export default function CustomTextInput(props:any) {
 
 
     return(
-    <View style={{display: 'flex',alignItems: 'center',justifyContent: 'center',width: screenWidth, gap: 10, top: "-20%"}}>
+    <View style={props.style}>
         <Text style={styles.text}>{props.label}</Text>
         <TextInput value={props.value} style={styles.input} placeholder={props.placeholder} onChangeText={props.onChangeText} placeholderTextColor={"#CBCBCB"}></TextInput>
     </View>
@@ -29,9 +29,9 @@ const styles = StyleSheet.create({
       text: {
         color: '#fff',
         // fontWeight: 'bold',
-        fontFamily: 'SFPROBOLD',
+        // fontFamily: 'SFPROBOLD',
         width: screenWidth/1.3,
         textAlign: 'left',
-        fontSize: 17,
+        fontSize: 15,
       },
  });

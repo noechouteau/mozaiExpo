@@ -9,6 +9,7 @@ import auth from '@react-native-firebase/auth';
 import { Redirect, usePathname, useRouter } from 'expo-router';
 import GraytButton from '@/components/GrayButton';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import JoinModal from '@/components/JoinModal';
 
 const {width: screenWidth, height: screenHeight} = Dimensions.get('window');
 const videoBG = require('../assets/noir_BG.mp4');
@@ -28,7 +29,8 @@ export default function Animation() {
     const router = useRouter();
 
     opacity.value = withTiming(1, {duration: 1000, easing: Easing.inOut(Easing.quad)});
-      
+    const [isJoinModalVisible, setJoinModalVisible] = useState<boolean>(false);
+
     const [loaded, error] = useFonts({
         'SFPRO': require('../assets/fonts/SFPRODISPLAYMEDIUM.otf'),
         "SFPROBOLD": require('../assets/fonts/SFPRODISPLAYBOLD.otf'),
@@ -39,13 +41,17 @@ export default function Animation() {
     }, [pathname]);
     
     // Handle user state changes
-    function onAuthStateChanged(user:any) {
+    async function onAuthStateChanged(user:any) {
+      const activeUser = await AsyncStorage.getItem("activeUser");
+      if(activeUser && activeUser!="guest" && activeUser!=""){
+        router.replace("/home");
+      }
       
-      console.log(user);
       if (initializing) setInitializing(false);
     }
     
     useEffect(() => {
+
       const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
       return subscriber; // unsubscribe on unmount
     }, []);
@@ -81,17 +87,8 @@ export default function Animation() {
       
       if(!confirm){
         return ( <View style={styles.container}>
-            <Animated.View
-              style={{
-                width:"100%",
-                opacity: opacity,
-                height: "100%",
-                justifyContent: 'center',
-                display: 'flex',
-                alignItems: 'center',
-                
-              }}
-            >
+
+                <JoinModal isVisible={isJoinModalVisible} onClose={() => setJoinModalVisible(false)} user={null} />
                 <View style={{zIndex:-2,width:"100%",height:"100%",position:"absolute", backgroundColor:"#00000099"}}></View>
                 <VideoView player={player} allowsFullscreen style={{zIndex:-3,width:"100%",height:"100%",position:"absolute"}} />
                 
@@ -101,15 +98,15 @@ export default function Animation() {
         
                     <View style={{display: 'flex',alignItems: 'center',bottom:"-11%",width: screenWidth, gap: 17}}>
                         <LightButton onPress={() => signInWithPhoneNumber(phoneNumber)} title="Log in"/>
-                        <GraytButton onPress={() => router.replace("/home")} title="Continue as guest"/>
+                        <GraytButton onPress={async() => {setJoinModalVisible(true);await AsyncStorage.setItem("activeUser", "guest");}} title="Continue as guest"/>
                     </View>
                 </View>
-            </Animated.View>
             
             </View>
           );
       } else {
         return(<View style={styles.container}>
+          
             <Animated.View
               style={{
                 width:"100%",
