@@ -4,7 +4,7 @@ import { getAuth } from "firebase/auth";
 import { useFonts } from 'expo-font';
 import Animated from 'react-native-reanimated';
 import auth from '@react-native-firebase/auth';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { getDbDoc, queryDbDocsByField } from '@/database/firebase/read';
 import LightButton from '@/components/LightButton';
 import GraytButton from '@/components/GrayButton';
@@ -22,7 +22,8 @@ import SelectButton from '@/components/SelectButton';
 import RoundButton from '@/components/RoundButton';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
-
+import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
+import GesturePan from '@/components/GesturePan';
 
 const {width: screenWidth, height: screenHeight} = Dimensions.get('window');
 const backgroundImage = require('../assets/images/bg_login_2.png');
@@ -48,6 +49,8 @@ export default function Home() {
     const [userPicture, setUserPicture] = useState<any>(require('../assets/images/newUserBgPic.png'));
     const [displayedMosaics, setDisplayedMosaics] = useState(userMosaics);
 
+    const pan = Gesture.Pan()
+
     const MenuItems = [
       { text: 'Actions', icon: 'home', isTitle: true, onPress: () => {} },
       { text: 'Rename', icon: 'edit', onPress: () => {} },
@@ -69,6 +72,7 @@ export default function Home() {
 
         if(currentMosaiques) {
           setUserMosaics(currentMosaiques != null ? JSON.parse(currentMosaiques) : null);
+          setDisplayedMosaics(currentMosaiques != null ? JSON.parse(currentMosaiques) : null);
           setUser(jsonUser != null ? JSON.parse(jsonUser) : null);
           setUserPicture({uri: jsonUser != null ? JSON.parse(jsonUser).picture : null});
           return
@@ -139,7 +143,7 @@ export default function Home() {
     }
 
     async function dynamicSearch(searchString: any) {
-      console.log(searchString);
+      setDisplayedMosaics(userMosaics.filter((mosaique: any) => mosaique.name.toLowerCase().includes(searchString.toLowerCase())));
     }
 
 
@@ -187,37 +191,46 @@ export default function Home() {
             </View>
 
             {user?.mosaiques && user.mosaiques.length > 0 ? (
-              <ScrollView contentContainerStyle={styles.mosaiquesContainer}>
-                  {userMosaics
-                    .filter((mosaique: any) => mosaique !== null && mosaique !== undefined) // Avoid null/undefined
-                    .map((mosaique: any) => (
-                      <HoldItem items={MenuItems} hapticFeedback="Heavy" key={mosaique?.id} 
-                      actionParams={{
-                        Quit: [mosaique.id],
-                      }}>
-                        <Pressable style={styles.mosaicTag}  key={mosaique?.id} onPress={async() => {await AsyncStorage.setItem("activeMosaic", mosaique?.id);router.replace("/mosaic")}}>
-                          
-                        <ImageBackground source={backgroundImage} resizeMode="cover" style={styles.mosaicPreview}>
-                          <View style={styles.mosaicPreview}>
-                            {/* <LinearGradient
-                              // Background Linear Gradient
-                              colors={['rgba(0,0,0,0.8)', 'transparent']}
-                              style={styles.background}
-                            /> */}
-                            <Image
-                              source={{ uri: mosaique?.icon || 'https://placehold.co/100x100' }}
-                              style={{ width: 50, height: 50 }}
-                            />
-                          </View>
-                        </ImageBackground>
+              <GestureHandlerRootView>
+                <GestureDetector gesture={pan}>
+                  {/* <ScrollView contentContainerStyle={styles.mosaiquesContainer}>
+                      {displayedMosaics
+                        .filter((mosaique: any) => mosaique !== null && mosaique !== undefined) // Avoid null/undefined
+                        .map((mosaique: any) => (
+                          <HoldItem items={MenuItems} hapticFeedback="Heavy" key={mosaique?.id} 
+                          actionParams={{
+                            Quit: [mosaique.id],
+                          }}>
+                            <Pressable style={styles.mosaicTag}  key={mosaique?.id} onPress={async() => {await AsyncStorage.setItem("activeMosaic", mosaique?.id);router.replace("/mosaic")}}>
+                              
+                            <ImageBackground source={backgroundImage} resizeMode="cover" style={styles.mosaicPreview}>
+                              <View style={styles.mosaicPreview}> */}
+                                {/* <LinearGradient
+                                  // Background Linear Gradient
+                                  colors={['rgba(0,0,0,0.8)', 'transparent']}
+                                  style={styles.background}
+                                /> */}
+                                {/* <Image
+                                  source={{ uri: mosaique?.icon || 'https://placehold.co/100x100' }}
+                                  style={{ width: 50, height: 50 }}
+                                />
+                                <Image
+                                  source={{ uri: mosaique?.images[0]?.url || 'https://placehold.co/100x100' }}
+                                  style={{ width: 50, height: 50 }}
+                                />
+                              </View>
+                            </ImageBackground>
 
-                          <View style={styles.mosaicInfo}>
-                            <Text style={styles.mosaicText}>{mosaique?.name || 'Unnamed Mosaic'}</Text>
-                          </View>
-                        </Pressable>
-                      </HoldItem>
-                    ))}
-              </ScrollView>
+                              <View style={styles.mosaicInfo}>
+                                <Text style={styles.mosaicText}>{mosaique?.name || 'Unnamed Mosaic'}</Text>
+                              </View>
+                            </Pressable>
+                          </HoldItem>
+                        ))}
+                  </ScrollView> */}
+                  <GesturePan mosaics={displayedMosaics}></GesturePan>
+                </GestureDetector>
+              </GestureHandlerRootView>
             ) : (
               <Text style={{ color: '#FFF', marginTop: 20 }}>No mosaics found. Create or join one!</Text>
             )} 

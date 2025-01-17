@@ -4,13 +4,14 @@ import { useFonts } from 'expo-font';
 import Animated from 'react-native-reanimated';
 import { HoldMenuProvider } from 'react-native-hold-menu';
 import { HoldItem } from 'react-native-hold-menu';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import LightButton from '@/components/LightButton';
 import CustomTextInput from '@/components/CustomTextInput';
 import createUser from '@/controllers/Users';
 import { Asset } from 'expo-asset';
 import * as ImagePicker from 'expo-image-picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const {width: screenWidth, height: screenHeight} = Dimensions.get('window');
 const backgroundImage = require('../assets/images/bg_login_2.png');
@@ -18,7 +19,15 @@ const backgroundImage = require('../assets/images/bg_login_2.png');
 export default function Profile() {
 
     const [selectedImage, setSelectedImage] = useState<any>(require('../assets/images/newUserBgPic.png'));
+    const [user, setUser] = useState<any>();
     const [userName, setUserName] = useState<string>("");
+
+    const setUserData = async () => {
+        const jsonUser = await AsyncStorage.getItem('currentUser');
+        setUser(jsonUser != null ? JSON.parse(jsonUser) : null);
+        console.log("ahah")
+        console.log(user);
+    }
 
     const pickImageAsync = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
@@ -37,6 +46,10 @@ export default function Profile() {
         }
     };
 
+    useEffect(() => {
+        setUserData();
+    }, []);
+
   return (<HoldMenuProvider theme='dark' safeAreaInsets={{
     top: 0,
     right: 0,
@@ -54,7 +67,7 @@ export default function Profile() {
   
               <View style={styles.titleContainer}>
                   <Pressable onPress={pickImageAsync}>
-                      <Image source={selectedImage} style={{width: 150, height: 150, alignSelf: 'center', borderRadius:100}} />
+                      <Image source={{uri:user?.picture}} style={{width: 150, height: 150, alignSelf: 'center', borderRadius:100}} />
                   </Pressable>
               </View>
   
