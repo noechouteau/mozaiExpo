@@ -60,19 +60,25 @@ const createRandomGrid = ({rows, cols, spacing, scene, images}: {
     cols: number;
     spacing: number;
     scene: THREE.Scene;
-    images: string[];
+    images: { url: string, width?: number, height?: number }[];
 }) => {
+    // Calculer le nombre maximum de cellules nécessaires
+    const totalImages = images.length;
+    const maxRows = Math.ceil(Math.sqrt(totalImages)); // Rangées nécessaires pour placer toutes les images
+    const maxCols = Math.ceil(totalImages / maxRows);  // Colonnes nécessaires pour placer toutes les images
 
     let index = 0;
 
-    for (let i = 0; i < rows; i++) {
-        for (let j = 0; j < cols; j++) {
-            const link = "https://placehold.jp/150x150.png"
+    for (let i = 0; i < maxRows; i++) {
+        for (let j = 0; j < maxCols; j++) {
+            if (index >= totalImages) break; // Arrêter une fois que toutes les images sont placées
 
-            const dataImage = images[index++]
-            const url = dataImage?.url
+            const dataImage = images[index];
+            index++;
 
-            const texture = new ExpoTHREE.TextureLoader().load(url || link);
+            const url = dataImage?.url || "https://placehold.jp/150x150.png";
+
+            const texture = new ExpoTHREE.TextureLoader().load(url);
 
             const width = dataImage?.width || 150;
             const height = dataImage?.height || 150;
@@ -98,8 +104,8 @@ const createRandomGrid = ({rows, cols, spacing, scene, images}: {
 
             const plane = new THREE.Mesh(new THREE.PlaneGeometry(planeWidth, planeHeight), material);
 
-            const x = j * spacing * 1.5 - (cols * spacing) / 2 + Math.random() * (spacing * 0.5);
-            const y = i * spacing * 1.5 - (rows * spacing) / 2 + Math.random() * (spacing * 0.5);
+            const x = j * spacing * 1.5 - (maxCols * spacing) / 2 + Math.random() * (spacing * 0.5);
+            const y = i * spacing * 1.5 - (maxRows * spacing) / 2 + Math.random() * (spacing * 0.5);
             const z = Math.random() * 4 - 2;
 
             plane.position.set(x, y, z);
@@ -107,8 +113,8 @@ const createRandomGrid = ({rows, cols, spacing, scene, images}: {
             scene.add(plane);
         }
     }
-
 };
+
 
 export default SceneManager;
 export {planes, cameraRef, raycaster, targetPosition};

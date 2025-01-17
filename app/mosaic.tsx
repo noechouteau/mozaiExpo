@@ -155,9 +155,11 @@ const styles = StyleSheet.create({
     buttons: {
         position: 'absolute',
         bottom: 50,
+        zIndex: 100,
         left: "50%",
         transform: [{translateX: "-50%"}],
         display: 'flex',
-
+        flexDirection: 'column',
+        gap: 8,
     }
 });
