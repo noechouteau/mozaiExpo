@@ -46,6 +46,7 @@ export default function Home() {
     const [isNewUserModalVisible, setNewUserModalVisible] = useState<boolean>(false);
     const [mosaiqueToDelete, setMosaiqueToDelete] = useState("");
     const [userPicture, setUserPicture] = useState<any>(require('../assets/images/newUserBgPic.png'));
+    const [displayedMosaics, setDisplayedMosaics] = useState(userMosaics);
 
     const MenuItems = [
       { text: 'Actions', icon: 'home', isTitle: true, onPress: () => {} },
