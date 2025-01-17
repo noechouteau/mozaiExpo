@@ -41,7 +41,7 @@
     "expo-status-bar": "~2.0.0",
     "expo-symbols": "~0.2.0",
     "expo-system-ui": "~4.0.6",
-    "expo-three": "^7.0.1",
+    "expo-three": "^6.0.1",
     "expo-video": "~2.0.4",
     "expo-web-browser": "~14.0.1",
     "firebase": "^11.1.0",
@@ -58,7 +58,8 @@
     "react-native-screens": "~4.4.0",
     "react-native-web": "~0.19.13",
     "react-native-webview": "13.12.5",
-    "three": "^0.135.0"
+    "three": "^0.135.0",
+    "expo-linear-gradient": "~14.0.2"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

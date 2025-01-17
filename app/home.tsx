@@ -21,6 +21,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import SelectButton from '@/components/SelectButton';
 import RoundButton from '@/components/RoundButton';
 import { StatusBar } from 'expo-status-bar';
+import { LinearGradient } from 'expo-linear-gradient';
 
 
 const {width: screenWidth, height: screenHeight} = Dimensions.get('window');
@@ -61,7 +62,16 @@ export default function Home() {
     // Handle user state changes
     async function onAuthStateChanged(newUserAuth: any) {
         console.log(newUserAuth);
+        const currentMosaiques = await AsyncStorage.getItem('currentMosaiques');
+        const jsonUser = await AsyncStorage.getItem('currentUser');
         if (initializing) setInitializing(false);
+
+        if(currentMosaiques) {
+          setUserMosaics(currentMosaiques != null ? JSON.parse(currentMosaiques) : null);
+          setUser(jsonUser != null ? JSON.parse(jsonUser) : null);
+          setUserPicture({uri: jsonUser != null ? JSON.parse(jsonUser).picture : null});
+          return
+        }
 
         await queryDbDocsByField({ collectionId: "users", field: "uid", value: newUserAuth.uid }).then(async (res: any) => {
             console.log(res.length < 1);
@@ -84,7 +94,10 @@ export default function Home() {
               const allMosaiques = await Promise.all(mosaicPromises);
               setUserMosaics(allMosaiques);
               setUser(res[0]);
-              console.log(res[0].picture);
+              const jsonValue = JSON.stringify(allMosaiques);
+              await AsyncStorage.setItem('currentMosaiques', jsonValue);
+              const jsonUser = JSON.stringify(res[0]);
+              await AsyncStorage.setItem('currentUser', jsonUser);
               setUserPicture({uri: res[0].picture});
             }
         }
@@ -124,34 +137,12 @@ export default function Home() {
         }
     }
 
+    async function dynamicSearch(searchString: any) {
+      console.log(searchString);
+    }
+
 
     return (
-    
-    // <HoldMenuProvider theme='dark' safeAreaInsets={{
-    //   top: 0,
-    //   right: 0,
-    //   bottom: 0,
-    //   left: 0
-    // }}>
-    // <StatusBar translucent/>
-    // <ImageBackground source={backgroundImage} resizeMode="cover" style={{ flex: 1, justifyContent: 'center', alignItems: 'center', width: screenWidth, height: screenHeight+45 }}>
-    
-    // <View style={styles.container}>
-    //   <TextInput style={styles.homeTextInput} placeholder='Room code'></TextInput>
-
-  
-    //   <HoldItem key={"heyp"} items={MenuItems} menuAnchorPosition="bottom-right" hapticFeedback="Heavy" activateOn="tap" containerStyles={{position: 'absolute', bottom: 15, right: 15,zIndex: 10}}>
-    //     <View style={styles.item}>
-    //       <Text style={styles.text}>aaaaaa</Text>
-    //     </View>
-    //   </HoldItem>
-    // </View>
-    // </ImageBackground>
-    // </HoldMenuProvider>
-
-
-
-
     <HoldMenuProvider theme='dark' safeAreaInsets={{
       top: 0,
       right: 0,
@@ -160,9 +151,7 @@ export default function Home() {
     }}>
         <View style={styles.container}>
           
-          <ImageBackground source={backgroundImage} resizeMode="cover" style={{ flex: 1, justifyContent: 'center', alignItems: 'center', width: screenWidth, height: screenHeight+45 }}>
-          
-            <View>
+            <View >
               <NewUserModal isVisible={isNewUserModalVisible} onClose={async() => {
                 console.log("aaa")
                 const activeUser=await AsyncStorage.getItem("activeUser");
@@ -174,29 +163,27 @@ export default function Home() {
               <JoinModal isVisible={isJoinModalVisible} onClose={() => setJoinModalVisible(false)} user={user} />
               <ConfirmModal isVisible={isConfirmDeleteModalVisible} text={"Are you sure you want to delete this mosaic?"} onClose={(confirmation)=>(confirmDelete(confirmation))} user={user} />
             </View>
-            <Text>Mosaic</Text>
 
+            <View style={{display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: screenWidth, gap: 10}}>
               <View style={styles.topBar}>
-                <Pressable onPress={() => {router.replace("/home")}}>
-                  <Image source={userPicture} style={{width: 50,height:50, borderRadius:50}}/>
-                </Pressable>
-                <View style={styles.searchBar}>
-                  <Ionicons name="search" size={25} color="grey" style={{width:35}} />
-                  <TextInput
-                      // style={styles.input}
-                      placeholder="Browse mosaics..."
-                      placeholderTextColor={"#ffffff50"}
-                      // onChangeText={(searchString) => {this.setState({searchString})}}
-                      underlineColorAndroid="transparent"
-                      style={{padding:0}}
-                  />
+                  <Pressable onPress={() => {router.replace("/profile")}}>
+                    <Image source={userPicture} style={{width: 40,height:40, borderRadius:50}}/>
+                  </Pressable>
+                  <View style={styles.searchBar}>
+                    <Ionicons name="search" size={26} color="grey" style={{width:35,paddingLeft:3}} />
+                    <TextInput
+                        // style={styles.input}
+                        placeholder="Browse mosaics..."
+                        placeholderTextColor={"#ffffff50"}
+                        // onChangeText={(searchString) => {this.setState({searchString})}}
+                        underlineColorAndroid="transparent"
+                        style={{padding:0,width:"100%",color:"#fff"}}
+                        onChangeText={(text) => dynamicSearch(text)}
+                    />
+                  </View>
                 </View>
-              </View>
-
-              <SelectButton>
-
-                
-              </SelectButton>
+                <SelectButton/>
+            </View>
 
             {user?.mosaiques && user.mosaiques.length > 0 ? (
               <ScrollView contentContainerStyle={styles.mosaiquesContainer}>
@@ -208,11 +195,24 @@ export default function Home() {
                         Quit: [mosaique.id],
                       }}>
                         <Pressable style={styles.mosaicTag}  key={mosaique?.id} onPress={async() => {await AsyncStorage.setItem("activeMosaic", mosaique?.id);router.replace("/mosaic")}}>
-                          <Image
-                            source={{ uri: mosaique?.icon || 'https://placehold.co/100x100' }}
-                            style={{ width: 50, height: 50 }}
-                          />
-                          <Text style={styles.mosaicText}>{mosaique?.name || 'Unnamed Mosaic'}</Text>
+                          
+                        <ImageBackground source={backgroundImage} resizeMode="cover" style={styles.mosaicPreview}>
+                          <View style={styles.mosaicPreview}>
+                            {/* <LinearGradient
+                              // Background Linear Gradient
+                              colors={['rgba(0,0,0,0.8)', 'transparent']}
+                              style={styles.background}
+                            /> */}
+                            <Image
+                              source={{ uri: mosaique?.icon || 'https://placehold.co/100x100' }}
+                              style={{ width: 50, height: 50 }}
+                            />
+                          </View>
+                        </ImageBackground>
+
+                          <View style={styles.mosaicInfo}>
+                            <Text style={styles.mosaicText}>{mosaique?.name || 'Unnamed Mosaic'}</Text>
+                          </View>
                         </Pressable>
                       </HoldItem>
                     ))}
@@ -228,7 +228,6 @@ export default function Home() {
               <HoldItem key={"Test"} items={AddItems} hapticFeedback="Heavy" activateOn="tap" menuAnchorPosition="bottom-right" containerStyles={{position: 'absolute', bottom: 15, right: 15,zIndex: 10}}>
                   {user && <RoundButton title="+" fontSize={20} />}
               </HoldItem>
-          </ImageBackground>
         </View>
     </HoldMenuProvider>
     );
@@ -240,20 +239,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     textAlign: 'center',
+    backgroundColor: '#0d0d0d',
   },
     mosaiquesContainer: {
-        marginVertical: 20,
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        display: 'flex',
-        width: screenWidth,
+      flexDirection: 'column',
+      justifyContent: 'center',
+      alignItems: 'center',
+      display: 'flex',
+      width: screenWidth,
     },
     mosaicTag: {
         backgroundColor: '#444',
         borderRadius: 8,
-        height: 260,
-        margin: 5,
+        margin: 10,
         width: screenWidth*0.88,
     },
     mosaicText: {
@@ -265,6 +263,10 @@ const styles = StyleSheet.create({
         width: "100%",
         height: 40,
         justifyContent: 'center',
+        marginTop:55,
+        display: 'flex',
+        alignItems: 'center',
+        gap:10
     },
     searchBar : {
         borderRadius: 50,
@@ -278,31 +280,33 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
     },
-
-
-
-
-    text: {
-      color: '#fff',
-      // fontWeight: 'bold',
-      fontFamily: 'SFPROBOLD',
-      textAlign: 'center',
+    mosaicPreview: {
+      borderTopLeftRadius: 10,
+      borderTopRightRadius: 10,
+      height: 150,
+      borderWidth: 1,
+      borderColor: "#FFFFFF50",
+      overflow: 'hidden',
     },
+    mosaicInfo: {
+      borderBottomLeftRadius: 10,
+      borderBottomRightRadius: 10,
+      borderWidth: 2,
+      borderColor: "#FFFFFF50",
+      padding: 10,
+      backgroundColor: "#000000",
+    },
+    background: {
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      top: 0,
+      height: 300,
+    },
+
+
+
     homeTextInput: {
       height:0, 
-    },
-    homeButton: {
-      backgroundColor: "#9B74DE",
-      color: "#fff",
-      padding: 10,
-      width: "50%",
-      textAlign: "center",
-      borderRadius: 5,
-    },
-    item: {
-      width: 50,
-      height: 50,
-      backgroundColor: 'blue',
-      margin: 10,
     },
 });

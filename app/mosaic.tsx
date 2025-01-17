@@ -116,15 +116,15 @@ export default function Mosaic({ user, mosaicId }: Props) {
     <ConfirmModal isVisible={isConfirmVisible} text={`Do you want to add ${assetsNumber} images to the mosaic ?`} onClose={(confirmation)=>(confirmUpload(confirmation))} user={user} />
     
     <Text>{activeMosaic.id}</Text>
-    {/* {activeMosaic?.images ?
+    {activeMosaic?.images ?
       activeMosaic.images.map((image: any) => (
         <View key={image.url+image.date.seconds}>
           <Image source={{ uri: image.url }} style={{ width: 50, height: 50 }} />
         </View>
       )) : null
-    } */}
+    }
 
-    <Environnement/>
+    {/* <Environnement/> */}
 
     <LightButton onPress={() => activeUser!="guest" ? router.replace("/home") : router.replace("/animation")} title="Home" />
     {activeUser!="guest" &&<LightButton onPress={pickImageAsync} title="+" /> }
