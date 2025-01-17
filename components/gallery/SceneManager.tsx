@@ -14,7 +14,7 @@ const cameraRef = {
 const raycaster = new THREE.Raycaster();
 const targetPosition = {current: {x: 0, y: 0, z: 0}};
 
-const SceneManager = async (gl: ExpoWebGLRenderingContext) => {
+const SceneManager = async (gl: ExpoWebGLRenderingContext, images: string[]) => {
     const {drawingBufferWidth: bufferWidth, drawingBufferHeight: bufferHeight} = gl;
 
     const renderer = new ExpoTHREE.Renderer({
@@ -39,7 +39,7 @@ const SceneManager = async (gl: ExpoWebGLRenderingContext) => {
 
     const scene = new THREE.Scene();
 
-    createRandomGrid({rows: 10, cols: 10, spacing: 1.5, scene: scene});
+    createRandomGrid({rows: images.length, cols: images.length, spacing: 1.5, scene: scene, images: images});
 
     const animate = () => {
         if (cameraRef.current) {
@@ -55,24 +55,40 @@ const SceneManager = async (gl: ExpoWebGLRenderingContext) => {
     animate();
 };
 
-const createRandomGrid = ({rows, cols, spacing, scene}: {
+const createRandomGrid = ({rows, cols, spacing, scene, images}: {
     rows: number;
     cols: number;
     spacing: number;
     scene: THREE.Scene;
+    images: string[];
 }) => {
+
+    let index = 0;
 
     for (let i = 0; i < rows; i++) {
         for (let j = 0; j < cols; j++) {
             const link = "https://placehold.jp/150x150.png"
-            const texture = new ExpoTHREE.TextureLoader().load(link);
 
-            const imageWidth = 150; // Todo bdd
-            const imageHeight = 150; // Todo bdd
+            const dataImage = images[index++]
+            const url = dataImage?.url
 
-            const aspectRatio = imageWidth / imageHeight;
-            const planeWidth = 1.5;
-            const planeHeight = planeWidth / aspectRatio;
+            const texture = new ExpoTHREE.TextureLoader().load(url || link);
+
+            const width = dataImage?.width || 150;
+            const height = dataImage?.height || 150;
+            const aspectRatio = width / height;
+            const maxDimension = 2.5;
+
+            let planeWidth: number;
+            let planeHeight: number;
+
+            if (aspectRatio >= 1) {
+                planeWidth = maxDimension;
+                planeHeight = maxDimension / aspectRatio;
+            } else {
+                planeHeight = maxDimension;
+                planeWidth = maxDimension * aspectRatio;
+            }
 
             const material = new THREE.MeshBasicMaterial({
                 map: texture,
