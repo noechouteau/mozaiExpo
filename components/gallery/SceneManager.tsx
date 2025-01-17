@@ -14,7 +14,7 @@ const cameraRef = {
 const raycaster = new THREE.Raycaster();
 const targetPosition = {current: {x: 0, y: 0, z: 0}};
 
-const SceneManager = async (gl: ExpoWebGLRenderingContext) => {
+const SceneManager = async (gl: ExpoWebGLRenderingContext, images: string[]) => {
     const {drawingBufferWidth: bufferWidth, drawingBufferHeight: bufferHeight} = gl;
 
     const renderer = new ExpoTHREE.Renderer({
@@ -39,7 +39,11 @@ const SceneManager = async (gl: ExpoWebGLRenderingContext) => {
 
     const scene = new THREE.Scene();
 
-    createRandomGrid({rows: 10, cols: 10, spacing: 1.5, scene: scene});
+    createRandomGrid({
+        spacing: 2.5,
+        scene: scene,
+        images: images
+    });
 
     const animate = () => {
         if (cameraRef.current) {
@@ -55,24 +59,46 @@ const SceneManager = async (gl: ExpoWebGLRenderingContext) => {
     animate();
 };
 
-const createRandomGrid = ({rows, cols, spacing, scene}: {
+const createRandomGrid = ({spacing, scene, images}: {
     rows: number;
     cols: number;
     spacing: number;
     scene: THREE.Scene;
+    images: { url: string, width?: number, height?: number }[];
 }) => {
 
-    for (let i = 0; i < rows; i++) {
-        for (let j = 0; j < cols; j++) {
-            const link = "https://placehold.jp/150x150.png"
-            const texture = new ExpoTHREE.TextureLoader().load(link);
+    const totalImages = images.length;
+    const maxRows = Math.ceil(Math.sqrt(totalImages));
+    const maxCols = Math.ceil(totalImages / maxRows);
 
-            const imageWidth = 150; // Todo bdd
-            const imageHeight = 150; // Todo bdd
+    let index = 0;
 
-            const aspectRatio = imageWidth / imageHeight;
-            const planeWidth = 1.5;
-            const planeHeight = planeWidth / aspectRatio;
+    for (let i = 0; i < maxRows; i++) {
+        for (let j = 0; j < maxCols; j++) {
+            if (index >= totalImages) break;
+
+            const dataImage = images[index];
+            index++;
+
+            const url = dataImage?.url || "https://placehold.jp/150x150.png";
+
+            const texture = new ExpoTHREE.TextureLoader().load(url);
+
+            const width = dataImage?.width || 150;
+            const height = dataImage?.height || 150;
+            const aspectRatio = width / height;
+            const maxDimension = 3;
+
+            let planeWidth: number;
+            let planeHeight: number;
+
+            if (aspectRatio >= 1) {
+                planeWidth = maxDimension;
+                planeHeight = maxDimension / aspectRatio;
+            } else {
+                planeHeight = maxDimension;
+                planeWidth = maxDimension * aspectRatio;
+            }
 
             const material = new THREE.MeshBasicMaterial({
                 map: texture,
@@ -82,8 +108,8 @@ const createRandomGrid = ({rows, cols, spacing, scene}: {
 
             const plane = new THREE.Mesh(new THREE.PlaneGeometry(planeWidth, planeHeight), material);
 
-            const x = j * spacing * 1.5 - (cols * spacing) / 2 + Math.random() * (spacing * 0.5);
-            const y = i * spacing * 1.5 - (rows * spacing) / 2 + Math.random() * (spacing * 0.5);
+            const x = j * spacing * 1.5 - (maxCols * spacing) / 2 + Math.random() * (spacing * 0.5);
+            const y = i * spacing * 1.5 - (maxRows * spacing) / 2 + Math.random() * (spacing * 0.5);
             const z = Math.random() * 4 - 2;
 
             plane.position.set(x, y, z);
@@ -91,8 +117,8 @@ const createRandomGrid = ({rows, cols, spacing, scene}: {
             scene.add(plane);
         }
     }
-
 };
+
 
 export default SceneManager;
 export {planes, cameraRef, raycaster, targetPosition};

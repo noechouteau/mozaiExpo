@@ -4,7 +4,11 @@ import {Text, View} from 'react-native';
 import SceneManager from "@/components/gallery/SceneManager";
 import useInteractionHandlers from "@/components/gallery/useInteractionHandlers"
 
-export default function App() {
+export default function App({
+                                images
+                            }: {
+    images: string[]
+}) {
     const {backTouch, handleTouchStart, handleTouchEnd, panHandlers, handleTouchMove} = useInteractionHandlers();
 
     const {active, action} = backTouch();
@@ -31,7 +35,7 @@ export default function App() {
             <GLView
                 {...panHandlers}
                 style={{flex: 1}}
-                onContextCreate={(gl) => SceneManager(gl)}
+                onContextCreate={(gl) => SceneManager(gl, images)}
                 onTouchStart={handleTouchStart}
                 onTouchEnd={handleTouchEnd}
                 onTouchMove={handleTouchMove}
