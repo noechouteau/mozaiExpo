@@ -39,7 +39,11 @@ const SceneManager = async (gl: ExpoWebGLRenderingContext, images: string[]) => 
 
     const scene = new THREE.Scene();
 
-    createRandomGrid({rows: images.length, cols: images.length, spacing: 1.5, scene: scene, images: images});
+    createRandomGrid({
+        spacing: 2.5,
+        scene: scene,
+        images: images
+    });
 
     const animate = () => {
         if (cameraRef.current) {
@@ -55,23 +59,23 @@ const SceneManager = async (gl: ExpoWebGLRenderingContext, images: string[]) => 
     animate();
 };
 
-const createRandomGrid = ({rows, cols, spacing, scene, images}: {
+const createRandomGrid = ({spacing, scene, images}: {
     rows: number;
     cols: number;
     spacing: number;
     scene: THREE.Scene;
     images: { url: string, width?: number, height?: number }[];
 }) => {
-    // Calculer le nombre maximum de cellules nécessaires
+
     const totalImages = images.length;
-    const maxRows = Math.ceil(Math.sqrt(totalImages)); // Rangées nécessaires pour placer toutes les images
-    const maxCols = Math.ceil(totalImages / maxRows);  // Colonnes nécessaires pour placer toutes les images
+    const maxRows = Math.ceil(Math.sqrt(totalImages));
+    const maxCols = Math.ceil(totalImages / maxRows);
 
     let index = 0;
 
     for (let i = 0; i < maxRows; i++) {
         for (let j = 0; j < maxCols; j++) {
-            if (index >= totalImages) break; // Arrêter une fois que toutes les images sont placées
+            if (index >= totalImages) break;
 
             const dataImage = images[index];
             index++;
@@ -83,7 +87,7 @@ const createRandomGrid = ({rows, cols, spacing, scene, images}: {
             const width = dataImage?.width || 150;
             const height = dataImage?.height || 150;
             const aspectRatio = width / height;
-            const maxDimension = 2.5;
+            const maxDimension = 3;
 
             let planeWidth: number;
             let planeHeight: number;
