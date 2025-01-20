@@ -12,6 +12,7 @@ import createUser from '@/controllers/Users';
 import { Asset } from 'expo-asset';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import auth from '@react-native-firebase/auth';
 
 const {width: screenWidth, height: screenHeight} = Dimensions.get('window');
 const backgroundImage = require('../assets/images/bg_login_2.png');
@@ -50,6 +51,18 @@ export default function Profile() {
         setUserData();
     }, []);
 
+    const onSignOut = async () => {
+        console.log("signing out");
+        // await auth().signOut();
+        await AsyncStorage.removeItem('currentUser');
+        await AsyncStorage.setItem("activeUser", "");
+        await AsyncStorage.setItem("activePhone", "");
+        await AsyncStorage.setItem('currentMosaiques', "");
+        await AsyncStorage.setItem('currentUser', "");
+        router.replace("/animation");
+        console.log("heh")
+    }
+
   return (<HoldMenuProvider theme='dark' safeAreaInsets={{
     top: 0,
     right: 0,
@@ -74,7 +87,7 @@ export default function Profile() {
               <View style={styles.formContainer}>
                   <CustomTextInput label="Username" style={styles.input} onChangeText={(text:any) => setUserName(text)} />
   
-                  <LightButton title="Sign out" />
+                  <LightButton title="Sign out" onPress={() => onSignOut()} />
               </View>
           </View>
         </View>

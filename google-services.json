@@ -22,6 +22,14 @@
           }
         },
         {
+          "client_id": "531634420897-dik4cf78javlb45hic5jcbrbs9qqik6q.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.cosmak.mozaiExpo",
+            "certificate_hash": "9ad37fc4f372c6f8a060b579c44011e9a26c396e"
+          }
+        },
+        {
           "client_id": "531634420897-1m4es3uhh876rq44hqps6oeore4bubq2.apps.googleusercontent.com",
           "client_type": 3
         }

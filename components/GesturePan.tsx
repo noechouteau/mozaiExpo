@@ -7,7 +7,11 @@ import Animated, {
   useSharedValue,
   withTiming,
   useAnimatedStyle,
+  runOnJS,
 } from 'react-native-reanimated';
+import SelectButton from './SelectButton';
+import { useEffect, useRef, useState } from 'react';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 const backgroundImage = require('../assets/images/bg_login_2.png');
@@ -27,8 +31,9 @@ export default function GesturePan({ mosaics }: any) {
   const displayedMosaics = mosaics;
   const onLeft = useSharedValue(true);
   const position = useSharedValue(INITIAL_POSITION); // Start centered on the left box
+  const [knobPosition, setKnobPosition] = useState("Shared");
 
-  const panGesture = Gesture.Pan()
+  const panGesture = Gesture.Pan().runOnJS(true)
     .onUpdate((e) => {
       if (onLeft.value) {
         position.value = INITIAL_POSITION + e.translationX;
@@ -42,34 +47,52 @@ export default function GesturePan({ mosaics }: any) {
       if(onLeft.value){
         if (position.value < END_POSITION*0.33 || velocity < -1.9) {
           position.value = withTiming(END_POSITION, { duration: 200 });
+          setTimeout(() => {
+            setKnobPosition("Solo");
+            console.log("Solo");
+          }, 100);
           onLeft.value = false;
         } else {
           position.value = withTiming(INITIAL_POSITION, { duration: 200 });
           onLeft.value = true;
         }
       } else if (position.value > END_POSITION*0.66 || velocity > 1.9) {
-          position.value = withTiming(INITIAL_POSITION, { duration: 200 });
+          position.value = withTiming(INITIAL_POSITION, { duration: 200 })
+          setTimeout(() => {
+            setKnobPosition("Shared");
+          }, 100);
           onLeft.value = true;
         } else {
           position.value = withTiming(END_POSITION, { duration: 200 });
           onLeft.value = false;
         }
-
     });
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: position.value }],
   }));
 
+  useEffect(() => {
+    if(knobPosition === "Shared"){
+      position.value = withTiming(INITIAL_POSITION, { duration: 200 });
+      onLeft.value = true;
+    } else {
+      position.value = withTiming(END_POSITION, { duration: 200 });
+      onLeft.value = false;
+    }
+  }, [knobPosition]);
+
   return (
     <GestureDetector gesture={panGesture}>
+      <Animated.View style={{marginTop:10}}>
+      <SelectButton knobPosition={knobPosition} setKnobPosition={setKnobPosition} />
       <Animated.View style={[styles.container, animatedStyle]}>
-
         <Animated.View style={[styles.box]} >
           <ScrollView contentContainerStyle={styles.mosaiquesContainer}>
               {displayedMosaics
                 .filter((mosaique: any) => mosaique !== null && mosaique !== undefined) // Avoid null/undefined
                 .map((mosaique: any) => (
+                  mosaique.users.length > 1 &&
                   <HoldItem items={MenuItems} hapticFeedback="Heavy" key={mosaique?.id} 
                   actionParams={{
                     Quit: [mosaique.id],
@@ -78,19 +101,20 @@ export default function GesturePan({ mosaics }: any) {
                       
                     <ImageBackground source={backgroundImage} resizeMode="cover" style={styles.mosaicPreview}>
                       <View style={styles.mosaicPreview}>
-                        {/* <LinearGradient
+                         <LinearGradient
                           // Background Linear Gradient
                           colors={['rgba(0,0,0,0.8)', 'transparent']}
                           style={styles.background}
-                        /> */}
-                        <Image
-                          source={{ uri: mosaique?.icon || 'https://placehold.co/100x100' }}
-                          style={{ width: 50, height: 50 }}
                         />
-                        <Image
-                          source={{ uri: mosaique?.images[0]?.url || 'https://placehold.co/100x100' }}
-                          style={{ width: 50, height: 50 }}
-                        />
+                        {mosaique?.images?.map((image: any, index: number) => (
+                        
+                          <Image
+                            key={index}
+                            source={{ uri: image.url || 'https://placehold.co/100x100' }}
+                            style={{ width: 50, height: 50, top:0,position:"relative" }}
+                          />
+                        ))
+                        }
                       </View>
                     </ImageBackground>
 
@@ -104,8 +128,47 @@ export default function GesturePan({ mosaics }: any) {
         </Animated.View>
 
         <Animated.View style={[styles.rightBox]}>
+          <ScrollView contentContainerStyle={styles.mosaiquesContainer}>
+                {displayedMosaics
+                  .filter((mosaique: any) => mosaique !== null && mosaique !== undefined) // Avoid null/undefined
+                  .map((mosaique: any) => (
+                    mosaique.users.length == 1 &&
+                    <HoldItem items={MenuItems} hapticFeedback="Heavy" key={mosaique?.id} 
+                    actionParams={{
+                      Quit: [mosaique.id],
+                    }}>
+                      <Pressable style={styles.mosaicTag}  key={mosaique?.id} onPress={async() => {await AsyncStorage.setItem("activeMosaic", mosaique?.id);router.replace("/mosaic")}}>
+                        
+                      <ImageBackground source={backgroundImage} resizeMode="cover" style={styles.mosaicPreview}>
+                        <View style={styles.mosaicPreview}>
+                          <LinearGradient
+                            // Background Linear Gradient
+                            colors={['rgba(0,0,0,0.8)', 'transparent']}
+                            style={styles.background}
+                          />
+                          {mosaique?.images?.map((image: any, index: number) => (
+                          
+                            <Image
+                              key={index}
+                              source={{ uri: image.url || 'https://placehold.co/100x100' }}
+                              style={{ width: 50, height: 50, top:0,position:"relative" }}
+                            />
+                          ))
+                          }
+                        </View>
+                      </ImageBackground>
 
+                        <View style={styles.mosaicInfo}>
+                          <Text style={styles.mosaicText}>{mosaique?.name || 'Unnamed Mosaic'}</Text>
+                        </View>
+                      </Pressable>
+                    </HoldItem>
+                  ))}
+            </ScrollView>
         </Animated.View>
+
+
+      </Animated.View>
       </Animated.View>
     </GestureDetector>
   );
@@ -121,17 +184,14 @@ const styles = StyleSheet.create({
     left: screenWidth / 2,
   },
   box: {
+    height: screenHeight-120 ,
     width: screenWidth * 0.9,
-    padding: 0,
-
-    margin: 0,
     borderRadius: 20,
     marginBottom: 30,
   },
   rightBox: {
-    height: 520,
+    height: screenHeight-120 ,
     width: screenWidth * 0.9,
-    backgroundColor: '#b58df1',
     borderRadius: 20,
     marginBottom: 30,
   },

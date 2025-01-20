@@ -10,23 +10,24 @@ import { Redirect, usePathname, useRouter } from 'expo-router';
 import GraytButton from '@/components/GrayButton';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import JoinModal from '@/components/JoinModal';
+import { Gyroscope } from 'expo-sensors';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const {width: screenWidth, height: screenHeight} = Dimensions.get('window');
 const videoBG = require('../assets/noir_BG.mp4');
 
 export default function Animation() {
     const opacity = useSharedValue(0);
-    let [loginButtonBG, setLoginButtonBG] = useState("#fbfbfc");
     const [phoneNumber, setPhoneNumber] = useState('');
-    // If null, no SMS has been sent
-    const [confirm, setConfirm]:any = useState(null);
-    // verification code (OTP - One-Time-Passcode)
+    const [confirm, setConfirm]: any = useState(null);
     const [code, setCode] = useState('');
-
-    const [initializing, setInitializing] = useState(true);
-    const [user, setUser]:any = useState();
-    const pathname = usePathname();
+    const [gradientStart, setGradientStart] = useState({ x: 0.5, y: 0 });
+    const [gradientEnd, setGradientEnd] = useState({ x: 0.5, y: 1 });
+    const [dynamicBorderRadius, setDynamicBorderRadius] = useState(12); // Default border radius
+    const [subscription, setSubscription]: any = useState(null);
     const router = useRouter();
+    const pathname = usePathname();
+    const [initializing, setInitializing] = useState(true);
 
     opacity.value = withTiming(1, {duration: 1000, easing: Easing.inOut(Easing.quad)});
     const [isJoinModalVisible, setJoinModalVisible] = useState<boolean>(false);
@@ -51,9 +52,30 @@ export default function Animation() {
     }
     
     useEffect(() => {
+      // Start listening to the gyroscope
+      const subscribe = Gyroscope.addListener((data) => {
+        const { x, y } = data;
 
+        // Map gyroscope values to gradient coordinates and dynamic border radius
+        const newStartX = Math.max(0, Math.min(1, 0.5 + x / 2)); // Clamp between 0 and 1
+        const newEndY = Math.max(0, Math.min(1, 0.5 + y / 2));
+        const newBorderRadius = Math.max(8, Math.min(30, 12 + y * 10)); // Adjust radius dynamically
+
+        setGradientStart({ x: newStartX, y: 0 });
+        setGradientEnd({ x: 0.5, y: newEndY });
+        setDynamicBorderRadius(newBorderRadius);
+      });
+
+      setSubscription(subscribe);
+
+      // Handle user state changes
       const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
-      return subscriber; // unsubscribe on unmount
+
+      // Cleanup on unmount
+      return () => {
+        subscription?.remove();
+        subscriber && subscriber();
+      };
     }, []);
 
 
@@ -68,8 +90,8 @@ export default function Animation() {
       }
 
     async function confirmCode() {
-      console.log("ere")
-    try {
+      console.log('Confirmation code entered:', code);
+      try {
       console.log(confirm);
         await confirm.confirm(code);
         router.replace("/home");
@@ -79,85 +101,130 @@ export default function Animation() {
     }
 
       
-
-    const player = useVideoPlayer(videoBG, player => {
-        player.loop = true;
-        player.play();
-      });
-      
-      if(!confirm){
-        return ( <View style={styles.container}>
-
-                <JoinModal isVisible={isJoinModalVisible} onClose={() => setJoinModalVisible(false)} user={null} />
-                <View style={{zIndex:-2,width:"100%",height:"100%",position:"absolute", backgroundColor:"#00000099"}}></View>
-                <VideoView player={player} allowsFullscreen style={{zIndex:-3,width:"100%",height:"100%",position:"absolute"}} />
-                
-                <Image source={require('../assets/images/mozailogo2.png')} style={{width: screenWidth/1.,height:screenHeight/2}}/>
-                <View style={{display: 'flex',alignItems: 'center',justifyContent: 'center',width: screenWidth, gap: 17, height: screenHeight/2}}>
-                    <CustomTextInput label="Phone number" placeholder="XX XX XX XX XX" value={phoneNumber} onChangeText={(text: SetStateAction<string>) => setPhoneNumber(text)} />
-        
-                    <View style={{display: 'flex',alignItems: 'center',bottom:"-11%",width: screenWidth, gap: 17}}>
-                        <LightButton onPress={() => signInWithPhoneNumber(phoneNumber)} title="Log in"/>
-                        <GraytButton onPress={async() => {setJoinModalVisible(true);await AsyncStorage.setItem("activeUser", "guest");}} title="Continue as guest"/>
-                    </View>
-                </View>
-            
-            </View>
-          );
-      } else {
-        return(<View style={styles.container}>
-          
-            <Animated.View
-              style={{
-                width:"100%",
-                opacity: opacity,
-                height: "100%",
-                justifyContent: 'center',
-                display: 'flex',
-                alignItems: 'center',
-                
-              }}
-            >
-                {/* <VideoView player={player} allowsFullscreen style={{zIndex:10,width:"100%",height:"100%"}} /> */}
-                <Image source={require('../assets/images/mozailogo2.png')} style={{width: screenWidth/1.,height:screenHeight/2}}/>
-                <View style={{display: 'flex',alignItems: 'center',justifyContent: 'center',width: screenWidth, gap: 17, height: screenHeight/2}}>
-                    <CustomTextInput label="Verification code" value={code} onChangeText={(text: SetStateAction<string>) => setCode(text)} />
-                    <LightButton title="Confirm Code" onPress={() => confirmCode()} />
-                    <GraytButton onPress={() => setConfirm(null)} title="Take me back"/>
-                </View>
-            </Animated.View>
-            
-            </View>
-
-        )
-      }
+    if (!confirm) {
+      return (
+          <View style={styles.container}>
+              <Image
+                  source={require('../assets/images/login/bglogin.jpg')}
+                  style={styles.backgroundImage}
+              />
+              <Image
+                  source={require('../assets/images/login/circle.png')}
+                  style={styles.logoOutside}
+              />
+              <Animated.View
+                  style={{
+                      width: '100%',
+                      opacity: opacity,
+                      height: '100%',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                  }}
+              >
+                  {/* Login card */}
+                  <View style={[styles.cardWrapper, { borderRadius: dynamicBorderRadius }]}>
+                      <LinearGradient
+                          colors={['#000000', '#DAEDBD', '#000000']}
+                          style={[styles.cardBorder, { borderRadius: dynamicBorderRadius }]}
+                          start={gradientStart}
+                          end={gradientEnd}
+                      >
+                          <View style={[styles.card, { borderRadius: dynamicBorderRadius }]}>
+                              <CustomTextInput
+                                  placeholder="Phone number"
+                                  placeholderTextColor="#CBCBCB"
+                                  value={phoneNumber}
+                                  onChangeText={(text: SetStateAction<string>) => setPhoneNumber(text)}
+                              />
+                              <LightButton onPress={() => signInWithPhoneNumber(phoneNumber)} title="Log in" />
+                              <GraytButton onPress={() => router.replace('/home')} title="Continue as guest" />
+                          </View>
+                      </LinearGradient>
+                  </View>
+              </Animated.View>
+          </View>
+      );
+  } else {
+      return (
+          <View style={styles.container}>
+              <Animated.View
+                  style={{
+                      width: '100%',
+                      opacity: opacity,
+                      height: '100%',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                  }}
+              >
+                  {/* Confirmation screen */}
+                  <Image
+                      source={require('../assets/images/mozailogo2.png')}
+                      style={{ width: screenWidth, height: screenHeight / 2 }}
+                  />
+                  <View
+                      style={{
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          width: screenWidth,
+                          gap: 17,
+                          height: screenHeight / 2,
+                      }}
+                  >
+                      <CustomTextInput
+                          label="Verification code"
+                          value={code}
+                          onChangeText={(text: SetStateAction<string>) => setCode(text)}
+                      />
+                      <LightButton title="Confirm Code" onPress={() => confirmCode()} />
+                      <GraytButton onPress={() => setConfirm(null)} title="Take me back" />
+                  </View>
+              </Animated.View>
+          </View>
+      );
+  }
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#000000',
-        alignItems: 'center',
-        justifyContent: 'center',
-        textAlign: 'center',
-      },
-      text: {
-        color: '#fff',
-        // fontWeight: 'bold',
-        fontFamily: 'SFPROBOLD',
-        width: screenWidth/1.3,
-        textAlign: 'left',
-        fontSize: 17,
-      },
-      input: {
-        borderRadius: 12,
-        borderColor: "#fff",
-        borderWidth: 1,
-        fontSize: 15,
-        color: "#fff",
-        padding: 15,
-        width: screenWidth/1.3,
-
-      },
+  container: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+  },
+  backgroundImage: {
+      width: screenWidth,
+      height: screenHeight,
+      position: 'absolute',
+      resizeMode: 'cover',
+      zIndex: -1,
+  },
+  cardWrapper: {
+      overflow: 'hidden',
+  },
+  cardBorder: {
+      padding: 2,
+  },
+  card: {
+      padding: 30,
+      backgroundColor: '#000000',
+      alignItems: 'center',
+      width: screenWidth / 1.15,
+      position: 'relative',
+  },
+  logoOutside: {
+      width: 190,
+      height: 190,
+      position: 'absolute',
+      top: 180,
+      left: (screenWidth - 190) / 2,
+      zIndex: 10,
+  },
+  input: {
+      marginTop: 20,
+      borderWidth: 1,
+      borderColor: '#FFFFFF',
+      borderRadius: 8,
+      width: '100%',
+      padding: 10,
+      color: '#FFFFFF',
+  },
 });
-

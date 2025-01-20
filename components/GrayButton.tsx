@@ -27,7 +27,7 @@ export default function GraytButton(props:any) {
     // Interpolate the backgroundColor value
     const interpolatedBG = backgroundColor.interpolate({
         inputRange: [0, 1],
-        outputRange: ["#3B3B3B", "#2b2b2b"], // Replace with your desired colors
+        outputRange: ["#ffffff", "#2b2b2b"], // Replace with your desired colors
     });
 
     return (
@@ -36,30 +36,30 @@ export default function GraytButton(props:any) {
             onPressIn={handlePressIn}
             onPressOut={handlePressOut}
             style={({ pressed }) => [
-                { backgroundColor: pressed ? "#ccc" : "transparent",
+                { backgroundColor: pressed ? "#ffffff" : "transparent",
                 borderRadius: 12,
                  },
             ]}
         >
             <Animated.View style={[styles.loginButton, { backgroundColor: interpolatedBG }]}>
-                <Text style={{ textAlign: "center", fontFamily: "SFPROBOLD", color: "#fff" }}>
-                    {props.title}
-                </Text>
-            </Animated.View>
+        <Text style={styles.buttonText}>{props.title}</Text>
+      </Animated.View>
         </Pressable>
     );
 };
 
 const styles = StyleSheet.create({
     loginButton: {
-        backgroundColor:"#fbfbfc",
+        backgroundColor: "#ffffff",
         borderRadius: 12,
-        color: "#fff",
         padding: 15,
-        fontSize: 20,
-        transitionDuration: "0.4s",
-        transitionProperty: "backgroundColor",
-        width: screenWidth/1.3,
+        width: screenWidth / 1.35,
         textAlign: "center",
-    },
+      },
+      buttonText: {
+        textAlign: "center",
+        fontFamily: "SFPRO",
+        fontSize: 18,
+        color: "#000000",
+      },
 });

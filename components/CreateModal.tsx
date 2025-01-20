@@ -11,6 +11,7 @@ import { DocumentReference, doc } from 'firebase/firestore';
 import { db } from '@/db-configs/firebase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
+import BacktButton from './BackButton';
 
 type Props = PropsWithChildren<{
   isVisible: boolean;
@@ -93,12 +94,9 @@ export default function CreateModal({ isVisible, onClose, user }: Props) {
                 <MaterialIcons name="close" color="#fff" size={22} />
             </Pressable>
             </View>
-            <Text>Mosaic name</Text>
+            <BacktButton title="<" onPress={onClose}></BacktButton>
             <CustomTextInput placeholder="Enter a name for your mosaic" onChangeText={(text:any) => setMosaicName(text)} />
-            <Text>Mosaic icon</Text>
-            <Pressable onPress={pickImageAsync}>
-                <Image source={selectedImage} style={{width:100, height:100}}/>
-            </Pressable>
+
             <LightButton title="Create" onPress={createMosaic} />
 
         </View>
@@ -122,7 +120,7 @@ const styles = StyleSheet.create({
     modalContent: {
         height: "45%",
         width: "90%",
-        backgroundColor: '#464C55',
+        backgroundColor: '#000000',
     },
     titleContainer: {
         height: '16%',

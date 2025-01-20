@@ -27,7 +27,7 @@ export default function LightButton(props:any) {
     // Interpolate the backgroundColor value
     const interpolatedBG = backgroundColor.interpolate({
         inputRange: [0, 1],
-        outputRange: ["#fbfbfc", "#bbbbbb"], // Replace with your desired colors
+        outputRange: ["#000000", "#bbbbbb"], // Replace with your desired colors
     });
 
     return (
@@ -42,9 +42,7 @@ export default function LightButton(props:any) {
             ]}
         >
             <Animated.View style={[styles.loginButton, { backgroundColor: interpolatedBG }]}>
-                <Text style={{ textAlign: "center", fontFamily: "SFPROBOLD" }}>
-                    {props.title}
-                </Text>
+                <Text style={styles.buttonText}>{props.title}</Text>
             </Animated.View>
         </Pressable>
     );
@@ -52,13 +50,22 @@ export default function LightButton(props:any) {
 
 const styles = StyleSheet.create({
     loginButton: {
-        backgroundColor:"#fbfbfc",
+        backgroundColor: "#fbfbfc",
         borderRadius: 12,
-        padding: 15,
         fontSize: 20,
+        borderColor: "#fff",
+        borderWidth: 1,
+        padding: 15,
         transitionDuration: "0.4s",
         transitionProperty: "backgroundColor",
-        width: screenWidth/1.3,
+        width: screenWidth / 1.35,
         textAlign: "center",
-    },
+        marginBottom: 20,
+      },
+    buttonText: {
+        textAlign: "center",
+        fontFamily: "SFPRO",
+        fontSize: 18,
+        color: "#ffffff",
+      },
 });

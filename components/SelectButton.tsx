@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing, ReduceMotion } from 'react-native-reanimated';
 
 const { width: screenWidth } = Dimensions.get('window');
 const BACKGROUND_WIDTH = screenWidth * 0.9; // 90% of screen width
 
-const SelectButton = () => {
+const SelectButton = (props:any) => {
   const [selected, setSelected] = useState('Shared'); // Selected value
   const [leftOffset, setLeftOffset] = useState(4); // Left offset of the highlight
   const animationValue = useSharedValue(0);
@@ -13,12 +13,12 @@ const SelectButton = () => {
   const handleSelect = (option:any) => {
     setSelected(option);
     setLeftOffset(0)
-    console.log("BOUAHAHHAHA")
     animationValue.value = withTiming(option === 'Shared' ? 0.0295 : 0.995, {
-      duration: 500,
-      easing: Easing.inOut(Easing.quad),
-      reduceMotion: ReduceMotion.System,
+    duration: 500,
+    easing: Easing.inOut(Easing.quad),
+    reduceMotion: ReduceMotion.System,
     });
+    props.setKnobPosition(option);
   };
 
   const animatedStyle = useAnimatedStyle(() => {
@@ -29,6 +29,11 @@ const SelectButton = () => {
     };
   });
 
+  useEffect(() => {
+    handleSelect(props.knobPosition);
+    setSelected(props.knobPosition);
+  }, [props.knobPosition]);
+
   return (
     <View>
       <View style={styles.background}>
@@ -36,6 +41,7 @@ const SelectButton = () => {
           style={[
             styles.highlight,
             animatedStyle, // Apply the animated style
+            
           ]}
         />
         <TouchableOpacity
@@ -72,7 +78,8 @@ const SelectButton = () => {
 const styles = StyleSheet.create({
   background: {
     flexDirection: 'row',
-    width: "90%",
+    width: screenWidth*0.9,
+    left: screenWidth*0.55,
     height: 40,
     padding: 5,
     borderRadius: 25,

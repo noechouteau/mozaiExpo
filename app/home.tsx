@@ -187,47 +187,11 @@ export default function Home() {
                     />
                   </View>
                 </View>
-                <SelectButton/>
             </View>
 
             {user?.mosaiques && user.mosaiques.length > 0 ? (
               <GestureHandlerRootView>
                 <GestureDetector gesture={pan}>
-                  {/* <ScrollView contentContainerStyle={styles.mosaiquesContainer}>
-                      {displayedMosaics
-                        .filter((mosaique: any) => mosaique !== null && mosaique !== undefined) // Avoid null/undefined
-                        .map((mosaique: any) => (
-                          <HoldItem items={MenuItems} hapticFeedback="Heavy" key={mosaique?.id} 
-                          actionParams={{
-                            Quit: [mosaique.id],
-                          }}>
-                            <Pressable style={styles.mosaicTag}  key={mosaique?.id} onPress={async() => {await AsyncStorage.setItem("activeMosaic", mosaique?.id);router.replace("/mosaic")}}>
-                              
-                            <ImageBackground source={backgroundImage} resizeMode="cover" style={styles.mosaicPreview}>
-                              <View style={styles.mosaicPreview}> */}
-                                {/* <LinearGradient
-                                  // Background Linear Gradient
-                                  colors={['rgba(0,0,0,0.8)', 'transparent']}
-                                  style={styles.background}
-                                /> */}
-                                {/* <Image
-                                  source={{ uri: mosaique?.icon || 'https://placehold.co/100x100' }}
-                                  style={{ width: 50, height: 50 }}
-                                />
-                                <Image
-                                  source={{ uri: mosaique?.images[0]?.url || 'https://placehold.co/100x100' }}
-                                  style={{ width: 50, height: 50 }}
-                                />
-                              </View>
-                            </ImageBackground>
-
-                              <View style={styles.mosaicInfo}>
-                                <Text style={styles.mosaicText}>{mosaique?.name || 'Unnamed Mosaic'}</Text>
-                              </View>
-                            </Pressable>
-                          </HoldItem>
-                        ))}
-                  </ScrollView> */}
                   <GesturePan mosaics={displayedMosaics}></GesturePan>
                 </GestureDetector>
               </GestureHandlerRootView>
