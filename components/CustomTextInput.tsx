@@ -15,21 +15,20 @@ export default function CustomTextInput(props:any) {
 
 const styles = StyleSheet.create({
       input: {
-        marginTop: 60,
         borderRadius: 12,
+        marginTop: 10,
         borderColor: "#fff",
         borderWidth: 1,
-        fontSize: 18,
+        fontSize: 14,
         color: "#fff",
-        padding: 15,
+        padding: 12,
         width: screenWidth/1.35,
       },
       text: {
         color: '#fff',
         // fontWeight: 'bold',
-        // fontFamily: 'SFPROBOLD',
-        width: screenWidth/1.3,
+        fontFamily: 'SFPROBOLD',
         textAlign: 'left',
-        fontSize: 15,
+        fontSize: 16,
       },
  });

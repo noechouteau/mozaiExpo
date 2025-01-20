@@ -32,12 +32,11 @@ export default function BackButton(props: any) {
     <Pressable
       onPress={props.onPress}
       onPressIn={handlePressIn}
-      onPressOut={handlePressOut}
       style={({ pressed }) => [
         {
           borderRadius: 90,
-          width: 40,
-          height: 40,
+          width: 30,
+          height:30,
         },
       ]}
     >
@@ -49,7 +48,7 @@ export default function BackButton(props: any) {
           end={gradientEnd}
         >
           <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-            <Ionicons name="chevron-back-outline" size={18} color="white" />
+            <Ionicons name="chevron-back-outline" size={15} color="white" />
           </View>
         </LinearGradient>
       </Animated.View>
@@ -60,8 +59,8 @@ export default function BackButton(props: any) {
 const styles = StyleSheet.create({
   backButton: {
     borderRadius: 90,
-    width: 40,
-    height: 40,
+    width: 30,
+    height: 30,
     textAlign: "center",
     borderWidth: 1,
     borderColor: "#ffffff50",

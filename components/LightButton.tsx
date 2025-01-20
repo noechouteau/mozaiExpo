@@ -1,4 +1,5 @@
-import { useRef } from "react";
+import { LinearGradient } from "expo-linear-gradient";
+import { useRef, useState } from "react";
 import { Animated, Dimensions, Pressable } from "react-native";
 import { StyleSheet, Text } from "react-native";
 
@@ -7,7 +8,9 @@ const {width: screenWidth, height: screenHeight} = Dimensions.get('window');
 
 export default function LightButton(props:any) {
     const backgroundColor = useRef(new Animated.Value(0)).current; // Animated value for the color
-
+    const [gradientStart, setGradientStart] = useState({ x: 0, y: 0 });
+    const [gradientEnd, setGradientEnd] = useState({ x: 2.5, y: 2 });
+  
     const handlePressIn = () => {
         Animated.timing(backgroundColor, {
             toValue: 1, // End value for pressed state
@@ -41,8 +44,15 @@ export default function LightButton(props:any) {
                  },
             ]}
         >
-            <Animated.View style={[styles.loginButton, { backgroundColor: interpolatedBG }]}>
-                <Text style={styles.buttonText}>{props.title}</Text>
+            <Animated.View >
+                <LinearGradient
+                    colors={["#0d0d0d","#DAEDBD"]}
+                    style={styles.loginButton}
+                    start={gradientStart}
+                    end={gradientEnd}
+                >
+                    <Text style={styles.buttonText}>{props.title}</Text>
+                </LinearGradient>
             </Animated.View>
         </Pressable>
     );
@@ -50,22 +60,20 @@ export default function LightButton(props:any) {
 
 const styles = StyleSheet.create({
     loginButton: {
-        backgroundColor: "#fbfbfc",
         borderRadius: 12,
-        fontSize: 20,
-        borderColor: "#fff",
+        fontSize: 16,
+        borderColor: "#b3b3b3ff",
         borderWidth: 1,
-        padding: 15,
+        padding: 10,
         transitionDuration: "0.4s",
         transitionProperty: "backgroundColor",
         width: screenWidth / 1.35,
         textAlign: "center",
-        marginBottom: 20,
       },
     buttonText: {
         textAlign: "center",
         fontFamily: "SFPRO",
-        fontSize: 18,
+        fontSize: 16,
         color: "#ffffff",
       },
 });

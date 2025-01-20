@@ -14,7 +14,6 @@ import { Gyroscope } from 'expo-sensors';
 import { LinearGradient } from 'expo-linear-gradient';
 
 const {width: screenWidth, height: screenHeight} = Dimensions.get('window');
-const videoBG = require('../assets/noir_BG.mp4');
 
 export default function Animation() {
     const opacity = useSharedValue(0);

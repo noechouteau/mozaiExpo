@@ -14,7 +14,8 @@ import { useEffect, useRef, useState } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
-const backgroundImage = require('../assets/images/bg_login_2.png');
+const backgroundImage = require('../assets/images/greenTheme/mosaicMinia.png');
+const radialBg = require('../assets/images/greenTheme/radialBg.png');
 
 const MenuItems = [
   { text: 'Actions', icon: 'home', isTitle: true, onPress: () => {} },
@@ -49,8 +50,7 @@ export default function GesturePan({ mosaics }: any) {
           position.value = withTiming(END_POSITION, { duration: 200 });
           setTimeout(() => {
             setKnobPosition("Solo");
-            console.log("Solo");
-          }, 100);
+          }, 200);
           onLeft.value = false;
         } else {
           position.value = withTiming(INITIAL_POSITION, { duration: 200 });
@@ -60,7 +60,7 @@ export default function GesturePan({ mosaics }: any) {
           position.value = withTiming(INITIAL_POSITION, { duration: 200 })
           setTimeout(() => {
             setKnobPosition("Shared");
-          }, 100);
+          }, 200);
           onLeft.value = true;
         } else {
           position.value = withTiming(END_POSITION, { duration: 200 });
@@ -93,17 +93,19 @@ export default function GesturePan({ mosaics }: any) {
                 .filter((mosaique: any) => mosaique !== null && mosaique !== undefined) // Avoid null/undefined
                 .map((mosaique: any) => (
                   mosaique.users.length > 1 &&
-                  <HoldItem items={MenuItems} hapticFeedback="Heavy" key={mosaique?.id} 
+                  <HoldItem items={MenuItems} hapticFeedback="Heavy" key={mosaique?.id} menuAnchorPosition={mosaique == displayedMosaics[displayedMosaics.length-1] && displayedMosaics.length-1 > 1 ? "bottom-left" : "top-left"}
                   actionParams={{
                     Quit: [mosaique.id],
                   }}>
                     <Pressable style={styles.mosaicTag}  key={mosaique?.id} onPress={async() => {await AsyncStorage.setItem("activeMosaic", mosaique?.id);router.replace("/mosaic")}}>
                       
-                    <ImageBackground source={backgroundImage} resizeMode="cover" style={styles.mosaicPreview}>
+                    <ImageBackground source={backgroundImage} resizeMode="cover" style={{backgroundColor:"#0D0D0D"}} imageStyle={{  borderTopLeftRadius: 15, borderTopRightRadius: 15}} >
                       <View style={styles.mosaicPreview}>
                          <LinearGradient
                           // Background Linear Gradient
-                          colors={['rgba(0,0,0,0.8)', 'transparent']}
+                          colors={["#DAEDBD","#0d0d0d","#DAEDBD"]}
+                          start={{ x: 0.4, y: -4.7 }}
+                          end={{ x: -1.1, y: 4.8 }}
                           style={styles.background}
                         />
                         {mosaique?.images?.map((image: any, index: number) => (
@@ -118,9 +120,12 @@ export default function GesturePan({ mosaics }: any) {
                       </View>
                     </ImageBackground>
 
+                    <ImageBackground source={radialBg} resizeMode="cover" imageStyle={{  borderBottomLeftRadius: 15, borderBottomRightRadius: 15}} style={{backgroundColor:"#0D0D0D"}}>
                       <View style={styles.mosaicInfo}>
                         <Text style={styles.mosaicText}>{mosaique?.name || 'Unnamed Mosaic'}</Text>
                       </View>
+                    </ImageBackground>
+
                     </Pressable>
                   </HoldItem>
                 ))}
@@ -133,19 +138,14 @@ export default function GesturePan({ mosaics }: any) {
                   .filter((mosaique: any) => mosaique !== null && mosaique !== undefined) // Avoid null/undefined
                   .map((mosaique: any) => (
                     mosaique.users.length == 1 &&
-                    <HoldItem items={MenuItems} hapticFeedback="Heavy" key={mosaique?.id} 
+                    <HoldItem items={MenuItems} hapticFeedback="Heavy" key={mosaique?.id} menuAnchorPosition={mosaique == displayedMosaics[displayedMosaics.length-1] && displayedMosaics.length-1 > 1 ? "bottom-left" : "top-left"}
                     actionParams={{
                       Quit: [mosaique.id],
                     }}>
                       <Pressable style={styles.mosaicTag}  key={mosaique?.id} onPress={async() => {await AsyncStorage.setItem("activeMosaic", mosaique?.id);router.replace("/mosaic")}}>
                         
-                      <ImageBackground source={backgroundImage} resizeMode="cover" style={styles.mosaicPreview}>
+                      <ImageBackground source={backgroundImage} resizeMode="stretch" style={{backgroundColor:"#0D0D0D"}} imageStyle={{  borderTopLeftRadius: 15, borderTopRightRadius: 15}}>
                         <View style={styles.mosaicPreview}>
-                          <LinearGradient
-                            // Background Linear Gradient
-                            colors={['rgba(0,0,0,0.8)', 'transparent']}
-                            style={styles.background}
-                          />
                           {mosaique?.images?.map((image: any, index: number) => (
                           
                             <Image
@@ -156,11 +156,14 @@ export default function GesturePan({ mosaics }: any) {
                           ))
                           }
                         </View>
-                      </ImageBackground>
+                      </ImageBackground >
 
+                      <ImageBackground source={radialBg} resizeMode="cover" imageStyle={{  borderBottomLeftRadius: 15, borderBottomRightRadius: 15}} style={{backgroundColor:"#0D0D0D"}}>
                         <View style={styles.mosaicInfo}>
                           <Text style={styles.mosaicText}>{mosaique?.name || 'Unnamed Mosaic'}</Text>
                         </View>
+                      </ImageBackground>
+
                       </Pressable>
                     </HoldItem>
                   ))}
@@ -186,13 +189,11 @@ const styles = StyleSheet.create({
   box: {
     height: screenHeight-120 ,
     width: screenWidth * 0.9,
-    borderRadius: 20,
     marginBottom: 30,
   },
   rightBox: {
     height: screenHeight-120 ,
     width: screenWidth * 0.9,
-    borderRadius: 20,
     marginBottom: 30,
   },
   mosaiquesContainer: {
@@ -202,9 +203,7 @@ const styles = StyleSheet.create({
     width: screenWidth,
   },
   mosaicTag: {
-    backgroundColor: '#444',
-    borderRadius: 8,
-    marginTop: 10,
+    marginTop: 15,
     width: screenWidth*0.88,
   },
   mosaicText: {
@@ -214,18 +213,18 @@ const styles = StyleSheet.create({
   mosaicPreview: {
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
-    height: 150,
-    borderWidth: 1,
-    borderColor: "#FFFFFF50",
+    height: 160,
+    borderWidth: 2,
+    borderColor: "#8D8E8C",
     overflow: 'hidden',
   },
   mosaicInfo: {
-    borderBottomLeftRadius: 10,
-    borderBottomRightRadius: 10,
+    borderBottomLeftRadius: 15,
+    borderBottomRightRadius: 15,
     borderWidth: 2,
-    borderColor: "#FFFFFF50",
+    borderTopWidth: 0,
+    borderColor: "#8D8E8C",
     padding: 10,
-    backgroundColor: "#000000",
   },
   background: {
     position: 'absolute',

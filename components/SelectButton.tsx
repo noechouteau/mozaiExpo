@@ -1,22 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Dimensions, ImageBackground } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing, ReduceMotion } from 'react-native-reanimated';
 
 const { width: screenWidth } = Dimensions.get('window');
 const BACKGROUND_WIDTH = screenWidth * 0.9; // 90% of screen width
+const radialBg = require('../assets/images/greenTheme/radialBg.png');
 
-const SelectButton = (props:any) => {
+const SelectButton = (props: any) => {
   const [selected, setSelected] = useState('Shared'); // Selected value
   const [leftOffset, setLeftOffset] = useState(4); // Left offset of the highlight
   const animationValue = useSharedValue(0);
 
-  const handleSelect = (option:any) => {
+  const handleSelect = (option: any) => {
     setSelected(option);
-    setLeftOffset(0)
-    animationValue.value = withTiming(option === 'Shared' ? 0.0295 : 0.995, {
-    duration: 500,
-    easing: Easing.inOut(Easing.quad),
-    reduceMotion: ReduceMotion.System,
+    setLeftOffset(0);
+    animationValue.value = withTiming(option === 'Shared' ? 0.0210 : 0.995, {
+      duration: 500,
+      easing: Easing.inOut(Easing.quad),
+      reduceMotion: ReduceMotion.System,
     });
     props.setKnobPosition(option);
   };
@@ -37,36 +38,16 @@ const SelectButton = (props:any) => {
   return (
     <View>
       <View style={styles.background}>
-        <Animated.View
-          style={[
-            styles.highlight,
-            animatedStyle, // Apply the animated style
-            
-          ]}
-        />
-        <TouchableOpacity
-          style={styles.option}
-          onPress={() => handleSelect('Shared')}
-        >
-          <Text
-            style={[
-              styles.text,
-              selected === 'Shared' ? styles.selectedText : styles.unselectedText,
-            ]}
-          >
+        <Animated.View style={[styles.highlightContainer, animatedStyle]}>
+          <ImageBackground source={radialBg} style={styles.highlight} />
+        </Animated.View>
+        <TouchableOpacity style={styles.option} onPress={() => handleSelect('Shared')}>
+          <Text style={[styles.text, selected === 'Shared' ? styles.selectedText : styles.unselectedText]}>
             Shared
           </Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.option}
-          onPress={() => handleSelect('Solo')}
-        >
-          <Text
-            style={[
-              styles.text,
-              selected === 'Solo' ? styles.selectedText : styles.unselectedText,
-            ]}
-          >
+        <TouchableOpacity style={styles.option} onPress={() => handleSelect('Solo')}>
+          <Text style={[styles.text, selected === 'Solo' ? styles.selectedText : styles.unselectedText]}>
             Solo
           </Text>
         </TouchableOpacity>
@@ -78,27 +59,30 @@ const SelectButton = (props:any) => {
 const styles = StyleSheet.create({
   background: {
     flexDirection: 'row',
-    width: screenWidth*0.9,
-    left: screenWidth*0.55,
-    height: 40,
-    padding: 5,
+    width: screenWidth * 0.9,
+    left: screenWidth * 0.55,
+    height: 35,
+    padding: 3,
     borderRadius: 25,
     borderWidth: 1,
-    borderColor: '#646464',
+    borderColor: '#8D8E8C',
     overflow: 'hidden',
     backgroundColor: '#000', // Background color
     alignItems: 'center',
     display: 'flex',
   },
-  highlight: {
+  highlightContainer: {
     position: 'absolute',
     width: '50%',
     height: '100%',
-    transform: [{ translateX: 15 }],
-    borderWidth: 1,
-    borderColor: '#ffffff50',
     borderRadius: 25,
-    backgroundColor: 'rgba(255,255,255,0.1)', // Animation color
+    overflow: 'hidden',
+    borderColor: '#8D8E8C',
+    borderWidth: 1,
+  },
+  highlight: {
+    width: '100%',
+    height: '100%',
   },
   option: {
     flex: 1,
