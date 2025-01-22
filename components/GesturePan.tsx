@@ -9,30 +9,34 @@ import Animated, {
   useAnimatedStyle,
   runOnJS,
 } from 'react-native-reanimated';
-import SelectButton from './SelectButton';
+import SelectButton from './buttons/SelectButton';
 import { useEffect, useRef, useState } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useMosaic } from '@/context/MosaicContext';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 const backgroundImage = require('../assets/images/greenTheme/mosaicMinia.png');
 const radialBg = require('../assets/images/greenTheme/radialBg.png');
-
-const MenuItems = [
-  { text: 'Actions', icon: 'home', isTitle: true, onPress: () => {} },
-  { text: 'Rename', icon: 'edit', onPress: () => {} },
-  { text: 'Quit', icon: 'trash', isDestructive: true, onPress: (mosaiqueId:any) => {} },
-];
 
 const END_POSITION = - screenWidth *0.9;
 
 // Calculate initial offset to center the left box
 const INITIAL_POSITION = screenWidth / 2 - screenWidth * 0.9 / 2;
 
-export default function GesturePan({ mosaics }: any) {
-  const displayedMosaics = mosaics;
+export default function GesturePan({ searchChain, deleteFunction }: any) {
+
+  const MenuItems = [
+    { text: 'Actions', icon: 'home', isTitle: true, onPress: () => {} },
+    { text: 'Rename', icon: 'edit', onPress: () => {} },
+    { text: 'Quit', icon: 'trash', isDestructive: true, onPress: (mosaiqueId:any) => {deleteFunction(mosaiqueId)} },
+  ];
+
+  const { mosaics } = useMosaic();
+  const displayedMosaics = mosaics ? mosaics.filter((mosaique: any) => mosaique.name.toLowerCase().includes(searchChain.toLowerCase())) : [];
   const onLeft = useSharedValue(true);
   const position = useSharedValue(INITIAL_POSITION); // Start centered on the left box
   const [knobPosition, setKnobPosition] = useState("Shared");
+  console.log(mosaics)
 
   const panGesture = Gesture.Pan().runOnJS(true)
     .onUpdate((e) => {
@@ -92,6 +96,7 @@ export default function GesturePan({ mosaics }: any) {
               {displayedMosaics
                 .filter((mosaique: any) => mosaique !== null && mosaique !== undefined) // Avoid null/undefined
                 .map((mosaique: any) => (
+                  mosaique.users &&
                   mosaique.users.length > 1 &&
                   <HoldItem items={MenuItems} hapticFeedback="Heavy" key={mosaique?.id} menuAnchorPosition={mosaique == displayedMosaics[displayedMosaics.length-1] && displayedMosaics.length-1 > 1 ? "bottom-left" : "top-left"}
                   actionParams={{
@@ -137,6 +142,7 @@ export default function GesturePan({ mosaics }: any) {
                 {displayedMosaics
                   .filter((mosaique: any) => mosaique !== null && mosaique !== undefined) // Avoid null/undefined
                   .map((mosaique: any) => (
+                    mosaique.users &&
                     mosaique.users.length == 1 &&
                     <HoldItem items={MenuItems} hapticFeedback="Heavy" key={mosaique?.id} menuAnchorPosition={mosaique == displayedMosaics[displayedMosaics.length-1] && displayedMosaics.length-1 > 1 ? "bottom-left" : "top-left"}
                     actionParams={{

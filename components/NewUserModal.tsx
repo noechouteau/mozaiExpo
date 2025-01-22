@@ -2,7 +2,7 @@ import { Modal, View, Text, Pressable, StyleSheet, TextInput,Image } from 'react
 import React, { act, PropsWithChildren, useState } from 'react';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import * as ImagePicker from 'expo-image-picker';
-import LightButton from './LightButton';
+import LightButton from './buttons/LightButton';
 import CustomTextInput from './CustomTextInput';
 import { uploadPicture } from '@/database/aws/set';
 import { updateDoc } from '@/database/firebase/set';
@@ -56,7 +56,6 @@ export default function NewUserModal({ isVisible, onClose, user }: Props) {
                 picture: res.Location,
                 uid: activeUser,
                 phone: phone,
-                mosaiques: [],
             }}).then(() => {
                 console.log("User created");
                 onClose();

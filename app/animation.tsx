@@ -1,5 +1,5 @@
 import CustomTextInput from '@/components/CustomTextInput';
-import LightButton from '@/components/LightButton';
+import LightButton from '@/components/buttons/LightButton';
 import { useFonts } from 'expo-font';
 import { SetStateAction, useEffect, useRef, useState } from 'react';
 import { View, Button,Image,Text, Dimensions, TextInput, Pressable,StyleSheet } from 'react-native';
@@ -7,7 +7,7 @@ import Animated, { useSharedValue, withSpring,useAnimatedStyle, withTiming, Easi
 import { useVideoPlayer, VideoSource, VideoView } from 'expo-video';
 import auth from '@react-native-firebase/auth';
 import { Redirect, usePathname, useRouter } from 'expo-router';
-import GraytButton from '@/components/GrayButton';
+import GraytButton from '@/components/buttons/GrayButton';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import JoinModal from '@/components/JoinModal';
 import { Gyroscope } from 'expo-sensors';
@@ -42,8 +42,9 @@ export default function Animation() {
     
     // Handle user state changes
     async function onAuthStateChanged(user:any) {
-      const activeUser = await AsyncStorage.getItem("activeUser");
-      if(activeUser && activeUser!="guest" && activeUser!=""){
+      const activeUser = await AsyncStorage.getItem("loggedIn");
+      console.log(activeUser);
+      if(activeUser && activeUser!="false" && activeUser!=""){
         router.replace("/home");
       }
       

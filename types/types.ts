@@ -1,12 +1,11 @@
 import { DocumentReference, Timestamp } from "@firebase/firestore";
 
 type User = {
-    id?: string;
+    uid?: string;
     name: string;
     phone: string;
     picture: string;
-    mosaiques: DocumentReference[];
-    archived?: [];
+    mosaiques: string[];
   };
 
 type Reactions = {
@@ -18,17 +17,18 @@ type Reactions = {
 type Image = {
     id?: string;
     date: Timestamp;
+    height: number;
+    width: number;
     informations: string;
-    reactions: DocumentReference[];
+    reactions: any[];
     url: string;
     user: DocumentReference;
 }
 type Mosaique = {
     id?: string;
-    icon: string;
     images: Image[];
     name: string;
-    users: DocumentReference[];
+    users: string[];
 }
   
   export { User, Mosaique, Image, Reactions };

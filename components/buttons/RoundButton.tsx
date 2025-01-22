@@ -18,30 +18,13 @@ export default function RoundButton(props:any) {
         transform: [{ scale: scaleAnim.value }],
       }));
       
-    const handlePressIn = () => {
-        Animated.timing(backgroundColor, {
-            toValue: 1, // End value for pressed state
-            duration: 200, // Transition duration in milliseconds
-            useNativeDriver: false, // Color interpolation needs false
-        }).start();
-    };
-
-    const handlePressOut = () => {
-        Animated.timing(backgroundColor, {
-            toValue: 0, // Back to initial state
-            duration: 200, // Transition duration
-            useNativeDriver: false,
-        }).start();
-    };
 
 
     return (
         <Pressable
             onPress={props.onPress}
-            onPressIn={handlePressIn}
-            onPressOut={handlePressOut}
             style={({ pressed }) => [
-                { backgroundColor: pressed ? "#ccc" : "transparent",
+                { 
                 borderRadius: 50,
                  },
             ]}

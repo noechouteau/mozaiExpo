@@ -5,7 +5,7 @@ import {useFonts} from 'expo-font';
 
 import {PropsWithChildren, useEffect, useState} from 'react';
 import {getDbDoc, queryDbDocsByField} from '@/database/firebase/read';
-import LightButton from '@/components/LightButton';
+import LightButton from '@/components/buttons/LightButton';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';

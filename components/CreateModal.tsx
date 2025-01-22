@@ -2,7 +2,7 @@ import { Modal, View, Text, Pressable, StyleSheet, TextInput,Image, Dimensions, 
 import React, { PropsWithChildren, useState } from 'react';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import * as ImagePicker from 'expo-image-picker';
-import LightButton from './LightButton';
+import LightButton from './buttons/LightButton';
 import CustomTextInput from './CustomTextInput';
 import { uploadPicture } from '@/database/aws/set';
 import { updateDoc } from '@/database/firebase/set';
@@ -11,7 +11,7 @@ import { DocumentReference, doc } from 'firebase/firestore';
 import { db } from '@/db-configs/firebase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
-import BacktButton from './BackButton';
+import BackButton from './buttons/BackButton';
 import { LinearGradient } from 'expo-linear-gradient';
 import { opacity } from 'react-native-reanimated/lib/typescript/Colors';
 
@@ -69,26 +69,21 @@ export default function CreateModal({ isVisible, onClose, user }: Props) {
           user.name = "Test";
         }
 
-        await uploadPicture(localUri, user.uid+ "/"+id+"-icon").then(async (res) => {
-            console.log(res);
-
-            await updateDoc({collectionId:"mosaiques",docId:id, newDatas: {
-                id: id,
-                name: mosaicName,
-                images : [],
-                users: [doc(db, "users", user.uid)],
-                icon: res.Location,
-            }}).then(() => {    
-                console.log("Mosaic created - mosaic side");
-            })
-            await updateDoc({collectionId:"users", docId: user.id, newDatas: {
-                mosaiques: [...user.mosaiques, doc(db, "mosaiques", id)],
-            }}).then(async () => {
-                console.log("Successfully created the mosaic - user side");
-                router.replace("/mosaic");
-                await AsyncStorage.setItem("activeMosaic", id);
-                onClose();
-            })
+        await updateDoc({collectionId:"mosaiques",docId:id, newDatas: {
+            id: id,
+            name: mosaicName,
+            images : [],
+            users: [user.uid],
+        }}).then(() => {    
+            console.log("Mosaic created - mosaic side");
+        })
+        await updateDoc({collectionId:"users", docId: user.id, newDatas: {
+            mosaiques: [...user.mosaiques, doc(db, "mosaiques", id)],
+        }}).then(async () => {
+            console.log("Successfully created the mosaic - user side");
+            router.replace("/mosaic");
+            await AsyncStorage.setItem("activeMosaic", id);
+            onClose();
         })
       }
 
@@ -103,7 +98,7 @@ export default function CreateModal({ isVisible, onClose, user }: Props) {
                   end={gradientEnd}>
                     <View style={[styles.card, { borderRadius: 24 }]}>
                       <View style={{alignSelf: 'flex-start',}}>
-                        <BacktButton onPress={onClose} ></BacktButton>
+                        <BackButton onPress={onClose} ></BackButton>
                       </View>
                       <CustomTextInput label="Give your Mosaic a name" placeholder="Enter a name for your mosaic" onChangeText={(text:any) => setMosaicName(text)} />
                       {errorDisplayed && <Text style={{color:"#7C061E"}}>Please give your mosaic a name !</Text>}

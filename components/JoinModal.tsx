@@ -1,7 +1,7 @@
 import { Modal, View, Text, Pressable, StyleSheet, TextInput,Image } from 'react-native';
 import React, { PropsWithChildren, useState } from 'react';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import LightButton from './LightButton';
+import LightButton from './buttons/LightButton';
 import { queryDbDocsByField } from '@/database/firebase/read';
 import { updateDoc } from '@/database/firebase/set';
 import { db } from '@/db-configs/firebase';

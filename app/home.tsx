@@ -6,8 +6,8 @@ import Animated from 'react-native-reanimated';
 import auth from '@react-native-firebase/auth';
 import React, { useEffect, useState } from 'react';
 import { getDbDoc, queryDbDocsByField } from '@/database/firebase/read';
-import LightButton from '@/components/LightButton';
-import GraytButton from '@/components/GrayButton';
+import LightButton from '@/components/buttons/LightButton';
+import GraytButton from '@/components/buttons/GrayButton';
 import CreateModal from '@/components/CreateModal';
 import JoinModal from '@/components/JoinModal';
 import { HoldItem, HoldMenuProvider } from 'react-native-hold-menu';
@@ -18,24 +18,23 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import NewUserModal from '@/components/NewUserModal';
 import { Asset } from 'expo-asset';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import SelectButton from '@/components/SelectButton';
-import RoundButton from '@/components/RoundButton';
+import SelectButton from '@/components/buttons/SelectButton';
+import RoundButton from '@/components/buttons/RoundButton';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import GesturePan from '@/components/GesturePan';
+import { useUser } from '@/context/UsersContext';
+import { useMosaic } from '@/context/MosaicContext';
 
 const {width: screenWidth, height: screenHeight} = Dimensions.get('window');
 const backgroundImage = require('../assets/images/bg_login_2.png');
 
 export default function Home() {
     const [initializing, setInitializing] = useState(true);
-    const [user, setUser]: any = useState();
-    const [userMosaics, setUserMosaics] = useState([
-      { id: '1', name: 'Item 1',icon:"" },
-      { id: '2', name: 'Item 2',icon:"" },
-      { id: '3', name: 'Item 3',icon:"" },
-    ]);
+    const { authInfos, userData, updateUserData } = useUser();
+    const { mosaics, updateMosaic } = useMosaic();
+
   
     const [loaded, error] = useFonts({
         'SFPRO': require('../assets/fonts/SFPRODISPLAYMEDIUM.otf'),
@@ -47,15 +46,9 @@ export default function Home() {
     const [isNewUserModalVisible, setNewUserModalVisible] = useState<boolean>(false);
     const [mosaiqueToDelete, setMosaiqueToDelete] = useState("");
     const [userPicture, setUserPicture] = useState<any>(require('../assets/images/newUserBgPic.png'));
-    const [displayedMosaics, setDisplayedMosaics] = useState(userMosaics);
+    const [searchChain, setSearchChain] = useState("");
 
     const pan = Gesture.Pan()
-
-    const MenuItems = [
-      { text: 'Actions', icon: 'home', isTitle: true, onPress: () => {} },
-      { text: 'Rename', icon: 'edit', onPress: () => {} },
-      { text: 'Quit', icon: 'trash', isDestructive: true, onPress: (mosaiqueId:any) => {setMosaiqueToDelete(mosaiqueId);setConfirmDeleteModalVisible(true)} },
-    ];
 
     const AddItems = [
       { text: 'Add', icon: 'plus', isTitle: true, onPress: () => {} },
@@ -65,85 +58,63 @@ export default function Home() {
 
     // Handle user state changes
     async function onAuthStateChanged(newUserAuth: any) {
-        console.log(newUserAuth);
-        const currentMosaiques = await AsyncStorage.getItem('currentMosaiques');
-        const jsonUser = await AsyncStorage.getItem('currentUser');
+        
+        const loggedIn = await AsyncStorage.getItem("loggedIn");
+        if(loggedIn == "false"|| loggedIn == null) {
+          await AsyncStorage.setItem("loggedIn", "true");
+        }
         if (initializing) setInitializing(false);
-
-        if(currentMosaiques) {
-          setUserMosaics(currentMosaiques != null ? JSON.parse(currentMosaiques) : null);
-          setDisplayedMosaics(currentMosaiques != null ? JSON.parse(currentMosaiques) : null);
-          setUser(jsonUser != null ? JSON.parse(jsonUser) : null);
-          setUserPicture({uri: jsonUser != null ? JSON.parse(jsonUser).picture : null});
-          return
-        }
-
-        await queryDbDocsByField({ collectionId: "users", field: "uid", value: newUserAuth.uid }).then(async (res: any) => {
-            console.log(res.length < 1);
-
-            if(res.length < 1 && newUserAuth) {
-
-              await AsyncStorage.setItem("activeUser", newUserAuth.uid);
-              await AsyncStorage.setItem("activePhone", newUserAuth.phoneNumber);
-              console.log("test")
-              setNewUserModalVisible(true);
-            } 
-            
-            else {
-              await AsyncStorage.setItem("activeUser", res[0].uid);
-
-              const mosaicPromises = res[0].mosaiques.map((mosaique: any) =>
-                  getDbDoc({ collectionId: "mosaiques", docId: mosaique.id })
-              );
-
-              const allMosaiques = await Promise.all(mosaicPromises);
-              setUserMosaics(allMosaiques);
-              setUser(res[0]);
-              const jsonValue = JSON.stringify(allMosaiques);
-              await AsyncStorage.setItem('currentMosaiques', jsonValue);
-              const jsonUser = JSON.stringify(res[0]);
-              await AsyncStorage.setItem('currentUser', jsonUser);
-              setUserPicture({uri: res[0].picture});
-            }
-        }
-        );
 
     }
 
     useEffect(() => {
-        const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
-        return subscriber; // unsubscribe on unmount
+      onAuthStateChanged(authInfos);
     }, []);
 
-    async function onLogout() {
-        auth().signOut();
-        await AsyncStorage.setItem("activeUser", "");
-        router.replace("/");
-    }
+
+    useEffect(() => {
+      if (userData) {
+        console.log('Snapshot updated:', userData);
+        console.log(userData.picture);
+        console.log("ARGHHHHH", mosaics)
+        setUserPicture({uri: userData.picture});
+        onAuthStateChanged(authInfos)
+      }
+    }, [userData]); // This runs whenever `userData` changes
+
+    useEffect(() => {
+      if (mosaics) {
+        console.log('Snapshot updated:', mosaics);
+      }
+    }, [mosaics]); // This runs whenever `mosaics` changes
+    
+
 
     async function confirmDelete(confirmation: boolean){
       setConfirmDeleteModalVisible(false)
-      if(confirmation){
-        console.log(mosaiqueToDelete)
-        await deleteDbDoc({ collection: "mosaiques", docId: mosaiqueToDelete }).then(async () => {
-          user.mosaiques = user.mosaiques.filter((mosaique: any) => mosaique.id !== mosaiqueToDelete);
-          setUser(user);
-          setUserMosaics(userMosaics.filter((mosaique: any) => mosaique.id !== mosaiqueToDelete));
-          if(user.uid == "1qcL9cle0mXLbPfWHQtCAVCdww63") {
-            user.uid = "0"
-          }
-          await updateDoc({ collectionId: "users", docId: user.uid, newDatas: {
-            mosaiques: user.mosaiques
-          }}).then(() => {
-            console.log("User updated");
-            user.uid = "1qcL9cle0mXLbPfWHQtCAVCdww63"
+      if(confirmation && mosaics && userData){
+        const completeMosToDel = mosaics.find((mosaique: any) => mosaique.id === mosaiqueToDelete);
+        if(completeMosToDel) {
+          await updateMosaic(mosaiqueToDelete, {
+            users: completeMosToDel.users.filter((user: any) => user !== userData.uid)
+          }).then(() => {
+            console.log("Mosaic quitted");
           });
-        });
+        }
+        // await deleteDbDoc({ collection: "mosaiques", docId: mosaiqueToDelete }).then(async () => {
+        //   await updateUserData({
+        //     mosaiques: user.mosaiques.filter((mosaique: any) => mosaique.id !== mosaiqueToDelete)
+        //   }).then(() => {
+        //     console.log("Mosaic deleted");
+        //   });
+        // });
         }
     }
 
     async function dynamicSearch(searchString: any) {
-      setDisplayedMosaics(userMosaics.filter((mosaique: any) => mosaique.name.toLowerCase().includes(searchString.toLowerCase())));
+      if(mosaics) {
+        setSearchChain(searchString);
+      }
     }
 
 
@@ -162,17 +133,17 @@ export default function Home() {
                 const activeUser=await AsyncStorage.getItem("activeUser");
                 await onAuthStateChanged({uid:activeUser});
                 setNewUserModalVisible(false)
-                }} user={user} />
+                }} user={userData} />
 
-              <CreateModal isVisible={isCreateModalVisible} onClose={() => setCreateModalVisible(false)} user={user} />
-              <JoinModal isVisible={isJoinModalVisible} onClose={() => setJoinModalVisible(false)} user={user} />
-              <ConfirmModal isVisible={isConfirmDeleteModalVisible} text={"Are you sure you want to delete this mosaic?"} onClose={(confirmation)=>(confirmDelete(confirmation))} user={user} />
+              <CreateModal isVisible={isCreateModalVisible} onClose={() => setCreateModalVisible(false)} user={userData} />
+              <JoinModal isVisible={isJoinModalVisible} onClose={() => setJoinModalVisible(false)} user={userData} />
+              <ConfirmModal isVisible={isConfirmDeleteModalVisible} text={"Are you sure you want to delete this mosaic?"} onClose={(confirmation)=>(confirmDelete(confirmation))} user={userData} />
             </View>
 
-            <View style={{display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: screenWidth, gap: 10}}>
+            <View style={{display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: screenWidth, gap: 10, position: mosaics && mosaics.length>0 ? "relative" : "absolute", top: 0}}>
               <View style={styles.topBar}>
                   <Pressable onPress={() => {router.replace("/profile")}}>
-                    <Image source={userPicture} style={{width: 40,height:40, borderRadius:50}}/>
+                    <Image source={userData ?{uri: userData.picture}:userPicture} style={{width: 40,height:40, borderRadius:50}}/>
                   </Pressable>
                   <View style={styles.searchBar}>
                     <Ionicons name="search" size={26} color="grey" style={{width:35,paddingLeft:3}} />
@@ -189,10 +160,10 @@ export default function Home() {
                 </View>
             </View>
 
-            {user?.mosaiques && user.mosaiques.length > 0 ? (
+            {mosaics && mosaics.length > 0 ? (
               <GestureHandlerRootView>
                 <GestureDetector gesture={pan}>
-                  <GesturePan mosaics={displayedMosaics}></GesturePan>
+                  <GesturePan searchChain={searchChain} deleteFunction={(tempId:any)=>{setMosaiqueToDelete(tempId);setConfirmDeleteModalVisible(true)}}></GesturePan>
                 </GestureDetector>
               </GestureHandlerRootView>
             ) : (
@@ -202,10 +173,11 @@ export default function Home() {
 
               <TextInput style={styles.homeTextInput}></TextInput>
 
-                
+              {userData && (
               <HoldItem key={"Test"} items={AddItems} hapticFeedback="Heavy" activateOn="tap" menuAnchorPosition="bottom-right" containerStyles={{position: 'absolute', bottom: 15, right:40,zIndex: 10}}>
-                  {user && <RoundButton title="+"/>}
+                  <RoundButton title="+"/>
               </HoldItem>
+              )}
         </View>
     </HoldMenuProvider>
     );

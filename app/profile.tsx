@@ -6,13 +6,17 @@ import { HoldMenuProvider } from 'react-native-hold-menu';
 import { HoldItem } from 'react-native-hold-menu';
 import { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import LightButton from '@/components/LightButton';
+import LightButton from '@/components/buttons/LightButton';
 import CustomTextInput from '@/components/CustomTextInput';
 import createUser from '@/controllers/Users';
 import { Asset } from 'expo-asset';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import auth from '@react-native-firebase/auth';
+import BackButton from '@/components/buttons/BackButton';
+import { uploadPicture } from '@/database/aws/set';
+import { updateDoc } from '@/database/firebase/set';
+import { useUser } from '@/context/UsersContext';
 
 const {width: screenWidth, height: screenHeight} = Dimensions.get('window');
 const backgroundImage = require('../assets/images/bg_login_2.png');
@@ -22,6 +26,7 @@ export default function Profile() {
     const [selectedImage, setSelectedImage] = useState<any>(require('../assets/images/newUserBgPic.png'));
     const [user, setUser] = useState<any>();
     const [userName, setUserName] = useState<string>("");
+    const { authInfos, userData, logout, updateUserData } = useUser();
 
     const setUserData = async () => {
         const jsonUser = await AsyncStorage.getItem('currentUser');
@@ -37,13 +42,20 @@ export default function Profile() {
             quality: 1,
         });
     
-        if (!result.canceled) {
-            console.log(result.assets[0].uri);
+        if (!result.canceled && userData) {
+            console.log(result.assets[0]," JJEJEJJEJEJJEJEJJEJE");
             let image = await Asset.loadAsync(result.assets[0].uri);
             console.log(image);
             setSelectedImage(image);
-        } else {
-            alert('You did not select any image.');
+
+            await uploadPicture(image[0].localUri, userData.uid+"/"+userData.uid+"-profile-pic").then(async (res) => {
+                console.log(res.Location, userData.name,userData.phone,userData.uid)
+                await updateUserData({
+                    picture: `${res.Location}?t=${Date.now()}`,
+                }).then(() => {
+                    console.log( "User data updated");
+                })
+            })
         }
     };
 
@@ -52,15 +64,10 @@ export default function Profile() {
     }, []);
 
     const onSignOut = async () => {
-        console.log("signing out");
-        // await auth().signOut();
-        await AsyncStorage.removeItem('currentUser');
-        await AsyncStorage.setItem("activeUser", "");
-        await AsyncStorage.setItem("activePhone", "");
-        await AsyncStorage.setItem('currentMosaiques', "");
-        await AsyncStorage.setItem('currentUser', "");
+        await logout();
+        await AsyncStorage.setItem("loggedIn", "false");
         router.replace("/animation");
-        console.log("heh")
+        console.log("Sign out");
     }
 
   return (<HoldMenuProvider theme='dark' safeAreaInsets={{
@@ -74,18 +81,21 @@ export default function Profile() {
   
    <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-              <Pressable style={{left:15,top:10, position:"absolute"}} onPress={() => {router.replace("/home")}}>
-                  <Text style={[styles.text,{left:15,top:10, position:"absolute"}]}>X</Text>
-              </Pressable>
+              <View style={{alignSelf: 'flex-start',left:20,top:20}}>  
+                <BackButton onPress={() => {router.replace("/home")}}  />
+              </View>
   
               <View style={styles.titleContainer}>
                   <Pressable onPress={pickImageAsync}>
-                      <Image source={{uri:user?.picture}} style={{width: 150, height: 150, alignSelf: 'center', borderRadius:100}} />
+                      <Image source={{uri:userData?.picture}} style={{width: 150, height: 150, alignSelf: 'center', borderRadius:100}} />
+                      <View style={{alignSelf: 'flex-end',top:-37,left:-5}}>  
+                        <BackButton onPress={pickImageAsync} icon="pencil-outline" start={{x:0,y:0}} end={{x:0,y:0}}/>
+                    </View>
                   </Pressable>
               </View>
   
               <View style={styles.formContainer}>
-                  <CustomTextInput label="Username" style={styles.input} onChangeText={(text:any) => setUserName(text)} />
+                  <CustomTextInput label="Username" onChangeText={(text:any) => setUserName(text)} />
   
                   <LightButton title="Sign out" onPress={() => onSignOut()} />
               </View>
@@ -110,13 +120,14 @@ const styles = StyleSheet.create({
         zIndex: 10,
     },
     modalContent: {
-        height: 290,
+        height: 270,
         width: "85%",
         borderRadius: 20,
         backgroundColor: '#000',
         display: 'flex',
         alignItems: 'center',
         boxShadow: '0px 0px 10px #464B3F',
+        
     },
     titleContainer: {
         display: 'flex',
@@ -127,13 +138,9 @@ const styles = StyleSheet.create({
         top:-80
     },
     formContainer: {
-        top: -60,
+        top: -100,
         display: 'flex',
         gap: 20,
-    },
-    input:{
-        display: 'flex',
-        gap: 10,
     },
     text: {
         color: '#fff',

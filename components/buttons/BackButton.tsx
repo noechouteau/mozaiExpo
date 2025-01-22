@@ -8,8 +8,8 @@ import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-na
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
 export default function BackButton(props: any) {
-  const [gradientStart, setGradientStart] = useState({ x: 0.5, y: 0 });
-  const [gradientEnd, setGradientEnd] = useState({ x: 4.6, y: 2 });
+  const [gradientStart, setGradientStart] = useState(props.start? props.start :{ x: 0.5, y: 0 });
+  const [gradientEnd, setGradientEnd] = useState(props.end? props.end :{ x: 4.6, y: 2 });
   const scaleAnim = useSharedValue(1); // Shared value for scale
 
   // Animated style for scaling
@@ -48,7 +48,10 @@ export default function BackButton(props: any) {
           end={gradientEnd}
         >
           <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-            <Ionicons name="chevron-back-outline" size={15} color="white" />
+            { !props.icon ?
+                <Ionicons name="chevron-back-outline" size={15} color="white" /> :
+                <Ionicons name={props.icon} size={15} color="white" />
+            }
           </View>
         </LinearGradient>
       </Animated.View>

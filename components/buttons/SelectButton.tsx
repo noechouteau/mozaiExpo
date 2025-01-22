@@ -4,7 +4,7 @@ import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing, ReduceM
 
 const { width: screenWidth } = Dimensions.get('window');
 const BACKGROUND_WIDTH = screenWidth * 0.9; // 90% of screen width
-const radialBg = require('../assets/images/greenTheme/radialBg.png');
+const radialBg = require('../../assets/images/greenTheme/radialBg.png');
 
 const SelectButton = (props: any) => {
   const [selected, setSelected] = useState('Shared'); // Selected value
