@@ -1,14 +1,28 @@
+import { useUser } from '@/context/UsersContext';
 import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions, ImageBackground } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing, ReduceMotion } from 'react-native-reanimated';
 
 const { width: screenWidth } = Dimensions.get('window');
 const BACKGROUND_WIDTH = screenWidth * 0.9; // 90% of screen width
-const radialBg = require('../../assets/images/greenTheme/radialBg.png');
 
 const SelectButton = (props: any) => {
   const [selected, setSelected] = useState('Shared'); // Selected value
   const [leftOffset, setLeftOffset] = useState(4); // Left offset of the highlight
+  const { selectedTheme } = useUser();
+  let radialBg;
+  if (selectedTheme === 'greenTheme') {
+    radialBg = require('../../assets/images/greenTheme/radialBg.png');
+  } else if (selectedTheme === 'blueTheme') {
+    radialBg = require('../../assets/images/blueTheme/radialBg.png');
+  } else if (selectedTheme === 'redTheme') {
+    radialBg = require('../../assets/images/redTheme/radialBg.png');
+  // } else if (selectedTheme === 'purpleTheme') {
+  //   radialBg = require('../../assets/images/purpleTheme/radialBg.png');
+  } else {
+    radialBg = require('../../assets/images/orangeTheme/radialBg.png');
+  }
+  
   const animationValue = useSharedValue(0);
 
   const handleSelect = (option: any) => {

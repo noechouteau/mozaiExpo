@@ -6,6 +6,7 @@ import { useUser } from './UsersContext';
 interface MosaicContextType {
   mosaics: Mosaique[] | null; 
   updateMosaic: (mosaicId: string, updatedFields: Partial<Mosaique>) => Promise<void>;
+  createMosaic: (newMosaic: Mosaique, customDocId: string) => Promise<void>;
 }
 
 const MosaicContext = createContext<MosaicContextType | undefined>(undefined);
@@ -20,7 +21,7 @@ export const MosaicProvider: React.FC<MosaicProviderProps> = ({ children }) => {
 
   useEffect(() => {
     const fetchMosaics = async () => {
-      if (!userData || !userData.uid) return;
+      if (!userData?.uid) return;
 
       try {
         const mosaicsSnapshot = await firestore()
@@ -59,7 +60,19 @@ export const MosaicProvider: React.FC<MosaicProviderProps> = ({ children }) => {
     }
   };
 
-  const contextValue = useMemo(() => ({ mosaics, updateMosaic }), [mosaics]);
+  const createMosaic = async (newMosaic: Mosaique, customDocId: string): Promise<void> => {
+    try {
+      const mosaicRef = await firestore().collection('mosaiques').doc(customDocId).set(newMosaic);
+  
+      setMosaics((prevMosaics) =>
+        prevMosaics ? [...prevMosaics, { id: customDocId, ...newMosaic }] : [{ id: customDocId, ...newMosaic }]
+      );
+    } catch (error) {
+      console.error('Error creating mosaic:', error);
+    }
+  };
+
+  const contextValue = useMemo(() => ({ mosaics, updateMosaic, createMosaic }), [mosaics]);
 
   return (
     <MosaicContext.Provider value={contextValue}>

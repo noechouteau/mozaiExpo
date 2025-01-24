@@ -9,7 +9,7 @@ import { StatusBar } from 'expo-status-bar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const {width: screenWidth, height: screenHeight} = Dimensions.get('window');
-const backgroundImage = require('../assets/images/bg_login_2.png');
+const backgroundImage = require('../assets/images/blueTheme/bg_login_2.png');
 
 export default function Index() {
 

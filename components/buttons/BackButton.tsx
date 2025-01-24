@@ -1,6 +1,7 @@
+import { useUser } from "@/context/UsersContext";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { LinearGradient } from "expo-linear-gradient";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Dimensions, Pressable, View } from "react-native";
 import { StyleSheet } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
@@ -11,6 +12,23 @@ export default function BackButton(props: any) {
   const [gradientStart, setGradientStart] = useState(props.start? props.start :{ x: 0.5, y: 0 });
   const [gradientEnd, setGradientEnd] = useState(props.end? props.end :{ x: 4.6, y: 2 });
   const scaleAnim = useSharedValue(1); // Shared value for scale
+  const [bgColor, setBgColor] = useState("#DAEDBD");
+  const { selectedTheme } = useUser();
+
+  useEffect(() => {
+    console.log(selectedTheme);
+    if (selectedTheme === 'greenTheme') {
+      setBgColor("#DAEDBD");
+    } else if (selectedTheme === 'blueTheme') {
+      setBgColor("#1100ff");
+    } else if (selectedTheme === 'redTheme') {
+      setBgColor("#F0265D");
+    } else if (selectedTheme === 'purpleTheme') {
+      setBgColor("#761DA7");
+    } else {
+      setBgColor("#F94D20");
+    }
+  }, [selectedTheme]);
 
   // Animated style for scaling
   const animatedStyle = useAnimatedStyle(() => ({
@@ -42,7 +60,7 @@ export default function BackButton(props: any) {
     >
       <Animated.View style={[animatedStyle, { width: 40 }]}>
         <LinearGradient
-          colors={["#000000", "#DAEDBD", "#000000"]}
+          colors={["#000000", bgColor, "#000000"]}
           style={styles.backButton}
           start={gradientStart}
           end={gradientEnd}

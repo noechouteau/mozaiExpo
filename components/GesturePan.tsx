@@ -10,13 +10,13 @@ import Animated, {
   runOnJS,
 } from 'react-native-reanimated';
 import SelectButton from './buttons/SelectButton';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useMosaic } from '@/context/MosaicContext';
+import { useUser } from '@/context/UsersContext';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
-const backgroundImage = require('../assets/images/greenTheme/mosaicMinia.png');
-const radialBg = require('../assets/images/greenTheme/radialBg.png');
+
 
 const END_POSITION = - screenWidth *0.9;
 
@@ -24,6 +24,10 @@ const END_POSITION = - screenWidth *0.9;
 const INITIAL_POSITION = screenWidth / 2 - screenWidth * 0.9 / 2;
 
 export default function GesturePan({ searchChain, deleteFunction }: any) {
+  const [bgColor, setBgColor] = useState("");
+  const [radialBg, setRadialBg] = useState();
+  const [backgroundImage, setBackgroundImage] = useState();
+  const { selectedTheme } = useUser();
 
   const MenuItems = [
     { text: 'Actions', icon: 'home', isTitle: true, onPress: () => {} },
@@ -36,7 +40,29 @@ export default function GesturePan({ searchChain, deleteFunction }: any) {
   const onLeft = useSharedValue(true);
   const position = useSharedValue(INITIAL_POSITION); // Start centered on the left box
   const [knobPosition, setKnobPosition] = useState("Shared");
-  console.log(mosaics)
+
+  useEffect(() => {
+    console.log(radialBg);
+    if (selectedTheme === 'greenTheme') {
+      setBgColor("#DAEDBD");
+      setRadialBg(require('../assets/images/greenTheme/radialBg.png'));
+      setBackgroundImage(require('../assets/images/greenTheme/mosaicMinia.png'));
+    } else if (selectedTheme === 'blueTheme') {
+      setBgColor("#1100ff");
+      setRadialBg(require('../assets/images/blueTheme/radialBg.png'));
+      setBackgroundImage(require('../assets/images/blueTheme/mosaicMinia.png'));
+    } else if (selectedTheme === 'redTheme') {
+      setBgColor("#F0265D");
+      setRadialBg(require('../assets/images/redTheme/radialBg.png'));
+      setBackgroundImage(require('../assets/images/redTheme/mosaicMinia.png'));
+    // } else if (selectedTheme === 'purpleTheme') {
+    //   setBgColor("#761DA7");
+    } else {
+      setBgColor("#F94D20");
+      setRadialBg(require('../assets/images/orangeTheme/radialBg.png'));
+      setBackgroundImage(require('../assets/images/orangeTheme/mosaicMinia.png'));
+    }
+  }, [selectedTheme]);
 
   const panGesture = Gesture.Pan().runOnJS(true)
     .onUpdate((e) => {
@@ -86,6 +112,21 @@ export default function GesturePan({ searchChain, deleteFunction }: any) {
     }
   }, [knobPosition]);
 
+  const imagePositionsCache = useRef<Record<string, { top: number; left: number }[]>>({});
+
+  // Function to precompute positions for a mosaic
+  const getImagePositions = (mosaicId: string, images: any[]) => {
+    console.log(imagePositionsCache.current[mosaicId])
+    if (!imagePositionsCache.current[mosaicId]) {
+      // If positions are not cached, calculate and store them
+      imagePositionsCache.current[mosaicId] = images.map(() => ({
+        top: Math.random() * 50,
+        left: Math.random() * 200,
+      }));
+    }
+    return imagePositionsCache.current[mosaicId];
+  };
+
   return (
     <GestureDetector gesture={panGesture}>
       <Animated.View style={{marginTop:10}}>
@@ -104,26 +145,37 @@ export default function GesturePan({ searchChain, deleteFunction }: any) {
                   }}>
                     <Pressable style={styles.mosaicTag}  key={mosaique?.id} onPress={async() => {await AsyncStorage.setItem("activeMosaic", mosaique?.id);router.replace("/mosaic")}}>
                       
-                    <ImageBackground source={backgroundImage} resizeMode="cover" style={{backgroundColor:"#0D0D0D"}} imageStyle={{  borderTopLeftRadius: 15, borderTopRightRadius: 15}} >
-                      <View style={styles.mosaicPreview}>
-                         <LinearGradient
-                          // Background Linear Gradient
-                          colors={["#DAEDBD","#0d0d0d","#DAEDBD"]}
-                          start={{ x: 0.4, y: -4.7 }}
-                          end={{ x: -1.1, y: 4.8 }}
-                          style={styles.background}
-                        />
-                        {mosaique?.images?.map((image: any, index: number) => (
-                        
-                          <Image
-                            key={index}
-                            source={{ uri: image.url || 'https://placehold.co/100x100' }}
-                            style={{ width: 50, height: 50, top:0,position:"relative" }}
+                    <ImageBackground
+                        source={backgroundImage}
+                        resizeMode="cover"
+                        style={{ backgroundColor: "#0D0D0D" }}
+                        imageStyle={{ borderTopLeftRadius: 15, borderTopRightRadius: 15 }}
+                      >
+                        <View style={styles.mosaicPreview}>
+                          <LinearGradient
+                            colors={[bgColor, "#0d0d0d", bgColor]}
+                            start={{ x: 0.4, y: -4.7 }}
+                            end={{ x: -1.1, y: 4.8 }}
+                            style={styles.background}
                           />
-                        ))
-                        }
-                      </View>
-                    </ImageBackground>
+                            {mosaique?.images?.slice().reverse().map((image:any, index:any) => {
+                            console.log(mosaique.id)
+                            const positions = getImagePositions(mosaique.id, mosaique.images);
+                            return (
+                              <Image
+                              key={index}
+                              source={{ uri: image.url || 'https://placehold.co/100x100' }}
+                              style={{
+                              width: 100, 
+                              height: 100,
+                              top: positions[mosaique.images.length - 1 - index].top,
+                              left: positions[mosaique.images.length - 1 - index].left,
+                              position: "absolute",
+                              }}
+                            />
+                            ); })}                                 
+                        </View>
+                      </ImageBackground>
 
                     <ImageBackground source={radialBg} resizeMode="cover" imageStyle={{  borderBottomLeftRadius: 15, borderBottomRightRadius: 15}} style={{backgroundColor:"#0D0D0D"}}>
                       <View style={styles.mosaicInfo}>

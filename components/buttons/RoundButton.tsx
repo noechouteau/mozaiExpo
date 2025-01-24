@@ -1,6 +1,7 @@
+import { useUser } from "@/context/UsersContext";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { LinearGradient } from "expo-linear-gradient";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Animated, Dimensions, Pressable, View } from "react-native";
 import { StyleSheet, Text } from "react-native";
 import { useAnimatedStyle, useSharedValue } from "react-native-reanimated";
@@ -11,7 +12,22 @@ const {width: screenWidth, height: screenHeight} = Dimensions.get('window');
 export default function RoundButton(props:any) {
       const [gradientStart, setGradientStart] = useState({ x: 0.5, y: 0 });
       const [gradientEnd, setGradientEnd] = useState({ x: 4.6, y: 2 });
-    const backgroundColor = useRef(new Animated.Value(0)).current; // Animated value for the color
+      const [bgColor, setBgColor] = useState("#DAEDBD");
+
+      const { selectedTheme } = useUser();
+    useEffect(() => {
+        if (selectedTheme === 'greenTheme') {
+          setBgColor("#DAEDBD");
+        } else if (selectedTheme === 'blueTheme') {
+          setBgColor("#1100ff");
+        } else if (selectedTheme === 'redTheme') {
+          setBgColor("#F0265D");
+        // } else if (selectedTheme === 'purpleTheme') {
+        //   setBgColor("#761DA7");
+        } else {
+          setBgColor("#F94D20");
+        }
+      }, [selectedTheme]);
     const scaleAnim = useSharedValue(1); // Shared value for scale
 
     const animatedStyle = useAnimatedStyle(() => ({
@@ -31,7 +47,7 @@ export default function RoundButton(props:any) {
         >
         <Animated.View style={[animatedStyle, { width: 40 }]}>
             <LinearGradient
-            colors={["#000000", "#DAEDBD", "#000000"]}
+            colors={["#000000", bgColor, "#000000"]}
             style={styles.loginButton}
             start={gradientStart}
             end={gradientEnd}

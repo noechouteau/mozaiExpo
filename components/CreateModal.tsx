@@ -14,6 +14,7 @@ import { router } from 'expo-router';
 import BackButton from './buttons/BackButton';
 import { LinearGradient } from 'expo-linear-gradient';
 import { opacity } from 'react-native-reanimated/lib/typescript/Colors';
+import { useMosaic } from '@/context/MosaicContext';
 
 const {width: screenWidth, height: screenHeight} = Dimensions.get('window');
 
@@ -30,34 +31,15 @@ export default function CreateModal({ isVisible, onClose, user }: Props) {
     const [errorDisplayed, setErrorDisplayed] = useState<boolean>(false);
     const [gradientStart, setGradientStart] = useState({ x: 0.2, y: 0 });
     const [gradientEnd, setGradientEnd] = useState({ x: 1.2, y: 1 });
+    const { createMosaic } = useMosaic();
 
-    const pickImageAsync = async () => {
-        let result = await ImagePicker.launchImageLibraryAsync({
-          mediaTypes: ['images'],
-          allowsEditing: false,
-          quality: 1,
-        });
-    
-        if (!result.canceled) {
-          console.log(result.assets[0].uri);
-          let image = await Asset.loadAsync(result.assets[0].uri);
-          console.log(image);
-          setSelectedImage(image);
-          setErrorDisplayed(false);
-        } else {
-          setErrorDisplayed(true);
-        }
-      };
-
-    async function createMosaic() {
+    async function createClicked() {
         console.log("Create a mosaic");
-        console.log(user)
 
         if(mosaicName.length < 1) {
           setErrorDisplayed(true);
           return;
         }
-        const [{ localUri }] = await Asset.loadAsync(selectedImage)
         setErrorDisplayed(false);
 
         let id = Math.random().toString(36).substring(2, 9);
@@ -68,27 +50,23 @@ export default function CreateModal({ isVisible, onClose, user }: Props) {
         if(user.name == undefined) {
           user.name = "Test";
         }
-
-        await updateDoc({collectionId:"mosaiques",docId:id, newDatas: {
+        const newMosaic = {
             id: id,
             name: mosaicName,
             images : [],
             users: [user.uid],
-        }}).then(() => {    
-            console.log("Mosaic created - mosaic side");
-        })
-        await updateDoc({collectionId:"users", docId: user.id, newDatas: {
-            mosaiques: [...user.mosaiques, doc(db, "mosaiques", id)],
-        }}).then(async () => {
-            console.log("Successfully created the mosaic - user side");
-            router.replace("/mosaic");
-            await AsyncStorage.setItem("activeMosaic", id);
-            onClose();
+        }
+
+        await createMosaic(newMosaic,id).then(async () => {
+          console.log("Mosaic created - mosaic side");
+          await AsyncStorage.setItem("activeMosaic", id);
+          router.replace("/mosaic");
+          onClose();
         })
       }
 
   return (
-    <Modal animationType="slide" transparent={true} visible={isVisible}>
+    <Modal animationType="fade" transparent={true} visible={isVisible}>
       <Animated.View style={styles.modalContainer}>
           <View style={[styles.modalContent, { borderRadius: 24}]}>
               <LinearGradient
@@ -102,7 +80,7 @@ export default function CreateModal({ isVisible, onClose, user }: Props) {
                       </View>
                       <CustomTextInput label="Give your Mosaic a name" placeholder="Enter a name for your mosaic" onChangeText={(text:any) => setMosaicName(text)} />
                       {errorDisplayed && <Text style={{color:"#7C061E"}}>Please give your mosaic a name !</Text>}
-                      <LightButton title="Create" onPress={createMosaic} />
+                      <LightButton title="Create" onPress={createClicked} />
 
                     </View>
               </LinearGradient>
@@ -121,7 +99,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         position: 'absolute',
         zIndex: 10,
-        backgroundColor: 'rgba(0,0,0,0.5)',
+        backgroundColor: 'rgba(0,0,0,0.95)',
     },
     modalContent: {
         overflow: 'hidden',

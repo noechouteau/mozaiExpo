@@ -28,7 +28,6 @@ import { useUser } from '@/context/UsersContext';
 import { useMosaic } from '@/context/MosaicContext';
 
 const {width: screenWidth, height: screenHeight} = Dimensions.get('window');
-const backgroundImage = require('../assets/images/bg_login_2.png');
 
 export default function Home() {
     const [initializing, setInitializing] = useState(true);
@@ -52,7 +51,9 @@ export default function Home() {
 
     const AddItems = [
       { text: 'Add', icon: 'plus', isTitle: true, onPress: () => {} },
-      { text: 'Create', icon: 'edit', onPress: () => {setCreateModalVisible(true)} },
+      { text: 'Create', icon: 'edit', onPress: () => {
+        setCreateModalVisible(true)
+      } },
       { text: 'Join', icon: 'edit', onPress: () => {setJoinModalVisible(true)} },
     ]
 
@@ -127,7 +128,6 @@ export default function Home() {
     }}>
         <View style={styles.container}>
           
-            <View >
               <NewUserModal isVisible={isNewUserModalVisible} onClose={async() => {
                 console.log("aaa")
                 const activeUser=await AsyncStorage.getItem("activeUser");
@@ -135,10 +135,9 @@ export default function Home() {
                 setNewUserModalVisible(false)
                 }} user={userData} />
 
-              <CreateModal isVisible={isCreateModalVisible} onClose={() => setCreateModalVisible(false)} user={userData} />
+              <View><CreateModal isVisible={isCreateModalVisible} onClose={() => setCreateModalVisible(false)} user={userData} /></View>
               <JoinModal isVisible={isJoinModalVisible} onClose={() => setJoinModalVisible(false)} user={userData} />
               <ConfirmModal isVisible={isConfirmDeleteModalVisible} text={"Are you sure you want to delete this mosaic?"} onClose={(confirmation)=>(confirmDelete(confirmation))} user={userData} />
-            </View>
 
             <View style={{display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: screenWidth, gap: 10, position: mosaics && mosaics.length>0 ? "relative" : "absolute", top: 0}}>
               <View style={styles.topBar}>

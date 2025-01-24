@@ -19,7 +19,7 @@ import { updateDoc } from '@/database/firebase/set';
 import { useUser } from '@/context/UsersContext';
 
 const {width: screenWidth, height: screenHeight} = Dimensions.get('window');
-const backgroundImage = require('../assets/images/bg_login_2.png');
+const backgroundImage = require('../assets/images/blueTheme/bg_login_2.png');
 
 export default function Profile() {
 
@@ -96,7 +96,15 @@ export default function Profile() {
   
               <View style={styles.formContainer}>
                   <CustomTextInput label="Username" onChangeText={(text:any) => setUserName(text)} />
-  
+
+                    <Text style={{color:"#fff",fontSize:16}}>Theme</Text>
+                    <View style={{display:"flex",flexDirection:"row",gap:10,width:200,height:50}}>
+                        <View style={{width:20,height:20,backgroundColor:"#DAEDBD"}}></View>
+                        <View style={{width:20,height:20,backgroundColor:"#F0265D"}}></View>
+                        <View style={{width:20,height:20,backgroundColor:"#1100ff"}}></View>
+                        <View style={{width:20,height:20,backgroundColor:"#F94D20"}}></View>
+                    </View>
+
                   <LightButton title="Sign out" onPress={() => onSignOut()} />
               </View>
           </View>

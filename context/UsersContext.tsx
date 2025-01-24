@@ -2,13 +2,16 @@ import React, { createContext, useContext, useState, useEffect, ReactNode, useMe
 import firestore from '@react-native-firebase/firestore';
 import auth, { FirebaseAuthTypes } from '@react-native-firebase/auth';
 import { User } from '@/types/types';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Define the context state shape
 interface UserContextType {
   authInfos: FirebaseAuthTypes.User | null; // Authenticated user
   userData: User | null; // Firestore user data
+  selectedTheme: string;
   logout: () => Promise<void>;
   updateUserData: (newData: Partial<User>) => Promise<void>;
+  changeTheme: (theme: string) => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -20,11 +23,19 @@ interface UserProviderProps {
 export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   const [authInfos, setUser] = useState<FirebaseAuthTypes.User | null>(null); // Auth user
   const [userData, setUserData] = useState<User | null>(null); // Firestore user data
+  const [selectedTheme, setSelectedTheme] = useState<string>('greenTheme');
 
   useEffect(() => {
+    const fetchTheme = async () => {
+      const theme = await AsyncStorage.getItem('theme');
+      setSelectedTheme(theme ?? 'blueTheme');
+    };
+
+    fetchTheme();
     const unsubscribeAuth = auth().onAuthStateChanged((authUser) => {
       setUser(authUser);
     });
+
 
     return () => unsubscribeAuth(); // Clean up on unmount
   }, []);
@@ -55,6 +66,12 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     }
   }, [authInfos]);
 
+  useEffect(() => {
+    if (selectedTheme) {
+      AsyncStorage.setItem('theme', selectedTheme);
+    }
+  }, [selectedTheme]);
+
   const logout = async () => {
     try {
       await auth().signOut(); // Sign out from Firebase
@@ -80,7 +97,11 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     }
   };
 
-  const contextValue = useMemo(() => ({ authInfos, userData, logout,updateUserData }), [authInfos, userData]);
+  const changeTheme = async (theme: string) => {
+    setSelectedTheme(theme);
+  }
+
+  const contextValue = useMemo(() => ({ authInfos, userData,selectedTheme, logout,updateUserData, changeTheme }), [authInfos, userData]);
 
   return (
     <UserContext.Provider value={contextValue}>
