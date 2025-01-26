@@ -48,8 +48,8 @@ export default function BackButton(props: any) {
 
   return (
     <Pressable
-      onPress={props.onPress}
       onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
       style={({ pressed }) => [
         {
           borderRadius: 90,
@@ -58,7 +58,7 @@ export default function BackButton(props: any) {
         },
       ]}
     >
-      <Animated.View style={[animatedStyle, { width: 40 }]}>
+      <Animated.View style={[animatedStyle, { width: 40, }]}>
         <LinearGradient
           colors={["#000000", bgColor, "#000000"]}
           style={styles.backButton}
@@ -85,6 +85,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     borderWidth: 1,
     borderColor: "#ffffff50",
+
   },
   buttonText: {
     textAlign: "center",

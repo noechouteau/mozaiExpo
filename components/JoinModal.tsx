@@ -1,5 +1,5 @@
 import { Modal, View, Text, Pressable, StyleSheet, TextInput,Image, Animated, Dimensions } from 'react-native';
-import React, { PropsWithChildren, useState } from 'react';
+import React, { PropsWithChildren, useEffect, useState } from 'react';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import LightButton from './buttons/LightButton';
 
@@ -10,6 +10,7 @@ import BackButton from './buttons/BackButton';
 import CustomTextInput from './CustomTextInput';
 import { useMosaic } from '@/context/MosaicContext';
 import firestore from '@react-native-firebase/firestore';
+import { useUser } from '@/context/UsersContext';
 
 const {width: screenWidth, height: screenHeight} = Dimensions.get('window');
 
@@ -27,7 +28,23 @@ export default function JoinModal({ isVisible, onClose, user }: Props) {
     const [mosaicId, setMosaicId] = useState<string>("");
     const router = useRouter();
     const { mosaics, updateMosaic } = useMosaic();
+    const [bgColor, setBgColor] = useState<string>("");
+    const { selectedTheme } = useUser();
 
+    useEffect(() => {
+    if (selectedTheme === 'greenTheme') {
+        setBgColor("#DAEDBD");
+    } else if (selectedTheme === 'blueTheme') {
+        setBgColor("#1100ff");
+    } else if (selectedTheme === 'redTheme') {
+        setBgColor("#F0265D");
+    // } else if (selectedTheme === 'purpleTheme') {
+    //   setBgColor("#761DA7");
+    } else {
+        setBgColor("#F94D20");
+    }
+    }, [selectedTheme]);
+    
     const joinMosaic = async () => {
         if(mosaicId.length < 1) {
             setErrorText("Please enter a code!");
@@ -67,11 +84,11 @@ export default function JoinModal({ isVisible, onClose, user }: Props) {
     } 
 
   return (
-     <Modal animationType="slide" transparent={true} visible={isVisible}>
+     <Modal animationType="fade" transparent={true} visible={isVisible}>
           <Animated.View style={styles.modalContainer}>
               <View style={[styles.modalContent, { borderRadius: 24}]}>
                   <LinearGradient
-                      colors={['#000000', '#DAEDBD', '#000000']}
+                      colors={['#000000', bgColor, '#000000']}
                       style={[styles.cardBorder, { borderRadius: 24 }]}
                       start={gradientStart}
                       end={gradientEnd}>

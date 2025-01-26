@@ -128,16 +128,16 @@ export default function Home() {
     }}>
         <View style={styles.container}>
           
-              <NewUserModal isVisible={isNewUserModalVisible} onClose={async() => {
+              <View><NewUserModal isVisible={isNewUserModalVisible} onClose={async() => {
                 console.log("aaa")
                 const activeUser=await AsyncStorage.getItem("activeUser");
                 await onAuthStateChanged({uid:activeUser});
                 setNewUserModalVisible(false)
-                }} user={userData} />
+                }} user={userData} /></View>
 
               <View><CreateModal isVisible={isCreateModalVisible} onClose={() => setCreateModalVisible(false)} user={userData} /></View>
-              <JoinModal isVisible={isJoinModalVisible} onClose={() => setJoinModalVisible(false)} user={userData} />
-              <ConfirmModal isVisible={isConfirmDeleteModalVisible} text={"Are you sure you want to delete this mosaic?"} onClose={(confirmation)=>(confirmDelete(confirmation))} user={userData} />
+              <View><JoinModal isVisible={isJoinModalVisible} onClose={() => setJoinModalVisible(false)} user={userData} /></View>
+              <View><ConfirmModal isVisible={isConfirmDeleteModalVisible} text={"Are you sure you want to delete this mosaic?"} onClose={(confirmation)=>(confirmDelete(confirmation))} user={userData} /></View>
 
             <View style={{display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: screenWidth, gap: 10, position: mosaics && mosaics.length>0 ? "relative" : "absolute", top: 0}}>
               <View style={styles.topBar}>

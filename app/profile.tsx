@@ -17,6 +17,7 @@ import BackButton from '@/components/buttons/BackButton';
 import { uploadPicture } from '@/database/aws/set';
 import { updateDoc } from '@/database/firebase/set';
 import { useUser } from '@/context/UsersContext';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const {width: screenWidth, height: screenHeight} = Dimensions.get('window');
 
@@ -27,18 +28,19 @@ const orange = require('../assets/images/orangeTheme/bg_login_2.png');
 
 export default function Profile() {
 
-    const [selectedImage, setSelectedImage] = useState<any>(require('../assets/images/newUserBgPic.png'));
-    const [user, setUser] = useState<any>();
+    const [gradientStart, setGradientStart] = useState({ x: 0.2, y: 0 });
+    const [gradientEnd, setGradientEnd] = useState({ x: 1.2, y: 1 });
     const [userName, setUserName] = useState<string>("");
     const {selectedTheme, changeTheme} = useUser();
     const {userData, logout, updateUserData } = useUser();
     const [backgroundImage, setBackgroundImage] = useState<any>();
+    const [bgColor, setBgColor] = useState<string>("");
 
     const setUserData = async () => {
-        const jsonUser = await AsyncStorage.getItem('currentUser');
-        setUser(jsonUser != null ? JSON.parse(jsonUser) : null);
-        console.log("ahah")
-        console.log(user);
+        if(userData){
+            setUserName(userData.name);
+        }
+
     }
 
     const pickImageAsync = async () => {
@@ -52,7 +54,6 @@ export default function Profile() {
             console.log(result.assets[0]," JJEJEJJEJEJJEJEJJEJE");
             let image = await Asset.loadAsync(result.assets[0].uri);
             console.log(image);
-            setSelectedImage(image);
 
             await uploadPicture(image[0].localUri, userData.uid+"/"+userData.uid+"-profile-pic").then(async (res) => {
                 console.log(res.Location, userData.name,userData.phone,userData.uid)
@@ -74,14 +75,18 @@ export default function Profile() {
         console.log("testingshit");
         if (selectedTheme === 'greenTheme') {
             setBackgroundImage(green);
+            setBgColor("#DAEDBD");
         } else if (selectedTheme === 'blueTheme') {
+            setBgColor("#1100ff");
             setBackgroundImage(blue);
         } else if (selectedTheme === 'redTheme') {
             setBackgroundImage(red);
+            setBgColor("#F0265D");
             // } else if (selectedTheme === 'purpleTheme') {
         //     backgroundImage = require('../assets/images/purpleTheme/bg_login_2.png');
         } else {
             setBackgroundImage(orange);
+            setBgColor("#F94D20");
         }
     }, [selectedTheme]);
 
@@ -103,9 +108,15 @@ export default function Profile() {
   <ImageBackground source={backgroundImage} resizeMode="cover" style={{ flex: 1, justifyContent: 'center', alignItems: 'center', width: screenWidth, height: screenHeight+45 }}>
   
    <View style={styles.modalContainer}>
+        <LinearGradient
+            colors={['#000000', bgColor, '#000000']}
+            style={[styles.cardBorder, { borderRadius: 24 }]}
+            start={gradientStart}
+            end={gradientEnd}>
           <View style={styles.modalContent}>
               <View style={{alignSelf: 'flex-start',left:20,top:20}}>  
-                <BackButton onPress={() => {router.replace("/home")}}  />
+                <BackButton onPress={() => {updateUserData({name:userName});
+                    router.replace("/home")}}  />
               </View>
   
               <View style={styles.titleContainer}>
@@ -118,31 +129,34 @@ export default function Profile() {
               </View>
   
               <View style={styles.formContainer}>
-                  <CustomTextInput label="Username" onChangeText={(text:any) => setUserName(text)} />
+                <CustomTextInput label="Username" value={userName} onChangeText={(text:any) => setUserName(text)} style={{width:screenWidth/1.55}}/>
+                  
+                    <View style={{display:"flex",gap:10}}>
+                        <Text style={styles.text}>Theme</Text>
+                        <View style={{display:"flex",flexDirection:"row",gap:10,width:200,height:25}}>
 
-                    <Text style={{color:"#fff",fontSize:16,fontFamily: 'SFPROBOLD',}}>Theme</Text>
-                    <View style={{display:"flex",flexDirection:"row",gap:10,width:200,height:25}}>
+                            <Pressable onPress={() => changeTheme("greenTheme")}>
+                            <View style={[{width:25,height:25,backgroundColor:"#bdda92",borderRadius:50}, selectedTheme=="greenTheme" ? {borderWidth:1,borderColor:"#ffffffff"}:{}]}></View>
+                            </Pressable>
 
-                        <Pressable onPress={() => changeTheme("greenTheme")}>
-                        <View style={[{width:25,height:25,backgroundColor:"#bdda92",borderRadius:50}, selectedTheme=="greenTheme" ? {borderWidth:1,borderColor:"#ffffffff"}:{}]}></View>
-                        </Pressable>
+                            <Pressable onPress={() => changeTheme("redTheme")}>
+                            <View style={[{width:25,height:25,backgroundColor:"#F0265D",borderRadius:50}, selectedTheme=="redTheme" ? {borderWidth:1,borderColor:"#ffffffff"}:{}]}></View>
+                            </Pressable>
 
-                        <Pressable onPress={() => changeTheme("redTheme")}>
-                        <View style={[{width:25,height:25,backgroundColor:"#F0265D",borderRadius:50}, selectedTheme=="redTheme" ? {borderWidth:1,borderColor:"#ffffffff"}:{}]}></View>
-                        </Pressable>
+                            <Pressable onPress={() => changeTheme("blueTheme")}>
+                            <View style={[{width:25,height:25,backgroundColor:"#1100ff",borderRadius:50}, selectedTheme=="blueTheme" ? {borderWidth:1,borderColor:"#ffffffff"}:{}]}></View>
+                            </Pressable>
 
-                        <Pressable onPress={() => changeTheme("blueTheme")}>
-                        <View style={[{width:25,height:25,backgroundColor:"#1100ff",borderRadius:50}, selectedTheme=="blueTheme" ? {borderWidth:1,borderColor:"#ffffffff"}:{}]}></View>
-                        </Pressable>
-
-                        <Pressable onPress={() => changeTheme("orangeTheme")}>
-                            <View style={[{width:25,height:25,backgroundColor:"#F94D20",borderRadius:50}, selectedTheme=="orangeTheme" ? {borderWidth:1,borderColor:"#ffffffff"}:{}]}></View>
-                        </Pressable>
+                            <Pressable onPress={() => changeTheme("orangeTheme")}>
+                                <View style={[{width:25,height:25,backgroundColor:"#F94D20",borderRadius:50}, selectedTheme=="orangeTheme" ? {borderWidth:1,borderColor:"#ffffffff"}:{}]}></View>
+                            </Pressable>
+                        </View>
                     </View>
 
                   <LightButton title="Sign out" onPress={() => onSignOut()} />
               </View>
           </View>
+        </LinearGradient>
         </View>
 
   </ImageBackground>
@@ -162,14 +176,19 @@ const styles = StyleSheet.create({
         position: 'absolute',
         zIndex: 10,
     },
+    cardBorder: {
+        padding: 3,
+        height: 356,
+        width: "85%",
+        display: 'flex',
+    },
     modalContent: {
         height: 350,
-        width: "85%",
+        width: "100%",
         borderRadius: 20,
         backgroundColor: '#000',
         display: 'flex',
         alignItems: 'center',
-        boxShadow: '0px 0px 10px #464B3F',
         
     },
     titleContainer: {
@@ -187,8 +206,9 @@ const styles = StyleSheet.create({
     },
     text: {
         color: '#fff',
+        // fontWeight: 'bold',
+        fontFamily: 'SFPROBOLD',
+        textAlign: 'left',
         fontSize: 16,
-        margin: 0,
-        padding:0
     }
 });
