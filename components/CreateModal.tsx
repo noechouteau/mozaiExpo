@@ -1,5 +1,5 @@
 import { Modal, View, Text, Pressable, StyleSheet, TextInput,Image, Dimensions, Animated } from 'react-native';
-import React, { PropsWithChildren, useState } from 'react';
+import React, { PropsWithChildren, useEffect, useState } from 'react';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import * as ImagePicker from 'expo-image-picker';
 import LightButton from './buttons/LightButton';
@@ -15,6 +15,7 @@ import BackButton from './buttons/BackButton';
 import { LinearGradient } from 'expo-linear-gradient';
 import { opacity } from 'react-native-reanimated/lib/typescript/Colors';
 import { useMosaic } from '@/context/MosaicContext';
+import { useUser } from '@/context/UsersContext';
 
 const {width: screenWidth, height: screenHeight} = Dimensions.get('window');
 
@@ -31,7 +32,24 @@ export default function CreateModal({ isVisible, onClose, user }: Props) {
     const [errorDisplayed, setErrorDisplayed] = useState<boolean>(false);
     const [gradientStart, setGradientStart] = useState({ x: 0.2, y: 0 });
     const [gradientEnd, setGradientEnd] = useState({ x: 1.2, y: 1 });
+    const [bgColor, setBgColor] = useState<string>("");
     const { createMosaic } = useMosaic();
+    const { selectedTheme } = useUser();
+
+
+      useEffect(() => {
+        if (selectedTheme === 'greenTheme') {
+          setBgColor("#DAEDBD");
+        } else if (selectedTheme === 'blueTheme') {
+          setBgColor("#1100ff");
+        } else if (selectedTheme === 'redTheme') {
+          setBgColor("#F0265D");
+        // } else if (selectedTheme === 'purpleTheme') {
+        //   setBgColor("#761DA7");
+        } else {
+          setBgColor("#F94D20");
+        }
+      }, [selectedTheme]);
 
     async function createClicked() {
         console.log("Create a mosaic");
@@ -70,7 +88,7 @@ export default function CreateModal({ isVisible, onClose, user }: Props) {
       <Animated.View style={styles.modalContainer}>
           <View style={[styles.modalContent, { borderRadius: 24}]}>
               <LinearGradient
-                  colors={['#000000', '#DAEDBD', '#000000']}
+                  colors={['#000000', bgColor, '#000000']}
                   style={[styles.cardBorder, { borderRadius: 24 }]}
                   start={gradientStart}
                   end={gradientEnd}>

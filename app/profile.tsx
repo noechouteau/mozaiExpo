@@ -19,14 +19,20 @@ import { updateDoc } from '@/database/firebase/set';
 import { useUser } from '@/context/UsersContext';
 
 const {width: screenWidth, height: screenHeight} = Dimensions.get('window');
-const backgroundImage = require('../assets/images/blueTheme/bg_login_2.png');
+
+const blue = require('../assets/images/blueTheme/bg_login_2.png');
+const green = require('../assets/images/greenTheme/bg_login_2.png');
+const red = require('../assets/images/redTheme/bg_login_2.png');
+const orange = require('../assets/images/orangeTheme/bg_login_2.png');
 
 export default function Profile() {
 
     const [selectedImage, setSelectedImage] = useState<any>(require('../assets/images/newUserBgPic.png'));
     const [user, setUser] = useState<any>();
     const [userName, setUserName] = useState<string>("");
-    const { authInfos, userData, logout, updateUserData } = useUser();
+    const {selectedTheme, changeTheme} = useUser();
+    const {userData, logout, updateUserData } = useUser();
+    const [backgroundImage, setBackgroundImage] = useState<any>();
 
     const setUserData = async () => {
         const jsonUser = await AsyncStorage.getItem('currentUser');
@@ -59,9 +65,26 @@ export default function Profile() {
         }
     };
 
+
     useEffect(() => {
         setUserData();
     }, []);
+
+    useEffect(() => {
+        console.log("testingshit");
+        if (selectedTheme === 'greenTheme') {
+            setBackgroundImage(green);
+        } else if (selectedTheme === 'blueTheme') {
+            setBackgroundImage(blue);
+        } else if (selectedTheme === 'redTheme') {
+            setBackgroundImage(red);
+            // } else if (selectedTheme === 'purpleTheme') {
+        //     backgroundImage = require('../assets/images/purpleTheme/bg_login_2.png');
+        } else {
+            setBackgroundImage(orange);
+        }
+    }, [selectedTheme]);
+
 
     const onSignOut = async () => {
         await logout();
@@ -97,12 +120,24 @@ export default function Profile() {
               <View style={styles.formContainer}>
                   <CustomTextInput label="Username" onChangeText={(text:any) => setUserName(text)} />
 
-                    <Text style={{color:"#fff",fontSize:16}}>Theme</Text>
-                    <View style={{display:"flex",flexDirection:"row",gap:10,width:200,height:50}}>
-                        <View style={{width:20,height:20,backgroundColor:"#DAEDBD"}}></View>
-                        <View style={{width:20,height:20,backgroundColor:"#F0265D"}}></View>
-                        <View style={{width:20,height:20,backgroundColor:"#1100ff"}}></View>
-                        <View style={{width:20,height:20,backgroundColor:"#F94D20"}}></View>
+                    <Text style={{color:"#fff",fontSize:16,fontFamily: 'SFPROBOLD',}}>Theme</Text>
+                    <View style={{display:"flex",flexDirection:"row",gap:10,width:200,height:25}}>
+
+                        <Pressable onPress={() => changeTheme("greenTheme")}>
+                        <View style={[{width:25,height:25,backgroundColor:"#bdda92",borderRadius:50}, selectedTheme=="greenTheme" ? {borderWidth:1,borderColor:"#ffffffff"}:{}]}></View>
+                        </Pressable>
+
+                        <Pressable onPress={() => changeTheme("redTheme")}>
+                        <View style={[{width:25,height:25,backgroundColor:"#F0265D",borderRadius:50}, selectedTheme=="redTheme" ? {borderWidth:1,borderColor:"#ffffffff"}:{}]}></View>
+                        </Pressable>
+
+                        <Pressable onPress={() => changeTheme("blueTheme")}>
+                        <View style={[{width:25,height:25,backgroundColor:"#1100ff",borderRadius:50}, selectedTheme=="blueTheme" ? {borderWidth:1,borderColor:"#ffffffff"}:{}]}></View>
+                        </Pressable>
+
+                        <Pressable onPress={() => changeTheme("orangeTheme")}>
+                            <View style={[{width:25,height:25,backgroundColor:"#F94D20",borderRadius:50}, selectedTheme=="orangeTheme" ? {borderWidth:1,borderColor:"#ffffffff"}:{}]}></View>
+                        </Pressable>
                     </View>
 
                   <LightButton title="Sign out" onPress={() => onSignOut()} />
@@ -128,7 +163,7 @@ const styles = StyleSheet.create({
         zIndex: 10,
     },
     modalContent: {
-        height: 270,
+        height: 350,
         width: "85%",
         borderRadius: 20,
         backgroundColor: '#000',

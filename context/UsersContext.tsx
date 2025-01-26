@@ -67,6 +67,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   }, [authInfos]);
 
   useEffect(() => {
+    console.log(selectedTheme,"broauahah");
     if (selectedTheme) {
       AsyncStorage.setItem('theme', selectedTheme);
     }
@@ -101,7 +102,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     setSelectedTheme(theme);
   }
 
-  const contextValue = useMemo(() => ({ authInfos, userData,selectedTheme, logout,updateUserData, changeTheme }), [authInfos, userData]);
+  const contextValue = useMemo(() => ({ authInfos, userData,selectedTheme, logout,updateUserData, changeTheme }), [authInfos, userData,selectedTheme]);
 
   return (
     <UserContext.Provider value={contextValue}>
