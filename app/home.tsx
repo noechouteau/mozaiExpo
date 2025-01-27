@@ -4,7 +4,7 @@ import { getAuth } from "firebase/auth";
 import { useFonts } from 'expo-font';
 import Animated from 'react-native-reanimated';
 import auth from '@react-native-firebase/auth';
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { getDbDoc, queryDbDocsByField } from '@/database/firebase/read';
 import LightButton from '@/components/buttons/LightButton';
 import GraytButton from '@/components/buttons/GrayButton';
@@ -160,15 +160,15 @@ export default function Home() {
                 </View>
             </View>
 
-            {mosaics && mosaics.length > 0 ? (
-              <GestureHandlerRootView>
-                <GestureDetector gesture={pan}>
-                  <GesturePan searchChain={searchChain} deleteFunction={(tempId:any)=>{setMosaiqueToDelete(tempId);setConfirmDeleteModalVisible(true)}}></GesturePan>
-                </GestureDetector>
-              </GestureHandlerRootView>
-            ) : (
-              <Text style={{ color: '#FFF', marginTop: 20 }}>No mosaics found. Create or join one!</Text>
-            )} 
+              {mosaics && mosaics.length > 0 ? (
+                <GestureHandlerRootView>
+                  <GestureDetector gesture={pan}>
+                      <GesturePan searchChain={searchChain} deleteFunction={(tempId:any)=>{setMosaiqueToDelete(tempId);setConfirmDeleteModalVisible(true)}}></GesturePan>
+                  </GestureDetector>
+                </GestureHandlerRootView>
+              ) : (
+                <Text style={{ color: '#FFF', marginTop: 20 }}>No mosaics found. Create or join one!</Text>
+              )}
 
 
               <TextInput style={styles.homeTextInput}></TextInput>

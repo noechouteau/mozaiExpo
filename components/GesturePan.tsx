@@ -118,7 +118,6 @@ export default function GesturePan({ searchChain, deleteFunction }: any) {
 
   // Function to precompute positions for a mosaic
   const getImagePositions = (mosaicId: string, images: any[]) => {
-    console.log(imagePositionsCache.current[mosaicId])
     if (!imagePositionsCache.current[mosaicId]) {
       // If positions are not cached, calculate and store them
       imagePositionsCache.current[mosaicId] = images.map(() => ({

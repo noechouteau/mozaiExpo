@@ -52,34 +52,33 @@ export default function JoinModal({ isVisible, onClose, user }: Props) {
             return;
         }
 
-        if(mosaics) {
-            console.log(mosaicId)
-            const mosaic = await firestore().collection("mosaiques").doc(mosaicId).get().then((doc) => doc.data());
+        console.log(mosaicId)
+        console.log(user)
+        const mosaic = await firestore().collection("mosaiques").doc(mosaicId).get().then((doc) => doc.data());
 
-            if(!mosaic) {
-                setErrorText("This mosaic does not exist!");
-                setErrorDisplayed(true);
-                return;
-            } else if (mosaic.users.includes(user.uid)) {
-                setErrorText("You are already in this mosaic!");
-                setErrorDisplayed(true);
-                return;
-            } else if (user){
-                setErrorDisplayed(false);
-                await updateMosaic(mosaicId, {
-                    users: [...mosaic.users, user.uid],
-                }).then(() => {
-                    console.log("Successfully joined the mosaic - mosaic side");
-                    router.replace("/mosaic");
-                    AsyncStorage.setItem("activeMosaic", mosaicId);
-                    onClose();
-                })
-            } else {
-                setErrorDisplayed(false);
+        if(!mosaic) {
+            console.log("AHHHHHHHHHHHHHHHH")
+            setErrorText("This mosaic does not exist!");
+            setErrorDisplayed(true);
+        } else if (user && mosaic.users.includes(user.uid)) {
+            setErrorText("You are already in this mosaic!");
+            setErrorDisplayed(true);
+        } else if (user && user != "guest"){
+            console.log(user)
+            setErrorDisplayed(false);
+            await updateMosaic(mosaicId, {
+                users: [...mosaic.users, user.uid],
+            }).then(() => {
+                console.log("Successfully joined the mosaic - mosaic side");
                 router.replace("/mosaic");
                 AsyncStorage.setItem("activeMosaic", mosaicId);
                 onClose();
-            }
+            })
+        } else {
+            setErrorDisplayed(false);
+            await AsyncStorage.setItem("activeMosaic", mosaicId);
+            router.replace("/mosaic");
+            onClose();
         }
     } 
 

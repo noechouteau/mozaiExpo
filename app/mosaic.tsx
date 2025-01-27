@@ -15,6 +15,9 @@ import {uploadPicture} from '@/database/aws/set';
 import {updateDoc} from '@/database/firebase/set';
 import {Timestamp} from 'firebase/firestore';
 import Environnement from '@/components/Environnement';
+import { useMosaic } from '@/context/MosaicContext';
+import firestore from '@react-native-firebase/firestore';
+import { useUser } from '@/context/UsersContext';
 
 type Props = PropsWithChildren<{
     user: any;
@@ -33,29 +36,30 @@ export default function Mosaic({user, mosaicId}: Props) {
         'SFPRO': require('../assets/fonts/SFPRODISPLAYMEDIUM.otf'),
         "SFPROBOLD": require('../assets/fonts/SFPRODISPLAYBOLD.otf'),
     });
-
-    const getData = async () => {
-
-    };
+    const { mosaics, updateMosaic } = useMosaic();
+    const { authInfos, userData, updateUserData } = useUser();
 
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const tempActiveMosaic = await AsyncStorage.getItem("activeMosaic");
-                setActiveMosaic(tempActiveMosaic);
 
                 const user = await AsyncStorage.getItem("activeUser") ?? "";
                 setActiveUser(user);
 
-                if (tempActiveMosaic) {
-                    const mosaic = await queryDbDocsByField({
-                        collectionId: "mosaiques",
-                        field: "id",
-                        value: tempActiveMosaic,
-                    });
+                if (tempActiveMosaic && mosaics) {
+                    const mosaic = mosaics.filter((mosaic: any) => mosaic.id === tempActiveMosaic);
 
                     if (mosaic.length > 0) {
                         setActiveMosaic(mosaic[0]);
+                    }
+                }
+                else if(!user && tempActiveMosaic) {
+                    console.log("ah")
+                    const mosaic = await firestore().collection("mosaiques").doc(tempActiveMosaic).get().then((doc) => doc.data())
+
+                    if (mosaic) {
+                        setActiveMosaic(mosaic);
                     }
                 }
             } catch (error) {
@@ -113,15 +117,22 @@ export default function Mosaic({user, mosaicId}: Props) {
                 width: imagesToUpload[index].width,
                 height: imagesToUpload[index].height,
             }));
-            await updateDoc({
-                collectionId: "mosaiques", docId: activeMosaic.id, newDatas: {
-                    images: [...activeMosaic.images, ...newImages],
-                }
-            }).then(async () => {
-                await getDbDoc({collectionId: "mosaiques", docId: activeMosaic.id}).then((mosaic: any) => {
-                    setActiveMosaic(mosaic);
-                })
-            })
+
+            await updateMosaic(activeMosaic.id, {
+                images: [...activeMosaic.images, ...newImages],
+            }).then(() => {
+                console.log("Successfully uploaded images");
+            });
+
+            // await updateDoc({
+            //     collectionId: "mosaiques", docId: activeMosaic.id, newDatas: {
+            //         images: [...activeMosaic.images, ...newImages],
+            //     }
+            // }).then(async () => {
+            //     await getDbDoc({collectionId: "mosaiques", docId: activeMosaic.id}).then((mosaic: any) => {
+            //         setActiveMosaic(mosaic);
+            //     })
+            // })
         })
 
     }
@@ -132,15 +143,16 @@ export default function Mosaic({user, mosaicId}: Props) {
                           onClose={(confirmation) => (confirmUpload(confirmation))} user={user}/>
 
             {activeMosaic?.images
+                
                 ? <Environnement images={activeMosaic.images}/>
                 : <Text>loading</Text>
             }
 
             <View style={styles.buttons}>
                 <LightButton
-                    onPress={() => activeUser != "guest" ? router.replace("/home") : router.replace("/animation")}
+                    onPress={() => userData ? router.replace("/home") : router.replace("/animation")}
                     title="Home"/>
-                {activeUser != "guest" && <LightButton onPress={pickImageAsync} title="+"/>}
+                {userData && <LightButton onPress={pickImageAsync} title="+"/>}
             </View>
 
         </View>

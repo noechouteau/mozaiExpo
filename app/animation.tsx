@@ -53,20 +53,20 @@ export default function Animation() {
     
     useEffect(() => {
       // Start listening to the gyroscope
-      const subscribe = Gyroscope.addListener((data) => {
-        const { x, y } = data;
+    //   const subscribe = Gyroscope.addListener((data) => {
+    //     const { x, y } = data;
 
-        // Map gyroscope values to gradient coordinates and dynamic border radius
-        const newStartX = Math.max(0, Math.min(1, 0.5 + x / 2)); // Clamp between 0 and 1
-        const newEndY = Math.max(0, Math.min(1, 0.5 + y / 2));
-        const newBorderRadius = Math.max(8, Math.min(30, 12 + y * 10)); // Adjust radius dynamically
+    //     // Map gyroscope values to gradient coordinates and dynamic border radius
+    //     const newStartX = Math.max(0, Math.min(1, 0.5 + x / 2)); // Clamp between 0 and 1
+    //     const newEndY = Math.max(0, Math.min(1, 0.5 + y / 2));
+    //     const newBorderRadius = Math.max(8, Math.min(30, 12 + y * 10)); // Adjust radius dynamically
 
-        setGradientStart({ x: newStartX, y: 0 });
-        setGradientEnd({ x: 0.5, y: newEndY });
-        setDynamicBorderRadius(newBorderRadius);
-      });
+    //     setGradientStart({ x: newStartX, y: 0 });
+    //     setGradientEnd({ x: 0.5, y: newEndY });
+    //     setDynamicBorderRadius(newBorderRadius);
+    //   });
 
-      setSubscription(subscribe);
+    //   setSubscription(subscribe);
 
       // Handle user state changes
       const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
@@ -104,6 +104,7 @@ export default function Animation() {
     if (!confirm) {
       return (
           <View style={styles.container}>
+            <View><JoinModal isVisible={isJoinModalVisible} onClose={() => setJoinModalVisible(false)} user={"guest"} /></View>
               <Image
                   source={require('../assets/images/login/bglogin.jpg')}
                   style={styles.backgroundImage}
@@ -137,7 +138,7 @@ export default function Animation() {
                                   onChangeText={(text: SetStateAction<string>) => setPhoneNumber(text)}
                               />
                               <LightButton onPress={() => signInWithPhoneNumber(phoneNumber)} title="Log in" />
-                              <GraytButton onPress={() => router.replace('/home')} title="Continue as guest" />
+                              <GraytButton onPress={() => setJoinModalVisible(true)} title="Continue as guest" />
                           </View>
                       </LinearGradient>
                   </View>
