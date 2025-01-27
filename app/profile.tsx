@@ -123,7 +123,7 @@ export default function Profile() {
                   <Pressable onPress={pickImageAsync}>
                       <Image source={{uri:userData?.picture}} style={{width: 150, height: 150, alignSelf: 'center', borderRadius:100}} />
                       <View style={{alignSelf: 'flex-end',top:-37,left:-5}}>  
-                        <BackButton onPress={pickImageAsync} icon="pencil-outline" start={{x:0,y:0}} end={{x:0,y:0}}/>
+                        <BackButton onPress={pickImageAsync} icon="pencil-outline" />
                     </View>
                   </Pressable>
               </View>

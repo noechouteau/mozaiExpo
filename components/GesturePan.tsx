@@ -162,7 +162,7 @@ export default function GesturePan({ searchChain, deleteFunction }: any) {
                             end={{ x: -1.1, y: 4.8 }}
                             style={styles.background}
                           />
-                            {mosaique?.images?.slice().reverse().map((image:any, index:any) => {
+                            {mosaique?.images?.reverse().map((image:any, index:any) => {
                             const positions = getImagePositions(mosaique.id, mosaique.images);
                             return (
                               <Image
@@ -207,7 +207,7 @@ export default function GesturePan({ searchChain, deleteFunction }: any) {
                         
                       <ImageBackground source={backgroundImage} resizeMode="stretch" style={{backgroundColor:"#0D0D0D"}} imageStyle={{  borderTopLeftRadius: 15, borderTopRightRadius: 15}}>
                         <View style={styles.mosaicPreview}>
-                        {mosaique?.images?.slice().reverse().map((image:any, index:any) => {
+                        {mosaique?.images?.reverse().map((image:any, index:any) => {
                             const positions = getImagePositions(mosaique.id, mosaique.images);
                             return (
                               <Image

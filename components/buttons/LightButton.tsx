@@ -63,7 +63,7 @@ export default function LightButton(props:any) {
             ]}
         >
             <ImageBackground source={radialBg} imageStyle={{ borderRadius: 12 }} resizeMode="cover">
-                <Animated.View style={styles.loginButton}>
+                <Animated.View style={[styles.loginButton, props.style]}>
                     {/* <LinearGradient
                         colors={["#0d0d0d","#DAEDBD"]}
                         style={styles.loginButton}

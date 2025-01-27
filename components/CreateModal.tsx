@@ -94,7 +94,7 @@ export default function CreateModal({ isVisible, onClose, user }: Props) {
                   end={gradientEnd}>
                     <View style={[styles.card, { borderRadius: 24 }]}>
                       <View style={{alignSelf: 'flex-start',}}>
-                        <BackButton onPress={onClose} ></BackButton>
+                        <BackButton onPress={()=>{setErrorDisplayed(false);onClose()}} ></BackButton>
                       </View>
                       <CustomTextInput label="Give your Mosaic a name" placeholder="Enter a name for your mosaic" onChangeText={(text:any) => setMosaicName(text)} />
                       {errorDisplayed && <Text style={{color:"#7C061E"}}>Please give your mosaic a name !</Text>}

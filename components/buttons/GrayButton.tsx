@@ -41,7 +41,7 @@ export default function GraytButton(props:any) {
                  },
             ]}
         >
-            <Animated.View style={[styles.loginButton, { backgroundColor: interpolatedBG }]}>
+            <Animated.View style={[styles.loginButton, { backgroundColor: interpolatedBG }, props.style]}>
         <Text style={styles.buttonText}>{props.title}</Text>
       </Animated.View>
         </Pressable>
@@ -52,14 +52,14 @@ const styles = StyleSheet.create({
     loginButton: {
         backgroundColor: "#ffffff",
         borderRadius: 12,
-        padding: 15,
+        padding: 10,
         width: screenWidth / 1.35,
         textAlign: "center",
       },
       buttonText: {
         textAlign: "center",
         fontFamily: "SFPRO",
-        fontSize: 18,
+        fontSize: 16,
         color: "#000000",
       },
 });

@@ -94,7 +94,7 @@ export default function JoinModal({ isVisible, onClose, user }: Props) {
                       end={gradientEnd}>
                         <View style={[styles.card, { borderRadius: 24 }]}>
                           <View style={{alignSelf: 'flex-start',}}>
-                            <BackButton onPress={onClose} ></BackButton>
+                            <BackButton onPress={()=>{setErrorDisplayed(false);onClose()}} ></BackButton>
                           </View>
                           <CustomTextInput label="Mosaic code" placeholder="XXXXXX" onChangeText={(text:any) => setMosaicId(text)} />
                           {errorDisplayed && <Text style={{color:"#7C061E"}}>{errorText}</Text>}

@@ -79,7 +79,7 @@ export default function RenameModal({ isVisible, onClose }: Props) {
                       end={gradientEnd}>
                         <View style={[styles.card, { borderRadius: 24 }]}>
                           <View style={{alignSelf: 'flex-start',}}>
-                            <BackButton onPress={onClose} ></BackButton>
+                            <BackButton onPress={()=>{setErrorDisplayed(false);onClose()}} ></BackButton>
                           </View>
                           <CustomTextInput label="Rename your Mosaic" placeholder="New name" onChangeText={(text:any) => setNewName(text)} />
                           {errorDisplayed && <Text style={{color:"#7C061E"}}>{errorText}</Text>}
