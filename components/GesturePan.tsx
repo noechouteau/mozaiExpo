@@ -14,6 +14,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useMosaic } from '@/context/MosaicContext';
 import { useUser } from '@/context/UsersContext';
+import RenameModal from './RenameModal';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -27,11 +28,12 @@ export default function GesturePan({ searchChain, deleteFunction }: any) {
   const [bgColor, setBgColor] = useState("");
   const [radialBg, setRadialBg] = useState();
   const [backgroundImage, setBackgroundImage] = useState();
+  const [isRenameModalVisible, setRenameModalVisible] = useState<boolean>(false);
   const { selectedTheme } = useUser();
 
   const MenuItems = [
     { text: 'Actions', icon: 'home', isTitle: true, onPress: () => {} },
-    { text: 'Rename', icon: 'edit', onPress: () => {} },
+    { text: 'Rename', icon: 'edit', onPress: async(mosaiqueId:any) => {await AsyncStorage.setItem("activeMosaic",mosaiqueId);setRenameModalVisible(true)} },
     { text: 'Quit', icon: 'trash', isDestructive: true, onPress: (mosaiqueId:any) => {deleteFunction(mosaiqueId)} },
   ];
 
@@ -133,6 +135,7 @@ export default function GesturePan({ searchChain, deleteFunction }: any) {
       <SelectButton knobPosition={knobPosition} setKnobPosition={setKnobPosition} />
       <Animated.View style={[styles.container, animatedStyle]}>
         <Animated.View style={[styles.box]} >
+          <View><RenameModal isVisible={isRenameModalVisible} onClose={() => setRenameModalVisible(false)} ></RenameModal></View>
           <ScrollView contentContainerStyle={styles.mosaiquesContainer}>
               {displayedMosaics
                 .filter((mosaique: any) => mosaique !== null && mosaique !== undefined) // Avoid null/undefined
@@ -141,6 +144,7 @@ export default function GesturePan({ searchChain, deleteFunction }: any) {
                   mosaique.users.length > 1 &&
                   <HoldItem items={MenuItems} hapticFeedback="Heavy" key={mosaique?.id} menuAnchorPosition={mosaique == displayedMosaics[displayedMosaics.length-1] && displayedMosaics.length-1 > 1 ? "bottom-left" : "top-left"}
                   actionParams={{
+                    Rename: [mosaique.id],
                     Quit: [mosaique.id],
                   }}>
                     <Pressable style={styles.mosaicTag}  key={mosaique?.id} onPress={async() => {await AsyncStorage.setItem("activeMosaic", mosaique?.id);router.replace("/mosaic")}}>
@@ -159,7 +163,6 @@ export default function GesturePan({ searchChain, deleteFunction }: any) {
                             style={styles.background}
                           />
                             {mosaique?.images?.slice().reverse().map((image:any, index:any) => {
-                            console.log(mosaique.id)
                             const positions = getImagePositions(mosaique.id, mosaique.images);
                             return (
                               <Image
@@ -204,15 +207,21 @@ export default function GesturePan({ searchChain, deleteFunction }: any) {
                         
                       <ImageBackground source={backgroundImage} resizeMode="stretch" style={{backgroundColor:"#0D0D0D"}} imageStyle={{  borderTopLeftRadius: 15, borderTopRightRadius: 15}}>
                         <View style={styles.mosaicPreview}>
-                          {mosaique?.images?.map((image: any, index: number) => (
-                          
-                            <Image
+                        {mosaique?.images?.slice().reverse().map((image:any, index:any) => {
+                            const positions = getImagePositions(mosaique.id, mosaique.images);
+                            return (
+                              <Image
                               key={index}
                               source={{ uri: image.url || 'https://placehold.co/100x100' }}
-                              style={{ width: 50, height: 50, top:0,position:"relative" }}
+                              style={{
+                              width: 100, 
+                              height: 100,
+                              top: positions[mosaique.images.length - 1 - index].top,
+                              left: positions[mosaique.images.length - 1 - index].left,
+                              position: "absolute",
+                              }}
                             />
-                          ))
-                          }
+                            ); })} 
                         </View>
                       </ImageBackground >
 

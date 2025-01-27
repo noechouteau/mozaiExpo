@@ -26,6 +26,7 @@ import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-g
 import GesturePan from '@/components/GesturePan';
 import { useUser } from '@/context/UsersContext';
 import { useMosaic } from '@/context/MosaicContext';
+import RenameModal from '@/components/RenameModal';
 
 const {width: screenWidth, height: screenHeight} = Dimensions.get('window');
 
@@ -126,19 +127,19 @@ export default function Home() {
       bottom: 0,
       left: 0
     }}>
-        <View style={styles.container}>
-          
-              <View><NewUserModal isVisible={isNewUserModalVisible} onClose={async() => {
-                console.log("aaa")
-                const activeUser=await AsyncStorage.getItem("activeUser");
-                await onAuthStateChanged({uid:activeUser});
-                setNewUserModalVisible(false)
-                }} user={userData} /></View>
+      
+        <View><NewUserModal isVisible={isNewUserModalVisible} onClose={async() => {
+          console.log("aaa")
+          const activeUser=await AsyncStorage.getItem("activeUser");
+          await onAuthStateChanged({uid:activeUser});
+          setNewUserModalVisible(false)
+          }} user={userData} /></View>
 
-              <View><CreateModal isVisible={isCreateModalVisible} onClose={() => setCreateModalVisible(false)} user={userData} /></View>
-              <View><JoinModal isVisible={isJoinModalVisible} onClose={() => setJoinModalVisible(false)} user={userData} /></View>
-              <View><ConfirmModal isVisible={isConfirmDeleteModalVisible} text={"Are you sure you want to delete this mosaic?"} onClose={(confirmation)=>(confirmDelete(confirmation))} user={userData} /></View>
+        <View><CreateModal isVisible={isCreateModalVisible} onClose={() => setCreateModalVisible(false)} user={userData} /></View>
+        <View><JoinModal isVisible={isJoinModalVisible} onClose={() => setJoinModalVisible(false)} user={userData} /></View>
+        <View><ConfirmModal isVisible={isConfirmDeleteModalVisible} text={"Are you sure you want to delete this mosaic?"} onClose={(confirmation)=>(confirmDelete(confirmation))} user={userData} /></View>
 
+        <Animated.View style={styles.container}>
             <View style={{display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: screenWidth, gap: 10, position: mosaics && mosaics.length>0 ? "relative" : "absolute", top: 0}}>
               <View style={styles.topBar}>
                   <Pressable onPress={() => {router.replace("/profile")}}>
@@ -177,7 +178,7 @@ export default function Home() {
                   <RoundButton title="+"/>
               </HoldItem>
               )}
-        </View>
+        </Animated.View>
     </HoldMenuProvider>
     );
 }
