@@ -174,7 +174,7 @@ export default function Home() {
               <TextInput style={styles.homeTextInput}></TextInput>
 
               {userData && (
-              <HoldItem key={"Test"} items={AddItems} hapticFeedback="Heavy" activateOn="tap" menuAnchorPosition="bottom-right" containerStyles={{position: 'absolute', bottom: 15, right:40,zIndex: 10}}>
+              <HoldItem key={"Test"} items={AddItems} hapticFeedback="Heavy" activateOn="tap" menuAnchorPosition="bottom-right" containerStyles={{position: 'absolute', bottom: 15, right:15,zIndex: 10}}>
                   <RoundButton title="+"/>
               </HoldItem>
               )}

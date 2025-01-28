@@ -1,4 +1,4 @@
-import {StyleSheet, View, Text} from 'react-native';
+import {StyleSheet, View, Text, Pressable} from 'react-native';
 import {router} from 'expo-router';
 
 import {useFonts} from 'expo-font';
@@ -18,6 +18,9 @@ import Environnement from '@/components/Environnement';
 import { useMosaic } from '@/context/MosaicContext';
 import firestore from '@react-native-firebase/firestore';
 import { useUser } from '@/context/UsersContext';
+import RoundButton from '@/components/buttons/RoundButton';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import MozaiInfosModal from '@/components/MozaiInfosModal';
 
 type Props = PropsWithChildren<{
     user: any;
@@ -27,6 +30,7 @@ type Props = PropsWithChildren<{
 export default function Mosaic({user, mosaicId}: Props) {
 
     const [isConfirmVisible, setConfirmVisible] = useState<boolean>(false);
+    const [isMozaiInfosVisible, setMozaiInfosVisible] = useState<boolean>(false);
     const [initializing, setInitializing] = useState(true);
     const [activeMosaic, setActiveMosaic] = useState<any>(null);
     const [activeUser, setActiveUser] = useState<any>(user);
@@ -72,6 +76,7 @@ export default function Mosaic({user, mosaicId}: Props) {
 
 
     const pickImageAsync = async () => {
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
         let result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ['images'],
             allowsMultipleSelection: true,
@@ -138,9 +143,18 @@ export default function Mosaic({user, mosaicId}: Props) {
     }
 
     return (<View style={styles.container}>
-            <ConfirmModal isVisible={isConfirmVisible}
-                          text={`Do you want to add ${assetsNumber} images to the mosaic ?`}
-                          onClose={(confirmation) => (confirmUpload(confirmation))} user={user}/>
+            <View>
+                <ConfirmModal isVisible={isConfirmVisible}
+                text={`Do you want to add ${assetsNumber} images to the mosaic ?`}
+                onClose={(confirmation) => (confirmUpload(confirmation))} user={user}/>
+            </View>
+
+            {activeMosaic && activeMosaic.id &&
+            <View>
+                 <MozaiInfosModal mosaicId={activeMosaic.id} isVisible={isMozaiInfosVisible} onClose={() => setMozaiInfosVisible(false)} user={user}>
+                </MozaiInfosModal>
+             </View>
+            }
 
             {activeMosaic?.images
                 
@@ -148,11 +162,23 @@ export default function Mosaic({user, mosaicId}: Props) {
                 : <Text>loading</Text>
             }
 
+            <View style={{position: 'absolute', zIndex:125, top: 45, display: 'flex', flexDirection: 'row', justifyContent: 'center', width: '100%'}}>
+                {activeMosaic && 
+                    <RoundButton style={{zIndex:20,width: (22-activeMosaic.name.length*0.42)*activeMosaic.name.length}} onPress={() => setMozaiInfosVisible(true)} >
+                        <View style={{display: 'flex', flexDirection: 'row', gap: 8, alignItems: 'center'}}>
+                            <Ionicons name="chevron-down" size={25} color="white" style={{width: 25, height: 25}}/>
+                            <Text style={styles.text}>{activeMosaic.name}</Text>
+                        </View>
+                    </RoundButton>
+                }
+            </View>
+
+
             <View style={styles.buttons}>
                 <LightButton
                     onPress={() => userData ? router.replace("/home") : router.replace("/animation")}
                     title="Home"/>
-                {userData && <LightButton onPress={pickImageAsync} title="+"/>}
+                {userData && <LightButton onPress={pickImageAsync} title="Add"/>}
             </View>
 
         </View>
@@ -173,5 +199,11 @@ const styles = StyleSheet.create({
         display: 'flex',
         flexDirection: 'column',
         gap: 8,
-    }
+    },
+    text: {
+        color: '#fff',
+        // fontWeight: 'bold',
+        fontFamily: 'SFPROBOLD',
+        textAlign: 'center',
+      },
 });

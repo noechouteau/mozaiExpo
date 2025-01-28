@@ -25,6 +25,7 @@ const END_POSITION = - screenWidth *0.9;
 const INITIAL_POSITION = screenWidth / 2 - screenWidth * 0.9 / 2;
 
 export default function GesturePan({ searchChain, deleteFunction }: any) {
+  const [allLoaded, setAllLoaded] = useState(false);
   const [bgColor, setBgColor] = useState("");
   const [radialBg, setRadialBg] = useState();
   const [backgroundImage, setBackgroundImage] = useState();
@@ -42,6 +43,14 @@ export default function GesturePan({ searchChain, deleteFunction }: any) {
   const onLeft = useSharedValue(true);
   const position = useSharedValue(INITIAL_POSITION); // Start centered on the left box
   const [knobPosition, setKnobPosition] = useState("Shared");
+
+  useEffect(() => {
+    if (displayedMosaics.length > 0) {
+      setTimeout(() => {
+        setAllLoaded(true);
+      }, 300);
+    }
+  }, [displayedMosaics]);
 
   useEffect(() => {
     console.log(radialBg);
@@ -133,12 +142,15 @@ export default function GesturePan({ searchChain, deleteFunction }: any) {
       <Animated.View style={{marginTop:10}}>
       <SelectButton knobPosition={knobPosition} setKnobPosition={setKnobPosition} />
       <Animated.View style={[styles.container, animatedStyle]}>
+      {allLoaded &&
+        <>
         <Animated.View style={[styles.box]} >
           <View><RenameModal isVisible={isRenameModalVisible} onClose={() => setRenameModalVisible(false)} ></RenameModal></View>
           <ScrollView contentContainerStyle={styles.mosaiquesContainer}>
               {displayedMosaics
                 .filter((mosaique: any) => mosaique !== null && mosaique !== undefined) // Avoid null/undefined
-                .map((mosaique: any) => (
+                .map((mosaique: any) => { 
+                  return(
                   mosaique.users &&
                   mosaique.users.length > 1 &&
                   <HoldItem items={MenuItems} hapticFeedback="Heavy" key={mosaique?.id} menuAnchorPosition={mosaique == displayedMosaics[displayedMosaics.length-1] && displayedMosaics.length-1 > 1 ? "bottom-left" : "top-left"}
@@ -187,7 +199,7 @@ export default function GesturePan({ searchChain, deleteFunction }: any) {
 
                     </Pressable>
                   </HoldItem>
-                ))}
+                )})}
           </ScrollView>
         </Animated.View>
 
@@ -235,9 +247,8 @@ export default function GesturePan({ searchChain, deleteFunction }: any) {
                   ))}
             </ScrollView>
         </Animated.View>
-
-
-      </Animated.View>
+        </>}
+        </Animated.View>
       </Animated.View>
     </GestureDetector>
   );

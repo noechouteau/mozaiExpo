@@ -45,15 +45,19 @@ export default function RoundButton(props:any) {
                  },
             ]}
         >
-        <Animated.View style={[animatedStyle, { width: 40 }]}>
+        <Animated.View style={[animatedStyle]}>
             <LinearGradient
             colors={["#000000", bgColor, "#000000"]}
-            style={styles.loginButton}
+            style={[styles.roundButton, props.style]}
             start={gradientStart}
             end={gradientEnd}
             >
             <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+                { props.children?
+                props.children
+                :
                 <Ionicons name="add" size={45} color="white" style={{width:45,height: 45}} />
+                }     
             </View>
             </LinearGradient>
         </Animated.View>
@@ -62,7 +66,7 @@ export default function RoundButton(props:any) {
 };
 
 const styles = StyleSheet.create({
-    loginButton: {
+    roundButton: {
         backgroundColor:"#0e0e7e",
         borderRadius: 50,
         borderWidth: 1,
@@ -78,12 +82,4 @@ const styles = StyleSheet.create({
         textAlign: "center",
         bottom: 0,
     },
-    backButton: {
-        borderRadius: 90,
-        width: 30,
-        height: 30,
-        textAlign: "center",
-        borderWidth: 1,
-        borderColor: "#ffffff50",
-      },
 });
