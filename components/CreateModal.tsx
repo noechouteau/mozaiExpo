@@ -72,7 +72,10 @@ export default function CreateModal({ isVisible, onClose, user }: Props) {
             id: id,
             name: mosaicName,
             images : [],
-            users: [user.uid],
+            users: [{
+              id:user.uid,
+              picture:user.picture,
+            }],
         }
 
         await createMosaic(newMosaic,id).then(async () => {

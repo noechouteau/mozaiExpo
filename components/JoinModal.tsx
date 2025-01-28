@@ -60,14 +60,15 @@ export default function JoinModal({ isVisible, onClose, user }: Props) {
             console.log("AHHHHHHHHHHHHHHHH")
             setErrorText("This mosaic does not exist!");
             setErrorDisplayed(true);
-        } else if (user && mosaic.users.includes(user.uid)) {
+        } else if (user && mosaic.users.some((userObj:any) => userObj.id === user.uid)) {
             setErrorText("You are already in this mosaic!");
             setErrorDisplayed(true);
         } else if (user && user != "guest"){
             console.log(user)
             setErrorDisplayed(false);
+            const newUser = {id:user.uid, picture:user.picture}
             await updateMosaic(mosaicId, {
-                users: [...mosaic.users, user.uid],
+                users: [...mosaic.users, newUser],
             }).then(() => {
                 console.log("Successfully joined the mosaic - mosaic side");
                 router.replace("/mosaic");

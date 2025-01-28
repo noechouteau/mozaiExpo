@@ -21,6 +21,7 @@ import { useUser } from '@/context/UsersContext';
 import RoundButton from '@/components/buttons/RoundButton';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MozaiInfosModal from '@/components/MozaiInfosModal';
+import Animated from 'react-native-reanimated';
 
 type Props = PropsWithChildren<{
     user: any;
@@ -156,6 +157,8 @@ export default function Mosaic({user, mosaicId}: Props) {
              </View>
             }
 
+            <Animated.View style={[styles.smoothCover, isMozaiInfosVisible?{opacity:1}:{opacity:0}]}></Animated.View>
+
             {activeMosaic?.images
                 
                 ? <Environnement images={activeMosaic.images}/>
@@ -164,7 +167,7 @@ export default function Mosaic({user, mosaicId}: Props) {
 
             <View style={{position: 'absolute', zIndex:125, top: 45, display: 'flex', flexDirection: 'row', justifyContent: 'center', width: '100%'}}>
                 {activeMosaic && 
-                    <RoundButton style={{zIndex:20,width: (22-activeMosaic.name.length*0.42)*activeMosaic.name.length}} onPress={() => setMozaiInfosVisible(true)} >
+                    <RoundButton style={{zIndex:20,width: (22-activeMosaic.name.length*0.5)*activeMosaic.name.length}} onPress={() => setMozaiInfosVisible(true)} >
                         <View style={{display: 'flex', flexDirection: 'row', gap: 8, alignItems: 'center'}}>
                             <Ionicons name="chevron-down" size={25} color="white" style={{width: 25, height: 25}}/>
                             <Text style={styles.text}>{activeMosaic.name}</Text>
@@ -189,6 +192,14 @@ const styles = StyleSheet.create({
     container: {
         position: 'relative',
         flex: 1,
+    },
+    smoothCover:{
+        position: 'absolute',
+        zIndex: 120,
+        width: '100%',
+        height: '100%',
+        pointerEvents: 'none',
+        backgroundColor: 'rgba(0,0,0,0.6)',
     },
     buttons: {
         position: 'absolute',

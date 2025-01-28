@@ -26,7 +26,6 @@ export default function MozaiInfosModal({ isVisible, onClose, user,mosaicId }: P
     const [gradientStart, setGradientStart] = useState({ x: 0.2, y: 0 });
     const [gradientEnd, setGradientEnd] = useState({ x: 1.2, y: 1 });
     const router = useRouter();
-    const { mosaics, updateMosaic } = useMosaic();
     const [bgColor, setBgColor] = useState<string>("");
     const { selectedTheme } = useUser();
     const scaleAnim = useSharedValue(1); // Shared value for scale
@@ -73,7 +72,7 @@ export default function MozaiInfosModal({ isVisible, onClose, user,mosaicId }: P
     } 
 
   return (
-     <Modal animationIn="slideInDown" backdropColor={"#00000000"} animationOut="slideOutUp" onBackButtonPress={onClose} hideModalContentWhileAnimating isVisible={isVisible}>
+     <Modal animationIn="slideInDown" backdropColor={"#00000000"} animationOut="slideOutUp" onBackButtonPress={onClose} useNativeDriver hideModalContentWhileAnimating isVisible={isVisible}>
         <Pressable onPress={onClose} style={styles.modalContainer}>
           <Animated.View style={styles.modalContainer}>
               <View style={[styles.modalContent, { borderRadius: 13}]}>
