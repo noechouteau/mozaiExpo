@@ -96,7 +96,7 @@ export default function JoinModal({ isVisible, onClose, user }: Props) {
                           <View style={{alignSelf: 'flex-start',}}>
                             <BackButton onPress={()=>{setErrorDisplayed(false);onClose()}} ></BackButton>
                           </View>
-                          <CustomTextInput label="Mosaic code" placeholder="XXXXXX" onChangeText={(text:any) => setMosaicId(text)} />
+                          <CustomTextInput label="Mosaic code" placeholder="XXXXXX" onChangeText={(text:any) => setMosaicId(text.toLowerCase())} />
                           {errorDisplayed && <Text style={{color:"#7C061E"}}>{errorText}</Text>}
                           <LightButton title="Join" onPress={joinMosaic} />
     

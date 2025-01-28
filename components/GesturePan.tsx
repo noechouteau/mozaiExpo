@@ -194,6 +194,24 @@ export default function GesturePan({ searchChain, deleteFunction }: any) {
                     <ImageBackground source={radialBg} resizeMode="cover" imageStyle={{  borderBottomLeftRadius: 15, borderBottomRightRadius: 15}} style={{backgroundColor:"#0D0D0D"}}>
                       <View style={styles.mosaicInfo}>
                         <Text style={styles.mosaicText}>{mosaique?.name || 'Unnamed Mosaic'}</Text>
+                        <View style={{display: 'flex', flexDirection: 'row',left:10*mosaique.users.length}}>
+                        {mosaique?.users?.map((user:any, index:any) => {
+                          console.log(mosaique?.users.length)
+                          return (
+                            <Image
+                              key={index}
+                              source={{ uri: user.picture || 'https://placehold.co/100x100' }}
+                              style={{
+                                width: 35,
+                                height: 35,
+                                borderRadius: 50,
+                                right:5*index*3,
+                              }}
+                            />
+                          );
+                        }
+                        )}
+                        </View>
                       </View>
                     </ImageBackground>
 
@@ -286,6 +304,7 @@ const styles = StyleSheet.create({
   mosaicText: {
       color: '#FFFFFF',
       fontSize: 16,
+      backgroundColor: '#000000',
   },
   mosaicPreview: {
     borderTopLeftRadius: 10,
@@ -301,6 +320,10 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderTopWidth: 0,
     borderColor: "#8D8E8C",
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     padding: 10,
   },
   background: {
