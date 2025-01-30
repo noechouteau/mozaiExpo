@@ -28,7 +28,7 @@ type Mosaique = {
     id?: string;
     images: Image[];
     name: string;
-    users: string[];
+    users: {}[];
 }
   
   export { User, Mosaique, Image, Reactions };

@@ -116,8 +116,10 @@ export default function Profile() {
             end={gradientEnd}>
           <View style={styles.modalContent}>
               <View style={{alignSelf: 'flex-start',left:20,top:20}}>  
-                <BackButton onPress={() => {updateUserData({name:userName});
-                    router.replace("/home")}}  />
+                <BackButton onPress={() => {
+                    router.replace("/home");
+                    updateUserData({name:userName});
+                    }}  />
               </View>
   
               <View style={styles.titleContainer}>

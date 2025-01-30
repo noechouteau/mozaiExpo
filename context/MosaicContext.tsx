@@ -26,7 +26,7 @@ export const MosaicProvider: React.FC<MosaicProviderProps> = ({ children }) => {
       try {
         const mosaicsSnapshot = await firestore()
           .collection('mosaiques')
-          .where('users', 'array-contains', userData.uid)
+          .where('users', 'array-contains', { id: userData.uid, picture: userData.picture })
           .get();
 
         const mosaicsData: Mosaique[] = mosaicsSnapshot.docs.map((doc) => ({

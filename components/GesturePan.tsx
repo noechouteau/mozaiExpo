@@ -25,6 +25,7 @@ const END_POSITION = - screenWidth *0.9;
 const INITIAL_POSITION = screenWidth / 2 - screenWidth * 0.9 / 2;
 
 export default function GesturePan({ searchChain, deleteFunction }: any) {
+  const [allLoaded, setAllLoaded] = useState(false);
   const [bgColor, setBgColor] = useState("");
   const [radialBg, setRadialBg] = useState();
   const [backgroundImage, setBackgroundImage] = useState();
@@ -42,6 +43,14 @@ export default function GesturePan({ searchChain, deleteFunction }: any) {
   const onLeft = useSharedValue(true);
   const position = useSharedValue(INITIAL_POSITION); // Start centered on the left box
   const [knobPosition, setKnobPosition] = useState("Shared");
+
+  useEffect(() => {
+    if (displayedMosaics.length > 0) {
+      setTimeout(() => {
+        setAllLoaded(true);
+      }, 300);
+    }
+  }, [displayedMosaics]);
 
   useEffect(() => {
     console.log(radialBg);
@@ -133,12 +142,15 @@ export default function GesturePan({ searchChain, deleteFunction }: any) {
       <Animated.View style={{marginTop:10}}>
       <SelectButton knobPosition={knobPosition} setKnobPosition={setKnobPosition} />
       <Animated.View style={[styles.container, animatedStyle]}>
+      {allLoaded &&
+        <>
         <Animated.View style={[styles.box]} >
           <View><RenameModal isVisible={isRenameModalVisible} onClose={() => setRenameModalVisible(false)} ></RenameModal></View>
           <ScrollView contentContainerStyle={styles.mosaiquesContainer}>
               {displayedMosaics
                 .filter((mosaique: any) => mosaique !== null && mosaique !== undefined) // Avoid null/undefined
-                .map((mosaique: any) => (
+                .map((mosaique: any) => { 
+                  return(
                   mosaique.users &&
                   mosaique.users.length > 1 &&
                   <HoldItem items={MenuItems} hapticFeedback="Heavy" key={mosaique?.id} menuAnchorPosition={mosaique == displayedMosaics[displayedMosaics.length-1] && displayedMosaics.length-1 > 1 ? "bottom-left" : "top-left"}
@@ -182,12 +194,30 @@ export default function GesturePan({ searchChain, deleteFunction }: any) {
                     <ImageBackground source={radialBg} resizeMode="cover" imageStyle={{  borderBottomLeftRadius: 15, borderBottomRightRadius: 15}} style={{backgroundColor:"#0D0D0D"}}>
                       <View style={styles.mosaicInfo}>
                         <Text style={styles.mosaicText}>{mosaique?.name || 'Unnamed Mosaic'}</Text>
+                        <View style={{display: 'flex', flexDirection: 'row',left:10*mosaique.users.length}}>
+                        {mosaique?.users?.map((user:any, index:any) => {
+                          console.log(mosaique?.users.length)
+                          return (
+                            <Image
+                              key={index}
+                              source={{ uri: user.picture || 'https://placehold.co/100x100' }}
+                              style={{
+                                width: 35,
+                                height: 35,
+                                borderRadius: 50,
+                                right:5*index*3,
+                              }}
+                            />
+                          );
+                        }
+                        )}
+                        </View>
                       </View>
                     </ImageBackground>
 
                     </Pressable>
                   </HoldItem>
-                ))}
+                )})}
           </ScrollView>
         </Animated.View>
 
@@ -235,9 +265,8 @@ export default function GesturePan({ searchChain, deleteFunction }: any) {
                   ))}
             </ScrollView>
         </Animated.View>
-
-
-      </Animated.View>
+        </>}
+        </Animated.View>
       </Animated.View>
     </GestureDetector>
   );
@@ -275,6 +304,7 @@ const styles = StyleSheet.create({
   mosaicText: {
       color: '#FFFFFF',
       fontSize: 16,
+      backgroundColor: '#000000',
   },
   mosaicPreview: {
     borderTopLeftRadius: 10,
@@ -290,6 +320,10 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderTopWidth: 0,
     borderColor: "#8D8E8C",
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     padding: 10,
   },
   background: {
