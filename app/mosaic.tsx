@@ -18,6 +18,7 @@ import Environnement from '@/components/Environnement';
 import { useMosaic } from '@/context/MosaicContext';
 import firestore from '@react-native-firebase/firestore';
 import { useUser } from '@/context/UsersContext';
+import RoundButton from '@/components/buttons/RoundButton';
 
 type Props = PropsWithChildren<{
     user: any;
@@ -148,11 +149,13 @@ export default function Mosaic({user, mosaicId}: Props) {
                 : <Text>loading</Text>
             }
 
+            <View style={styles.topBar}>
+                <RoundButton
+                        onPress={() => userData ? router.replace("/home") : router.replace("/animation")}
+                        title="Home" icon="home" size={35} />
+            </View>
             <View style={styles.buttons}>
-                <LightButton
-                    onPress={() => userData ? router.replace("/home") : router.replace("/animation")}
-                    title="Home"/>
-                {userData && <LightButton onPress={pickImageAsync} title="+"/>}
+                {userData && <LightButton onPress={pickImageAsync} title="add"/>}
             </View>
 
         </View>
@@ -173,5 +176,17 @@ const styles = StyleSheet.create({
         display: 'flex',
         flexDirection: 'column',
         gap: 8,
+    },
+    topBar: {
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: 15,
+        paddingTop: 50,
+        position: 'absolute',
+        top: 0,
+        width: '100%',
+        zIndex: 100,
     }
 });

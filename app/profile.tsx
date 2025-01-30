@@ -94,6 +94,7 @@ export default function Profile() {
     const onSignOut = async () => {
         await logout();
         await AsyncStorage.setItem("loggedIn", "false");
+        await AsyncStorage.setItem("theme", "greenTheme");
         router.replace("/animation");
         console.log("Sign out");
     }

@@ -4,7 +4,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useEffect, useRef, useState } from "react";
 import { Animated, Dimensions, Pressable, View } from "react-native";
 import { StyleSheet, Text } from "react-native";
-import { useAnimatedStyle, useSharedValue } from "react-native-reanimated";
+import { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 
 
 const {width: screenWidth, height: screenHeight} = Dimensions.get('window');
@@ -30,9 +30,22 @@ export default function RoundButton(props:any) {
       }, [selectedTheme]);
     const scaleAnim = useSharedValue(1); // Shared value for scale
 
+    // Animated style for scaling
     const animatedStyle = useAnimatedStyle(() => ({
-        transform: [{ scale: scaleAnim.value }],
-      }));
+      transform: [{ scale: scaleAnim.value }],
+    }));
+
+    const handlePressIn = () => {
+      console.log("Pressed In");
+      scaleAnim.value = withTiming(0.8, { duration: 100 }); // Scale down
+    };
+
+    const handlePressOut = () => {
+      console.log("Pressed Out");
+      scaleAnim.value = withTiming(1, { duration: 100 }); // Scale back to normal
+      props.onPress();
+    };
+
       
 
 
@@ -53,7 +66,7 @@ export default function RoundButton(props:any) {
             end={gradientEnd}
             >
             <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-                <Ionicons name="add" size={45} color="white" style={{width:45,height: 45}} />
+                <Ionicons name={props.icon? props.icon :"add"} size={props.size? props.size :45} color="white" style={{width:props.size?props.size:45,height: props.size?props.size:45}} />
             </View>
             </LinearGradient>
         </Animated.View>
