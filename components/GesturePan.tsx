@@ -15,6 +15,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useMosaic } from '@/context/MosaicContext';
 import { useUser } from '@/context/UsersContext';
 import RenameModal from './RenameModal';
+import React from 'react';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -302,9 +303,8 @@ const styles = StyleSheet.create({
     width: screenWidth*0.88,
   },
   mosaicText: {
-      color: '#FFFFFF',
-      fontSize: 16,
-      backgroundColor: '#000000',
+    color: '#FFFFFF',
+    fontSize: 16,
   },
   mosaicPreview: {
     borderTopLeftRadius: 10,
@@ -325,6 +325,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 10,
+    height:60,
   },
   background: {
     position: 'absolute',

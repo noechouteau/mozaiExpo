@@ -11,7 +11,7 @@ export default function GraytButton(props:any) {
     const handlePressIn = () => {
         Animated.timing(backgroundColor, {
             toValue: 1, // End value for pressed state
-            duration: 200, // Transition duration in milliseconds
+            duration: 100, // Transition duration in milliseconds
             useNativeDriver: false, // Color interpolation needs false
         }).start();
     };
@@ -19,7 +19,7 @@ export default function GraytButton(props:any) {
     const handlePressOut = () => {
         Animated.timing(backgroundColor, {
             toValue: 0, // Back to initial state
-            duration: 200, // Transition duration
+            duration: 100, // Transition duration
             useNativeDriver: false,
         }).start();
     };
@@ -27,7 +27,7 @@ export default function GraytButton(props:any) {
     // Interpolate the backgroundColor value
     const interpolatedBG = backgroundColor.interpolate({
         inputRange: [0, 1],
-        outputRange: ["#ffffff", "#2b2b2b"], // Replace with your desired colors
+        outputRange: ["#ffffff", "#818181"], // Replace with your desired colors
     });
 
     return (
@@ -60,12 +60,15 @@ const styles = StyleSheet.create({
         width: screenWidth / 1.35,
         display: "flex",
         flexDirection: "row",
+        justifyContent: "center",
         textAlign: "center",
       },
       buttonText: {
         textAlign: "center",
         fontFamily: "SFPRO",
         fontSize: 16,
+        flex:1,
+        
         color: "#000000",
       },
 });

@@ -51,7 +51,7 @@ export default function RenameModal({ isVisible, onClose }: Props) {
             setErrorText("Please enter a new name !");
             setErrorDisplayed(true);
             return;
-        } else if (newName.length > 20) {
+        } else if (newName.length > 14) {
             setErrorText("Name is too long !");
             setErrorDisplayed(true);
             return;
@@ -82,7 +82,7 @@ export default function RenameModal({ isVisible, onClose }: Props) {
                             <BackButton onPress={()=>{setErrorDisplayed(false);onClose()}} ></BackButton>
                           </View>
                           <CustomTextInput label="Rename your Mosaic" placeholder="New name" onChangeText={(text:any) => setNewName(text)} />
-                          {errorDisplayed && <Text style={{color:"#7C061E"}}>{errorText}</Text>}
+                          {errorDisplayed && <Text style={{color:"#EE4266"}}>{errorText}</Text>}
                           <LightButton title="Rename" onPress={renameMosaic} />
     
                         </View>

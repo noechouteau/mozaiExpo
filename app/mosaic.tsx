@@ -3,7 +3,7 @@ import {router} from 'expo-router';
 
 import {useFonts} from 'expo-font';
 
-import {PropsWithChildren, useEffect, useState} from 'react';
+import {PropsWithChildren, useEffect, useRef, useState} from 'react';
 import {getDbDoc, queryDbDocsByField} from '@/database/firebase/read';
 import LightButton from '@/components/buttons/LightButton';
 
@@ -43,6 +43,7 @@ export default function Mosaic({user, mosaicId}: Props) {
     });
     const { mosaics, updateMosaic } = useMosaic();
     const { authInfos, userData, updateUserData } = useUser();
+    const [topZindex, setTopZindex] = useState<number>(130);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -145,10 +146,10 @@ export default function Mosaic({user, mosaicId}: Props) {
 
     return (<View style={styles.container}>
 
-            <View style={styles.topBar}>
+            <View style={[styles.topBar,{zIndex:topZindex}]}>
                 <RoundButton
                         onPress={() => userData ? router.replace("/home") : router.replace("/animation")}
-                        title="Home" icon="home" size={35} />
+                        title="Home" icon="home" size={25} />
             </View>
 
             <View>
@@ -157,9 +158,9 @@ export default function Mosaic({user, mosaicId}: Props) {
                 onClose={(confirmation) => (confirmUpload(confirmation))} user={user}/>
             </View>
 
-            {activeMosaic && activeMosaic.id &&
+            {activeMosaic?.id &&
             <View>
-                 <MozaiInfosModal mosaicId={activeMosaic.id} isVisible={isMozaiInfosVisible} onClose={() => setMozaiInfosVisible(false)} user={user}>
+                 <MozaiInfosModal mosaicId={activeMosaic.id} isVisible={isMozaiInfosVisible} onClose={() => {setTopZindex(130); setMozaiInfosVisible(false)}} users={activeMosaic.users}>
                 </MozaiInfosModal>
              </View>
             }
@@ -174,7 +175,7 @@ export default function Mosaic({user, mosaicId}: Props) {
 
             <View style={{position: 'absolute', zIndex:125, top: 45, display: 'flex', flexDirection: 'row', justifyContent: 'center', width: '100%'}}>
                 {activeMosaic && 
-                    <RoundButton style={{zIndex:20,width: (22-activeMosaic.name.length*0.5)*activeMosaic.name.length}} onPress={() => setMozaiInfosVisible(true)} >
+                    <RoundButton style={{zIndex:20,width:"unset", padding:20}} onPress={() => { setTopZindex(110);setMozaiInfosVisible(true)}} >
                         <View style={{display: 'flex', flexDirection: 'row', gap: 8, alignItems: 'center'}}>
                             <Ionicons name="chevron-down" size={25} color="white" style={{width: 25, height: 25}}/>
                             <Text style={styles.text}>{activeMosaic.name}</Text>
@@ -185,10 +186,10 @@ export default function Mosaic({user, mosaicId}: Props) {
 
 
             <View style={styles.buttons}>
-                <LightButton
-                    onPress={() => userData ? router.replace("/home") : router.replace("/animation")}
-                    title="Home"/>
-                {userData && <LightButton onPress={pickImageAsync} title="Add"/>}
+                {userData && <RoundButton onPress={pickImageAsync} style={{width:180,height:50}}>
+                                <Text style={styles.text}>Add</Text>
+                            </RoundButton>
+                    }
             </View>
 
         </View>
@@ -224,11 +225,9 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         padding: 15,
-        paddingTop: 50,
+        paddingTop: 45,
         position: 'absolute',
-        top: 0,
-        width: '100%',
-        zIndex: 100,
+        top: 0,        
     },
     text: {
         color: '#fff',

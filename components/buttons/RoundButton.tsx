@@ -10,7 +10,7 @@ import { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reani
 const {width: screenWidth, height: screenHeight} = Dimensions.get('window');
 
 export default function RoundButton(props:any) {
-      const [gradientStart, setGradientStart] = useState({ x: 0.5, y: 0 });
+      const [gradientStart, setGradientStart] = useState({ x: 0.3, y: 0 });
       const [gradientEnd, setGradientEnd] = useState({ x: 4.6, y: 2 });
       const [bgColor, setBgColor] = useState("#DAEDBD");
 

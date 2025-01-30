@@ -30,6 +30,7 @@ export default function CreateModal({ isVisible, onClose, user }: Props) {
     const [selectedImage, setSelectedImage] = useState<any>(PlaceholderImage);
     const [mosaicName, setMosaicName] = useState<string>("");
     const [errorDisplayed, setErrorDisplayed] = useState<boolean>(false);
+    const [errorText, setErrorText] = useState<string>("");
     const [gradientStart, setGradientStart] = useState({ x: 0.2, y: 0 });
     const [gradientEnd, setGradientEnd] = useState({ x: 1.2, y: 1 });
     const [bgColor, setBgColor] = useState<string>("");
@@ -55,9 +56,14 @@ export default function CreateModal({ isVisible, onClose, user }: Props) {
         console.log("Create a mosaic");
 
         if(mosaicName.length < 1) {
+          setErrorText("Please enter a name !");
           setErrorDisplayed(true);
           return;
-        }
+        }else if (mosaicName.length > 14) {
+          setErrorText("Name is too long !");
+          setErrorDisplayed(true);
+          return;
+      }
         setErrorDisplayed(false);
 
         let id = Math.random().toString(36).substring(2, 9);
@@ -100,7 +106,7 @@ export default function CreateModal({ isVisible, onClose, user }: Props) {
                         <BackButton onPress={()=>{setErrorDisplayed(false);onClose()}} ></BackButton>
                       </View>
                       <CustomTextInput label="Give your Mosaic a name" placeholder="Enter a name for your mosaic" onChangeText={(text:any) => setMosaicName(text)} />
-                      {errorDisplayed && <Text style={{color:"#7C061E"}}>Please give your mosaic a name !</Text>}
+                        {errorDisplayed && <Text style={{color:"#7C061E"}}>{errorText}</Text>}
                       <LightButton title="Create" onPress={createClicked} />
 
                     </View>

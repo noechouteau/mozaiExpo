@@ -1,4 +1,4 @@
-import { View, Text, Pressable, StyleSheet, Animated, Dimensions } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Animated, Dimensions,Image } from 'react-native';
 import React, { PropsWithChildren, useEffect, useRef, useState } from 'react';
 
 import { useRouter } from 'expo-router';
@@ -18,11 +18,11 @@ const {width: screenWidth, height: screenHeight} = Dimensions.get('window');
 type Props = PropsWithChildren<{
   isVisible: boolean;
   onClose: () => void;
-  user: any;
+  users: any;
   mosaicId?: string;
 }>;
 
-export default function MozaiInfosModal({ isVisible, onClose, user,mosaicId }: Props) {
+export default function MozaiInfosModal({ isVisible, onClose, users,mosaicId }: Props) {
     const [gradientStart, setGradientStart] = useState({ x: 0.2, y: 0 });
     const [gradientEnd, setGradientEnd] = useState({ x: 1.2, y: 1 });
     const router = useRouter();
@@ -74,7 +74,7 @@ export default function MozaiInfosModal({ isVisible, onClose, user,mosaicId }: P
   return (
      <Modal animationIn="slideInDown" backdropColor={"#00000000"} animationOut="slideOutUp" onBackButtonPress={onClose} useNativeDriver hideModalContentWhileAnimating isVisible={isVisible}>
         <Pressable onPress={onClose} style={styles.modalContainer}>
-          <Animated.View style={styles.modalContainer}>
+            <Pressable style={{marginTop:65}}>
               <View style={[styles.modalContent, { borderRadius: 13}]}>
                   <LinearGradient
                       colors={['#000000', bgColor, '#000000']}
@@ -82,6 +82,24 @@ export default function MozaiInfosModal({ isVisible, onClose, user,mosaicId }: P
                       start={gradientStart}
                       end={gradientEnd}>
                         <View style={[styles.card, { borderRadius: 13 }]}>
+                            <View style={{display: 'flex', flexDirection: 'row',justifyContent: 'center',alignItems: 'center',gap: 5,flexWrap: 'wrap',}}>
+                            {users?.map((user:any, index:any) => {
+                                console.log(users.length)
+                                return (
+                                <Image
+                                    key={index}
+                                    source={{ uri: user.picture || 'https://placehold.co/100x100' }}
+                                    style={{
+                                    width: 40,
+                                    height: 40,
+                                    borderRadius: 50,
+                                    }}
+                                />
+                                
+                                );
+                            }
+                            )}
+                            </View>
                           <Text style={styles.text}>Share your mosaic</Text>
                             <Pressable onPressIn={handlePressIn}onPressOut={handlePressOut} onPress={async() => {await Clipboard.setStringAsync(mosaicId?mosaicId.toLocaleUpperCase():"");}}>
                                 <Animated.View style={[styles.copyArea, { backgroundColor:backgroundColor }]}>
@@ -89,15 +107,15 @@ export default function MozaiInfosModal({ isVisible, onClose, user,mosaicId }: P
                                     <Ionicons name="copy-outline" size={20} color="white" />
                                 </Animated.View>
                             </Pressable>
-                          <GraytButton style={{display:"flex"}} textStyle={{color:"#EE4266"}} title="Leave mosaic" onPress={joinMosaic}>
-                                <Ionicons name="exit-outline" size={20} color="#EE4266" style={{width:20,height:20}} />
+                          <GraytButton style={{display:"flex",width:220}} textStyle={{color:"#EE4266"}} onPress={joinMosaic}>
+                                <Ionicons name="exit-outline" size={20} color="#EE4266" style={{width:20,height:20,position:'absolute',left:20,top:10}} />
                                 <Text style={[{color: "#EE4266",fontFamily: "SFPRO", fontSize: 16,}]}>Leave mosaic</Text>
                             </GraytButton>
     
                         </View>
                   </LinearGradient>
-              </View>
-          </Animated.View>
+                </View>
+              </Pressable>
           </Pressable>
         </Modal>
   );
@@ -119,7 +137,6 @@ const styles = StyleSheet.create({
     cardBorder: {
         padding: 2,
         display: 'flex',
-        marginTop: 45+20,
     },
     card: {
         padding: 22,
@@ -146,7 +163,8 @@ const styles = StyleSheet.create({
         backgroundColor:"#1A1A1A",
         padding: 10,
         gap: 8,
+        width:220,
         alignItems: 'center',
-        justifyContent: 'center',
+        justifyContent: 'space-between',
     }
 });
