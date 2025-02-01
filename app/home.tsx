@@ -67,6 +67,9 @@ export default function Home() {
         }
         if (initializing) setInitializing(false);
 
+        if(authInfos && !userData) {
+          setNewUserModalVisible(true);
+        }
     }
 
     useEffect(() => {
@@ -127,14 +130,10 @@ export default function Home() {
       bottom: 0,
       left: 0
     }}>
-      
         <View><NewUserModal isVisible={isNewUserModalVisible} onClose={async() => {
-          console.log("aaa")
-          const activeUser=await AsyncStorage.getItem("activeUser");
-          await onAuthStateChanged({uid:activeUser});
-          setNewUserModalVisible(false)
-          }} user={userData} /></View>
-
+            console.log("aaa")
+            setNewUserModalVisible(false)
+            }}/></View>
         <View><CreateModal isVisible={isCreateModalVisible} onClose={() => setCreateModalVisible(false)} user={userData} /></View>
         <View><JoinModal isVisible={isJoinModalVisible} onClose={() => setJoinModalVisible(false)} user={userData} /></View>
         <View><ConfirmModal isVisible={isConfirmDeleteModalVisible} text={"Are you sure you want to quit this mosaic?"} onClose={(confirmation)=>(confirmDelete(confirmation))} user={userData} /></View>

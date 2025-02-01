@@ -12,6 +12,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import JoinModal from '@/components/JoinModal';
 import { Gyroscope } from 'expo-sensors';
 import { LinearGradient } from 'expo-linear-gradient';
+import NewUserModal from '@/components/NewUserModal';
+import { useUser } from '@/context/UsersContext';
 
 const {width: screenWidth, height: screenHeight} = Dimensions.get('window');
 
@@ -27,9 +29,11 @@ export default function Animation() {
     const router = useRouter();
     const pathname = usePathname();
     const [initializing, setInitializing] = useState(true);
+    const { authInfos, userData, updateUserData } = useUser();
 
     opacity.value = withTiming(1, {duration: 1000, easing: Easing.inOut(Easing.quad)});
     const [isJoinModalVisible, setJoinModalVisible] = useState<boolean>(false);
+    const [isNewUserModalVisible, setNewUserModalVisible] = useState<boolean>(true);
 
     const [loaded, error] = useFonts({
         'SFPRO': require('../assets/fonts/SFPRODISPLAYMEDIUM.otf'),
@@ -92,7 +96,12 @@ export default function Animation() {
     async function confirmCode() {
       console.log('Confirmation code entered:', code);
       try {
-      console.log(confirm);
+        // console.log(userData);
+        await AsyncStorage.setItem("activePhone", phoneNumber);
+        if(authInfos){
+            await AsyncStorage.setItem("activeUser", authInfos.uid);
+          }
+
         await confirm.confirm(code);
         router.replace("/home");
     } catch (error) {
@@ -148,6 +157,7 @@ export default function Animation() {
   } else {
       return (
           <View style={styles.container}>
+
               <Animated.View
                   style={{
                       width: '100%',

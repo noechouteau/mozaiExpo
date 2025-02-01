@@ -10,6 +10,7 @@ interface UserContextType {
   userData: User | null; // Firestore user data
   selectedTheme: string;
   logout: () => Promise<void>;
+  createUser: (newUser: User) => Promise<void>;
   updateUserData: (newData: Partial<User>) => Promise<void>;
   changeTheme: (theme: string) => void;
 }
@@ -83,6 +84,22 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     }
   };
 
+  const createUser = async (newUser: User) => {
+    if (!authInfos) {
+      throw new Error('No user is signed in');
+    }
+
+    try {
+      const userDocRef = firestore().collection('users').doc(newUser.uid);
+      await userDocRef.set(newUser); // Create a new document with the user data
+      setUserData(newUser); // Update the local state with the new user data
+      console.log('New user data successfully created:', newUser);
+    } catch (error) {
+      console.error('Error creating new user data:', error);
+      throw error; // Re-throw error for handling in the component
+    }
+  };
+
   const updateUserData = async (newData: Partial<User>) => {
     if (!authInfos) {
       throw new Error('No user is signed in');
@@ -102,7 +119,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     setSelectedTheme(theme);
   }
 
-  const contextValue = useMemo(() => ({ authInfos, userData,selectedTheme, logout,updateUserData, changeTheme }), [authInfos, userData,selectedTheme]);
+  const contextValue = useMemo(() => ({ authInfos, userData,selectedTheme, logout,createUser,updateUserData, changeTheme }), [authInfos, userData,selectedTheme]);
 
   return (
     <UserContext.Provider value={contextValue}>

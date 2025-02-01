@@ -105,8 +105,6 @@ export default function Mosaic({user, mosaicId}: Props) {
             setImagesToUpload(images);
 
             setConfirmVisible(true);
-        } else {
-            alert('You did not select any image.');
         }
     };
 
