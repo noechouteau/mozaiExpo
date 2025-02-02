@@ -69,6 +69,8 @@ export default function Home() {
 
         if(authInfos && !userData) {
           setNewUserModalVisible(true);
+        } else {
+          setNewUserModalVisible(false);
         }
     }
 

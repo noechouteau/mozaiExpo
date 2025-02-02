@@ -55,9 +55,9 @@ export default function GraytButton(props:any) {
 const styles = StyleSheet.create({
     loginButton: {
         backgroundColor: "#ffffff",
-        borderRadius: 12,
-        padding: 10,
-        width: screenWidth / 1.35,
+        borderRadius: 14,
+        padding: 13,
+        width: screenWidth / 1.38,
         display: "flex",
         flexDirection: "row",
         justifyContent: "center",
@@ -65,10 +65,9 @@ const styles = StyleSheet.create({
       },
       buttonText: {
         textAlign: "center",
-        fontFamily: "SFPRO",
+        fontFamily: "Monrope",
         fontSize: 16,
         flex:1,
-        
         color: "#000000",
       },
 });
