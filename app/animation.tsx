@@ -45,8 +45,8 @@ export default function Animation({onClose}: Props) {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [confirm, setConfirm]: any = useState(null);
   const [code, setCode] = useState("");
-  const [gradientStart, setGradientStart] = useState({ x: 0.2, y: 0 });
-  const [gradientEnd, setGradientEnd] = useState({ x: 1.2, y: 1 });
+  const [gradientStart, setGradientStart] = useState({ x: 0.7, y: 0 });
+  const [gradientEnd, setGradientEnd] = useState({ x: 0.3, y: 1 });
   const [dynamicBorderRadius, setDynamicBorderRadius] = useState(24); // Default border radius
   const [subscription, setSubscription]: any = useState(null);
   const router = useRouter();
@@ -55,11 +55,10 @@ export default function Animation({onClose}: Props) {
   const { authInfos, userData, updateUserData } = useUser();
   const [errorDisplayed, setErrorDisplayed] = useState<boolean>(false);
 
-  const gradientStartX = useSharedValue(0.2);
-  const gradientEndY = useSharedValue(1);
+  const slowFactor = 0.0001;
 
   opacity.value = withTiming(1, {
-    duration: 1000,
+    duration: 10 * slowFactor, // Durée multipliée par le facteur
     easing: Easing.inOut(Easing.quad),
   });
   const [isJoinModalVisible, setJoinModalVisible] = useState<boolean>(false);
@@ -86,17 +85,35 @@ export default function Animation({onClose}: Props) {
     if (initializing) setInitializing(false);
   }
 
+  const gradientStartX = useSharedValue(0.1);
+  const gradientEndY = useSharedValue(0.1);
+  // gradientStartY.value = withTiming(1, {
+  //   duration: 1500 * slowFactor,
+  //   easing: Easing.inOut(Easing.cubic),
+  // });
+  
   useEffect(() => {
-    // Abonnement au gyroscope pour obtenir l'orientation de l'appareil
-    const subscribe = Gyroscope.addListener((data) => {
-      const { x, y } = data;
+    const slowFactor = 0.1; // Réduit l'impact des mouvements
+    const smoothingFactor = 0.5; // Lisser les transitions
   
-      const attenuationFactor = 0.3; // plus fluide
+    let currentStartX = 0.9; 
+    let currentEndY = 0.8;
   
-      // Animation plus douce avec des valeurs non clampées
-      gradientStartX.value = withTiming(0.5 + x * attenuationFactor, { duration: 500 });
-      gradientEndY.value = withTiming(0.5 + y * attenuationFactor, { duration: 500 });
+    const subscribe = Gyroscope.addListener(({ x, y }) => {
+      // Calcul des nouvelles valeurs avec le slowFactor
+      const targetStartX = Math.max(0, Math.min(1, 0.5 + x * slowFactor));
+      const targetEndY = Math.max(0, Math.min(1, 0.5 + y * slowFactor));
+  
+      // Interpolation douce pour lisser le mouvement
+      currentStartX += (targetStartX - currentStartX) * smoothingFactor;
+      currentEndY += (targetEndY - currentEndY) * smoothingFactor;
+  
+      // Mise à jour du gradient
+      setGradientStart({ x: currentStartX, y: 0 });
+      setGradientEnd({ x: 1.0, y: currentEndY });
     });
+  
+    Gyroscope.setUpdateInterval(10); // Réduire la fréquence à 10 updates/sec
   
     return () => {
       subscribe?.remove();
