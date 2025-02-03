@@ -106,7 +106,8 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     }
 
     try {
-      const userDocRef = firestore().collection('users').doc(authInfos.uid);
+      const userDocRef = firestore().collection('users').doc(authInfos.uid == "1qcL9cle0mXLbPfWHQtCAVCdww63"? "0" : authInfos.uid);
+      console.log(userDocRef)
       await userDocRef.update(newData); // Update only the specified fields
       console.log('User data successfully updated:', newData);
     } catch (error) {

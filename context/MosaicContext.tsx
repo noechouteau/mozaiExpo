@@ -19,29 +19,33 @@ export const MosaicProvider: React.FC<MosaicProviderProps> = ({ children }) => {
   const [mosaics, setMosaics] = useState<Mosaique[] | null>(null);
   const { userData } = useUser();
 
+  const fetchMosaics = async () => {
+    if (!userData?.uid) return;
+
+    try {
+      const mosaicsSnapshot = await firestore()
+        .collection('mosaiques')
+        .where('users', 'array-contains', { id: userData.uid, picture: userData.picture })
+        .get();
+
+      const mosaicsData: Mosaique[] = mosaicsSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Mosaique[];
+
+      setMosaics(mosaicsData);
+    } catch (error) {
+      console.error('Error fetching mosaics:', error);
+    }
+  };
+
   useEffect(() => {
-    const fetchMosaics = async () => {
-      if (!userData?.uid) return;
-
-      try {
-        const mosaicsSnapshot = await firestore()
-          .collection('mosaiques')
-          .where('users', 'array-contains', { id: userData.uid, picture: userData.picture })
-          .get();
-
-        const mosaicsData: Mosaique[] = mosaicsSnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as Mosaique[];
-
-        setMosaics(mosaicsData);
-      } catch (error) {
-        console.error('Error fetching mosaics:', error);
-      }
-    };
 
     fetchMosaics();
-  }, [userData]); 
+  }, [userData]);
+
+  useEffect(() => {
+  }, [mosaics]);
 
   const updateMosaic = async (mosaicId: string, updatedFields: Partial<Mosaique>): Promise<void> => {
     try {

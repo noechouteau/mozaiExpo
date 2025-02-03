@@ -103,11 +103,11 @@ export default function Home() {
       if(confirmation && mosaics && userData){
         const completeMosToDel = mosaics.find((mosaique: any) => mosaique.id === mosaiqueToDelete);
         if(completeMosToDel) {
-          await updateMosaic(mosaiqueToDelete, {
-            users: completeMosToDel.users.filter((user: any) => user !== userData.uid)
-          }).then(() => {
+            await updateMosaic(mosaiqueToDelete, {
+            users: completeMosToDel.users.filter((user: any) => user.id !== userData.uid)
+            }).then(() => {
             console.log("Mosaic quitted");
-          });
+            });
         }
         // await deleteDbDoc({ collection: "mosaiques", docId: mosaiqueToDelete }).then(async () => {
         //   await updateUserData({

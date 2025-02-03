@@ -11,6 +11,7 @@ import {
   TextInput,
   Pressable,
   StyleSheet,
+  ImageBackground,
 } from "react-native";
 import Animated, {
   useSharedValue,
@@ -156,6 +157,11 @@ export default function Animation() {
 
   if (!confirm) {
     return (
+      <ImageBackground
+      source={require('../assets/images/greenTheme/bg_login_2.png')}
+      resizeMode="cover"
+      style={styles.backgroundImage}
+      >
       <View style={styles.container}>
         <View>
           <JoinModal
@@ -164,10 +170,6 @@ export default function Animation() {
             user={"guest"}
           />
         </View>
-        <Image
-          source={require("../assets/images/login/bglogin.jpg")}
-          style={styles.backgroundImage}
-        />
         <Image
           source={require("../assets/images/login/circle.png")}
           style={styles.logoOutside}
@@ -218,6 +220,7 @@ export default function Animation() {
           </View>
         </Animated.View>
       </View>
+      </ImageBackground>
     );
   } else {
     return (
@@ -267,23 +270,26 @@ export default function Animation() {
 const styles = StyleSheet.create({
   container: {
     height: '100%',
-        width: '100%',
-        display: 'flex',
-        justifyContent: "center",
-        alignItems: 'center',
-        position: 'absolute',
-        zIndex: 10,
-        backgroundColor: 'rgba(0,0,0,0.95)',
+    width: '100%',
+    borderTopRightRadius: 18,
+    display: 'flex',
+    justifyContent: "center",
+    alignItems: 'center',
+    borderTopLeftRadius: 18,
+    position: 'absolute',
+    zIndex: 10,
   },
   backgroundImage: {
-    width: screenWidth,
-    height: screenHeight,
-    position: "absolute",
-    resizeMode: "cover",
-    zIndex: -1,
+    flex: 1, 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+
   },
   cardWrapper: {
     overflow: "hidden",
+    position: "absolute",
+    top: screenHeight / 2 -130,
+
   },
   cardBorder: {
     padding: 2,
@@ -297,12 +303,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: screenWidth / 1.15,
     position: "relative",
+    height: 340,
   },
   logoOutside: {
     width: 190,
     height: 170,
     position: "absolute",
-    top: screenHeight / 2 - 190 / 2 - 160,
+    top: screenHeight / 2 - 210,
     left: (screenWidth - 190) / 2,
     zIndex: 10,
     resizeMode: "contain",

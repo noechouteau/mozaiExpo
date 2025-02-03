@@ -72,7 +72,6 @@ export default function Profile() {
     }, []);
 
     useEffect(() => {
-        console.log("testingshit");
         if (selectedTheme === 'greenTheme') {
             setBackgroundImage(green);
             setBgColor("#DAEDBD");
@@ -117,9 +116,9 @@ export default function Profile() {
             end={gradientEnd}>
           <View style={styles.modalContent}>
               <View style={{alignSelf: 'flex-start',left:20,top:20}}>  
-                <BackButton onPress={() => {
+                <BackButton onPress={async() => {
                     router.replace("/home");
-                    updateUserData({name:userName});
+                    await updateUserData({name:userName});
                     }}  />
               </View>
   

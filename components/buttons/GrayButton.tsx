@@ -37,7 +37,7 @@ export default function GraytButton(props:any) {
             onPressOut={handlePressOut}
             style={({ pressed }) => [
                 { backgroundColor: pressed ? "#ffffff" : "transparent",
-                borderRadius: 12,
+                borderRadius: 14,
                  },
             ]}
         >

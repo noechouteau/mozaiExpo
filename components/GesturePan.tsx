@@ -40,7 +40,7 @@ export default function GesturePan({ searchChain, deleteFunction }: any) {
   ];
 
   const { mosaics } = useMosaic();
-  const displayedMosaics = mosaics ? mosaics.filter((mosaique: any) => mosaique.name.toLowerCase().includes(searchChain.toLowerCase())) : [];
+  let displayedMosaics = mosaics ? mosaics.filter((mosaique: any) => mosaique.name.toLowerCase().includes(searchChain.toLowerCase())) : [];
   const onLeft = useSharedValue(true);
   const position = useSharedValue(INITIAL_POSITION); // Start centered on the left box
   const [knobPosition, setKnobPosition] = useState("Shared");
@@ -52,6 +52,11 @@ export default function GesturePan({ searchChain, deleteFunction }: any) {
       }, 300);
     }
   }, [displayedMosaics]);
+
+  useEffect(() => {
+    if(mosaics)
+    console.log(mosaics[0].users)
+  }, [mosaics]);
 
   useEffect(() => {
     console.log(radialBg);
