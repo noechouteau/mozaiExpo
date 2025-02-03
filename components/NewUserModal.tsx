@@ -83,11 +83,8 @@ export default function NewUserModal({ isVisible, onClose }: Props) {
                 mosaiques: []
             }
             await createUser(newUser).then(() => {
-<<<<<<< HEAD
                 console.log("User created");
                 setLoadingVisible(false);
-=======
->>>>>>> 04d9cfdbece832f3750cfa371b070d837708cc57
                 onClose();
             })
         })
