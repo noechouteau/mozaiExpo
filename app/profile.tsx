@@ -109,26 +109,28 @@ export default function Profile() {
   <ImageBackground source={backgroundImage} resizeMode="cover" style={{ flex: 1, justifyContent: 'center', alignItems: 'center', width: screenWidth, height: screenHeight+45 }}>
   
    <View style={styles.modalContainer}>
+
+        <View style={styles.titleContainer}>
+            <Pressable onPress={pickImageAsync}>
+                <Image source={{uri:userData?.picture}} style={{width: 150, height: 150, alignSelf: 'center', borderRadius:100}} />
+                <View style={{alignSelf: 'flex-end',top:-37,left:-5}}>  
+                    <BackButton onPress={pickImageAsync} icon="pencil-outline" />
+                </View>
+            </Pressable>
+        </View>
+
         <LinearGradient
             colors={['#000000', bgColor, '#000000']}
             style={[styles.cardBorder, { borderRadius: 24 }]}
             start={gradientStart}
             end={gradientEnd}>
+                
           <View style={styles.modalContent}>
               <View style={{alignSelf: 'flex-start',left:20,top:20}}>  
                 <BackButton onPress={async() => {
                     router.replace("/home");
                     await updateUserData({name:userName});
                     }}  />
-              </View>
-  
-              <View style={styles.titleContainer}>
-                  <Pressable onPress={pickImageAsync}>
-                      <Image source={{uri:userData?.picture}} style={{width: 150, height: 150, alignSelf: 'center', borderRadius:100}} />
-                      <View style={{alignSelf: 'flex-end',top:-37,left:-5}}>  
-                        <BackButton onPress={pickImageAsync} icon="pencil-outline" />
-                    </View>
-                  </Pressable>
               </View>
   
               <View style={styles.formContainer}>
@@ -173,7 +175,6 @@ const styles = StyleSheet.create({
         width: '100%',
         borderTopRightRadius: 18,
         display: 'flex',
-        justifyContent: "center",
         alignItems: 'center',
         borderTopLeftRadius: 18,
         position: 'absolute',
@@ -184,6 +185,7 @@ const styles = StyleSheet.create({
         height: 356,
         width: "85%",
         display: 'flex',
+        top: screenHeight/2-296,
     },
     modalContent: {
         height: 350,
@@ -200,12 +202,13 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         textAlign: 'center',
         flexDirection: 'column',
-        top:-80
+        top: screenHeight/2 -180,
+        zIndex: 100,
     },
     formContainer: {
-        top: -100,
         display: 'flex',
         gap: 20,
+        top:70,
     },
     text: {
         color: '#fff',
