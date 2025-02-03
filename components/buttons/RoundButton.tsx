@@ -78,6 +78,7 @@ export default function RoundButton(props:any) {
 
 const styles = StyleSheet.create({
     roundButton: {
+        position: "relative",
         backgroundColor:"#0e0e7e",
         borderRadius: 50,
         borderWidth: 1,
@@ -92,5 +93,6 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         textAlign: "center",
         bottom: 0,
+        zIndex: 1,
     },
 });

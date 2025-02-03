@@ -3,16 +3,12 @@ import {router} from 'expo-router';
 
 import {useFonts} from 'expo-font';
 
-import {PropsWithChildren, useEffect, useRef, useState} from 'react';
-import {getDbDoc, queryDbDocsByField} from '@/database/firebase/read';
-import LightButton from '@/components/buttons/LightButton';
-
+import {PropsWithChildren, useEffect, useState} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 import {Asset} from 'expo-asset';
 import ConfirmModal from '@/components/ConfirmModal';
 import {uploadPicture} from '@/database/aws/set';
-import {updateDoc} from '@/database/firebase/set';
 import {Timestamp} from 'firebase/firestore';
 import Environnement from '@/components/Environnement';
 import {useMosaic} from '@/context/MosaicContext';
@@ -22,7 +18,6 @@ import RoundButton from '@/components/buttons/RoundButton';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MozaiInfosModal from '@/components/MozaiInfosModal';
 import Animated from 'react-native-reanimated';
-import useInteractionHandlers from "@/components/gallery/useInteractionHandlers";
 
 type Props = PropsWithChildren<{
     user: any;
@@ -33,7 +28,6 @@ export default function Mosaic({user, mosaicId}: Props) {
 
     const [isConfirmVisible, setConfirmVisible] = useState<boolean>(false);
     const [isMozaiInfosVisible, setMozaiInfosVisible] = useState<boolean>(false);
-    const [initializing, setInitializing] = useState(true);
     const [activeMosaic, setActiveMosaic] = useState<any>(null);
     const [activeUser, setActiveUser] = useState<any>(user);
     const [assetsNumber, setAssetsNumber] = useState<number>(0);
@@ -43,39 +37,43 @@ export default function Mosaic({user, mosaicId}: Props) {
         "SFPROBOLD": require('../assets/fonts/SFPRODISPLAYBOLD.otf'),
     });
     const {mosaics, updateMosaic} = useMosaic();
-    const {authInfos, userData, updateUserData} = useUser();
+    const {userData} = useUser();
     const [topZindex, setTopZindex] = useState<number>(130);
 
-
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const tempActiveMosaic = await AsyncStorage.getItem("activeMosaic");
-
-                const user = await AsyncStorage.getItem("activeUser") ?? "";
-                setActiveUser(user);
-
-                if (tempActiveMosaic && mosaics) {
-                    const mosaic = mosaics.filter((mosaic: any) => mosaic.id === tempActiveMosaic);
-
-                    if (mosaic.length > 0) {
-                        setActiveMosaic(mosaic[0]);
-                    }
-                } else if (!user && tempActiveMosaic) {
-                    const mosaic = await firestore().collection("mosaiques").doc(tempActiveMosaic).get().then((doc) => doc.data())
-
-                    if (mosaic) {
-                        setActiveMosaic(mosaic);
-                    }
-                }
-            } catch (error) {
-                console.error("Error fetching data: ", error);
-            }
-        };
-
         fetchData();
     }, []);
 
+    const fetchData = async () => {
+        try {
+            const tempActiveMosaic = await AsyncStorage.getItem("activeMosaic");
+            const user = await AsyncStorage.getItem("activeUser") ?? "";
+            setActiveUser(user);
+
+            if (tempActiveMosaic && mosaics) {
+                const mosaic = mosaics.find((mosaic: any) => mosaic.id === tempActiveMosaic);
+                if (mosaic) {
+                    setActiveMosaic(mosaic);
+                }
+            } else if (!user && tempActiveMosaic) {
+                const mosaic = await firestore().collection("mosaiques").doc(tempActiveMosaic).get().then((doc) => doc.data());
+                if (mosaic) {
+                    setActiveMosaic(mosaic);
+                }
+            }
+        } catch (error) {
+            console.error("Error fetching data: ", error);
+        }
+    };
+
+    const refreshActiveMosaic = async () => {
+        if (activeMosaic?.id) {
+            const updatedMosaic = await firestore().collection("mosaiques").doc(activeMosaic.id).get().then((doc) => doc.data());
+            if (updatedMosaic) {
+                setActiveMosaic(updatedMosaic);
+            }
+        }
+    };
 
     const pickImageAsync = async () => {
         await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -101,7 +99,6 @@ export default function Mosaic({user, mosaicId}: Props) {
                 };
             });
             const images = await Promise.all(assetPromises);
-            images.forEach(image => console.log(image));
             setImagesToUpload(images);
 
             setConfirmVisible(true);
@@ -111,7 +108,11 @@ export default function Mosaic({user, mosaicId}: Props) {
     const confirmUpload = async (confirmation: boolean) => {
         setConfirmVisible(false);
         if (!confirmation) return;
-        const assetPromises = imagesToUpload.map((asset: any) => uploadPicture(asset.localUri, activeMosaic.id + "/" + activeUser + "/" + asset.uri.split("/").pop()));
+
+        const assetPromises = imagesToUpload.map((asset: any) =>
+            uploadPicture(asset.localUri, `${activeMosaic.id}/${activeUser}/${asset.uri.split("/").pop()}`)
+        );
+
         await Promise.all(assetPromises).then(async (res) => {
             const newImages = res.map((image: any, index: number) => ({
                 date: new Timestamp(new Date().getTime() / 1000, 0),
@@ -123,90 +124,82 @@ export default function Mosaic({user, mosaicId}: Props) {
                 height: imagesToUpload[index].height,
             }));
 
-            await updateMosaic(activeMosaic.id, {
+            const updatedMosaic = {
+                ...activeMosaic,
                 images: [...activeMosaic.images, ...newImages],
+            };
+
+            console.log('Updated mosaic:', updatedMosaic);
+
+            setActiveMosaic(updatedMosaic);
+
+            await updateMosaic(activeMosaic.id, {
+                images: updatedMosaic.images,
             });
+        });
+    };
 
-            // await updateDoc({
-            //     collectionId: "mosaiques", docId: activeMosaic.id, newDatas: {
-            //         images: [...activeMosaic.images, ...newImages],
-            //     }
-            // }).then(async () => {
-            //     await getDbDoc({collectionId: "mosaiques", docId: activeMosaic.id}).then((mosaic: any) => {
-            //         setActiveMosaic(mosaic);
-            //     })
-            // })
-        })
 
-    }
 
-    const {backTouch} = useInteractionHandlers();
-
-    const {active, action} = backTouch();
-
-    return (<View style={styles.container}>
-
+    return (
+        <View style={styles.container}>
             <View style={[styles.topBar, {zIndex: topZindex}]}>
                 <RoundButton
                     onPress={() => userData ? router.replace("/home") : router.replace("/animation")}
-                    title="Home" icon="home" size={25}/>
+                    title="Home" icon="home" size={25}
+                />
             </View>
 
-            <View>
-                <ConfirmModal isVisible={isConfirmVisible}
-                              text={`Do you want to add ${assetsNumber} images to the mosaic ?`}
-                              onClose={(confirmation) => (confirmUpload(confirmation))} user={user}/>
-            </View>
+            <ConfirmModal isVisible={isConfirmVisible}
+                          text={`Do you want to add ${assetsNumber} images to the mosaic ?`}
+                          onClose={(confirmation) => confirmUpload(confirmation)}
+                          user={user}
+            />
 
-            {activeMosaic?.id &&
-                <View>
-                    <MozaiInfosModal mosaicId={activeMosaic.id} isVisible={isMozaiInfosVisible} onClose={() => {
+            {activeMosaic?.id && (
+                <MozaiInfosModal
+                    mosaicId={activeMosaic.id}
+                    isVisible={isMozaiInfosVisible}
+                    onClose={() => {
                         setTopZindex(130);
-                        setMozaiInfosVisible(false)
-                    }} users={activeMosaic.users}>
-                    </MozaiInfosModal>
-                </View>
-            }
+                        setMozaiInfosVisible(false);
+                    }}
+                    users={activeMosaic.users}
+                />
+            )}
 
-            <Animated.View
-                style={[styles.smoothCover, isMozaiInfosVisible ? {opacity: 1} : {opacity: 0}]}></Animated.View>
+            <Animated.View style={[styles.smoothCover, isMozaiInfosVisible ? {opacity: 1} : {opacity: 0}]}/>
 
-            {activeMosaic?.images
+            {activeMosaic?.images ? (
+                <Environnement key={activeMosaic.images.lenght} images={activeMosaic.images}>
+                    {userData && (
+                        <View style={styles.buttons}>
+                            <RoundButton onPress={pickImageAsync} style={{width: 180, height: 50}}>
+                                <Text style={styles.text}>Add</Text>
+                            </RoundButton>
+                        </View>
+                    )}
+                </Environnement>
+            ) : (
+                <Text>loading</Text>
+            )}
 
-                ? <Environnement images={activeMosaic.images}/>
-                : <Text>loading</Text>
-            }
-
-            <View style={{
-                position: 'absolute',
-                zIndex: 125,
-                top: 45,
-                display: 'flex',
-                flexDirection: 'row',
-                justifyContent: 'center',
-                width: '100%'
-            }}>
-                {activeMosaic &&
-                    <RoundButton style={{zIndex: 20, width: "unset", padding: 20}} onPress={() => {
-                        setTopZindex(110);
-                        setMozaiInfosVisible(true)
-                    }}>
-                        <View style={{display: 'flex', flexDirection: 'row', gap: 8, alignItems: 'center'}}>
-                            <Ionicons name="chevron-down" size={25} color="white" style={{width: 25, height: 25}}/>
+            <View style={styles.infoButtonContainer}>
+                {activeMosaic && (
+                    <RoundButton
+                        style={{zIndex: 20, width: "unset", padding: 20}}
+                        onPress={() => {
+                            setTopZindex(110);
+                            setMozaiInfosVisible(true);
+                        }}
+                    >
+                        <View style={styles.infoButtonContent}>
+                            <Ionicons name="chevron-down" size={25} color="white"/>
                             <Text style={styles.text}>{activeMosaic.name}</Text>
                         </View>
                     </RoundButton>
-                }
+                )}
             </View>
-
-
-            {userData && !active &&
-                <View style={styles.buttons}><RoundButton onPress={pickImageAsync} style={{width: 180, height: 50}}>
-                    <Text style={styles.text}>Add</Text>
-                </RoundButton></View>
-            }
-
-
         </View>
     );
 }
@@ -246,8 +239,22 @@ const styles = StyleSheet.create({
     },
     text: {
         color: '#fff',
-        // fontWeight: 'bold',
         fontFamily: 'SFPROBOLD',
         textAlign: 'center',
+    },
+    infoButtonContainer: {
+        position: 'absolute',
+        zIndex: 125,
+        top: 45,
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'center',
+        width: '100%',
+    },
+    infoButtonContent: {
+        display: 'flex',
+        flexDirection: 'row',
+        gap: 8,
+        alignItems: 'center',
     },
 });

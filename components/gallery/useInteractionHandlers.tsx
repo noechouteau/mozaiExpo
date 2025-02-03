@@ -7,10 +7,12 @@ import { Gyroscope } from 'expo-sensors';
 
 const {width, height} = Dimensions.get('window');
 
-const useInteractionHandlers = () => {
+const useInteractionHandlers = ([
+    isMeshActive,
+    setIsMeshActive,
+                                ]) => {
     const isTouching = useRef<boolean>(false);
     const isMoving = useRef<boolean>(false);
-    const [isMeshActive, setIsMeshActive] = useState(false);
     const initialTouchDistance = useRef<number>(0);
     const initialCameraZ = useRef<number>(0);
 
@@ -25,52 +27,55 @@ const useInteractionHandlers = () => {
         maxY: 10,
     }
 
+
     const meshClick = new MeshClick({
         planes: planes,
         camera: cameraRef.current,
-        onStateChange: setIsMeshActive,
+        onStateChange: (state) => {
+            setIsMeshActive(state);
+        },
     });
 
 
-    useEffect(() => {
-        const gyroSensitivity = 0.02;
-        let gyroSubscription: any;
+    // useEffect(() => {
+    //     const gyroSensitivity = 0.02;
+    //     let gyroSubscription: any;
+    //
+    //     const updateGyroscope = ({ x, y }: { x: number; y: number }) => {
+    //         if (cameraRef.current && !isTouching.current && !isMeshActive) {
+    //             targetPosition.current.x -= y * gyroSensitivity;
+    //             targetPosition.current.y += x * gyroSensitivity;
+    //
+    //             targetPosition.current.x = Math.max(
+    //                 Math.min(targetPosition.current.x, sizesPan.maxX),
+    //                 sizesPan.minX
+    //             );
+    //             targetPosition.current.y = Math.max(
+    //                 Math.min(targetPosition.current.y, sizesPan.maxY),
+    //                 sizesPan.minY
+    //             );
+    //         }
+    //     };
+    //
+    //     Gyroscope.setUpdateInterval(16);
+    //
+    //     const subscribeGyroscope = () => {
+    //         gyroSubscription = Gyroscope.addListener(updateGyroscope);
+    //     };
+    //
+    //     const unsubscribeGyroscope = () => {
+    //         if (gyroSubscription) {
+    //             gyroSubscription.remove();
+    //         }
+    //     };
+    //
+    //     subscribeGyroscope();
+    //
+    //     return () => {
+    //         unsubscribeGyroscope();
+    //     };
+    // }, [isMeshActive]);
 
-
-        const updateGyroscope = ({ x, y }: { x: number; y: number }) => {
-            if (cameraRef.current && !isTouching.current && !isMeshActive) {
-                targetPosition.current.x -= y * gyroSensitivity;
-                targetPosition.current.y += x * gyroSensitivity;
-
-                targetPosition.current.x = Math.max(
-                    Math.min(targetPosition.current.x, sizesPan.maxX),
-                    sizesPan.minX
-                );
-                targetPosition.current.y = Math.max(
-                    Math.min(targetPosition.current.y, sizesPan.maxY),
-                    sizesPan.minY
-                );
-            }
-        };
-
-        Gyroscope.setUpdateInterval(16);
-
-        const subscribeGyroscope = () => {
-            gyroSubscription = Gyroscope.addListener(updateGyroscope);
-        };
-
-        const unsubscribeGyroscope = () => {
-            if (gyroSubscription) {
-                gyroSubscription.remove();
-            }
-        };
-
-        subscribeGyroscope();
-
-        return () => {
-            unsubscribeGyroscope();
-        };
-    }, [isMeshActive]);
 
     const handleTouchStart = ({nativeEvent}: {
         nativeEvent: { locationX: number, locationY: number, touches: { locationX: number, locationY: number }[] }
@@ -190,7 +195,7 @@ const useInteractionHandlers = () => {
         };
     };
 
-    return { handleTouchStart, handleTouchEnd, panHandlers, handleTouchMove, backTouch };
+    return { handleTouchStart, handleTouchEnd, panHandlers, handleTouchMove, backTouch, isMeshActive };
 };
 
 

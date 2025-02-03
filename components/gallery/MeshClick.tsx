@@ -21,6 +21,7 @@ class MeshClick {
     }
 
     setPlaneClicked(plane: THREE.Mesh | null) {
+        console.log("setPlaneClicked called with:", plane);
         if (plane) {
             this.planeClicked = plane;
             this.enter();
@@ -85,7 +86,7 @@ class MeshClick {
             duration: 2,
             delay: 2,
             ease: "expo.inOut",
-            onLeave: () => {
+            onComplete: () => {
                 this.onStateChange(this.isActive);
             }
         })
