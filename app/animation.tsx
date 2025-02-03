@@ -1,7 +1,7 @@
 import CustomTextInput from "@/components/CustomTextInput";
 import LightButton from "@/components/buttons/LightButton";
 import { useFonts } from "expo-font";
-import { SetStateAction, useEffect, useRef, useState } from "react";
+import { SetStateAction, PropsWithChildren, useEffect, useRef, useState } from "react";
 import {
   View,
   Button,
@@ -30,10 +30,17 @@ import { Gyroscope } from "expo-sensors";
 import { LinearGradient } from "expo-linear-gradient";
 import NewUserModal from "@/components/NewUserModal";
 import { useUser } from "@/context/UsersContext";
+import BackButton from "@/components/buttons/BackButton";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
-export default function Animation() {
+type Props = PropsWithChildren<{
+  isVisible: boolean;
+  onClose: () => void;
+  user: any;
+}>;
+
+export default function Animation({onClose}: Props) {
   const opacity = useSharedValue(0);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [confirm, setConfirm]: any = useState(null);
@@ -46,6 +53,7 @@ export default function Animation() {
   const pathname = usePathname();
   const [initializing, setInitializing] = useState(true);
   const { authInfos, userData, updateUserData } = useUser();
+  const [errorDisplayed, setErrorDisplayed] = useState<boolean>(false);
 
   const gradientStartX = useSharedValue(0.2);
   const gradientEndY = useSharedValue(1);
@@ -79,55 +87,21 @@ export default function Animation() {
   }
 
   useEffect(() => {
-    // Start listening to the gyroscope
-    //   const subscribe = Gyroscope.addListener((data) => {
-    //     const { x, y } = data;
-
-    //     // Map gyroscope values to gradient coordinates and dynamic border radius
-    //     const newStartX = Math.max(0, Math.min(1, 0.5 + x / 2)); // Clamp between 0 and 1
-    //     const newEndY = Math.max(0, Math.min(1, 0.5 + y / 2));
-    //     const newBorderRadius = Math.max(8, Math.min(30, 12 + y * 10)); // Adjust radius dynamically
-
-    //     setGradientStart({ x: newStartX, y: 0 });
-    //     setGradientEnd({ x: 0.5, y: newEndY });
-    //     setDynamicBorderRadius(newBorderRadius);
-    //   });
-
-    //   setSubscription(subscribe);
-
-    // Handle user state changes
-    const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
-
-    // Cleanup on unmount
+    // Abonnement au gyroscope pour obtenir l'orientation de l'appareil
+    const subscribe = Gyroscope.addListener((data) => {
+      const { x, y } = data;
+  
+      const attenuationFactor = 0.3; // plus fluide
+  
+      // Animation plus douce avec des valeurs non clampées
+      gradientStartX.value = withTiming(0.5 + x * attenuationFactor, { duration: 500 });
+      gradientEndY.value = withTiming(0.5 + y * attenuationFactor, { duration: 500 });
+    });
+  
     return () => {
-      subscription?.remove();
-      subscriber && subscriber();
+      subscribe?.remove();
     };
   }, []);
-
-//   useEffect(() => {
-//     // Abonnement au gyroscope pour obtenir l'orientation de l'appareil
-//     const subscribe = Gyroscope.addListener((data) => {
-//       const { x, y } = data;
-
-//       const attenuationFactor = 0.001; 
-
-//       // On mappe les valeurs de gyroscope pour ajuster les points du gradient
-//       const newStartX = Math.max(0, Math.min(1, 0.5 +  x * attenuationFactor)); // Clamp entre 0 et 1
-//       const newEndY = Math.max(0, Math.min(1, 0.5 + y * attenuationFactor)); // Clamp entre 0 et 1
-
-//       // Mise à jour des coordonnées de départ et de fin du gradient
-//       setGradientStart({ x: newStartX, y: 0 });
-//       setGradientEnd({ x: 0.5, y: newEndY });
-//     });
-
-//     setSubscription(subscribe);
-
-//     return () => {
-//       // Nettoyage lors du démontage du composant
-//       subscription?.remove();
-//     };
-//   }, []);
 
   async function signInWithPhoneNumber(phoneNumber: any) {
     try {
@@ -224,7 +198,23 @@ export default function Animation() {
     );
   } else {
     return (
+      <ImageBackground
+      source={require('../assets/images/greenTheme/bg_login_2.png')}
+      resizeMode="cover"
+      style={styles.backgroundImage}
+      >
       <View style={styles.container}>
+        <View>
+          <JoinModal
+            isVisible={isJoinModalVisible}
+            onClose={() => setJoinModalVisible(false)}
+            user={"guest"}
+          />
+        </View>
+        <Image
+          source={require("../assets/images/login/circle.png")}
+          style={styles.logoOutside}
+        />
         <Animated.View
           style={{
             width: "100%",
@@ -234,35 +224,39 @@ export default function Animation() {
             alignItems: "center",
           }}
         >
-          {/* Confirmation screen */}
-          <Image
-            source={require("../assets/images/mozailogo2.png")}
-            style={{ width: screenWidth, height: screenHeight / 2 }}
-          />
+          {/* Login card */}
           <View
-            style={{
-              alignItems: "center",
-              justifyContent: "center",
-              width: screenWidth,
-              gap: 17,
-              height: screenHeight / 2,
-            }}
+            style={[styles.cardWrapper2, { borderRadius: dynamicBorderRadius }]}
           >
+            <LinearGradient
+              colors={["#000000", "#DAEDBD", "#000000"]}
+              style={[styles.cardBorder, { borderRadius: 24 }]}
+              start={gradientStart}
+              end={gradientEnd}
+            >
+              <View
+                style={[styles.card2, { borderRadius: 24 }]}
+              >
+                <View style={{alignSelf: 'flex-start', marginBottom: 30}}>
+                        <BackButton onPress={()=>{
+                          setErrorDisplayed(false);
+                        setConfirm(null);}} > 
+                        </BackButton>
+                </View>
             <CustomTextInput
               label="Log in"
+              placeholder="XXXXXX"
               value={code}
               onChangeText={(text: SetStateAction<string>) => setCode(text)}
               style={{ marginBottom: 17 }}
             />
-            <LightButton title="Confirm Code" onPress={() => confirmCode()} />
-            <GraytButton
-              onPress={() => setConfirm(null)}
-              title="Take me back"
-              style={{ marginTop: 17 }}
-            />
+            <LightButton title="Log in" onPress={() => confirmCode()} />
+          </View>
+            </LinearGradient>
           </View>
         </Animated.View>
       </View>
+      </ImageBackground>
     );
   }
 }
@@ -289,7 +283,11 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     position: "absolute",
     top: screenHeight / 2 -130,
-
+  },
+  cardWrapper2: {
+    overflow: "hidden",
+    position: "absolute",
+    top: screenHeight / 2 -130,
   },
   cardBorder: {
     padding: 2,
@@ -304,6 +302,15 @@ const styles = StyleSheet.create({
     width: screenWidth / 1.15,
     position: "relative",
     height: 340,
+  },
+  card2: {
+    padding: 36,
+    paddingTop: 36,
+    backgroundColor: "#000000",
+    alignItems: "center",
+    width: screenWidth / 1.15,
+    position: "relative",
+    height: 270,
   },
   logoOutside: {
     width: 190,
@@ -325,3 +332,4 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     }
     });
+
