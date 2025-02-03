@@ -1,4 +1,4 @@
-import {StyleSheet, View, Text} from 'react-native';
+import {StyleSheet, View, Text, Button} from 'react-native';
 import {router} from 'expo-router';
 
 import {useFonts} from 'expo-font';
@@ -15,6 +15,7 @@ import {uploadPicture} from '@/database/aws/set';
 import {updateDoc} from '@/database/firebase/set';
 import {Timestamp} from 'firebase/firestore';
 import Environnement from '@/components/Environnement';
+import ScreenButton from "@/components/gallery/buttons/ScreenButton";
 
 type Props = PropsWithChildren<{
     user: any;
@@ -137,10 +138,15 @@ export default function Mosaic({user, mosaicId}: Props) {
             }
 
             <View style={styles.buttons}>
+                <View>
+                    <Text></Text>
+                </View>
                 <LightButton
                     onPress={() => activeUser != "guest" ? router.replace("/home") : router.replace("/animation")}
-                    title="Home"/>
-                {activeUser != "guest" && <LightButton onPress={pickImageAsync} title="+"/>}
+                    title="X"/>
+                {activeUser != "guest" && (
+                    <Button title={'Add'} />
+                )}
             </View>
 
         </View>
