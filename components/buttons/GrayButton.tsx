@@ -11,7 +11,7 @@ export default function GraytButton(props:any) {
     const handlePressIn = () => {
         Animated.timing(backgroundColor, {
             toValue: 1, // End value for pressed state
-            duration: 200, // Transition duration in milliseconds
+            duration: 100, // Transition duration in milliseconds
             useNativeDriver: false, // Color interpolation needs false
         }).start();
     };
@@ -19,7 +19,7 @@ export default function GraytButton(props:any) {
     const handlePressOut = () => {
         Animated.timing(backgroundColor, {
             toValue: 0, // Back to initial state
-            duration: 200, // Transition duration
+            duration: 100, // Transition duration
             useNativeDriver: false,
         }).start();
     };
@@ -27,7 +27,7 @@ export default function GraytButton(props:any) {
     // Interpolate the backgroundColor value
     const interpolatedBG = backgroundColor.interpolate({
         inputRange: [0, 1],
-        outputRange: ["#ffffff", "#2b2b2b"], // Replace with your desired colors
+        outputRange: ["#ffffff", "#818181"], // Replace with your desired colors
     });
 
     return (
@@ -37,28 +37,37 @@ export default function GraytButton(props:any) {
             onPressOut={handlePressOut}
             style={({ pressed }) => [
                 { backgroundColor: pressed ? "#ffffff" : "transparent",
-                    borderRadius: 12,
-                },
+                borderRadius: 12,
+                 },
             ]}
         >
-            <Animated.View style={[styles.loginButton, { backgroundColor: interpolatedBG }]}>
-                <Text style={styles.buttonText}>{props.title}</Text>
-            </Animated.View>
+            <Animated.View style={[styles.loginButton, { backgroundColor: interpolatedBG }, props.style]}>
+        {props.children?
+            props.children
+            :
+            <Text style={[styles.buttonText,props.textStyle]}>{props.title}</Text>
+        }
+      </Animated.View>
         </Pressable>
     );
 };
+
 const styles = StyleSheet.create({
     loginButton: {
         backgroundColor: "#ffffff",
-        borderRadius: 12,
-        padding: 15,
-        width: screenWidth / 1.35,
+        borderRadius: 14,
+        padding: 13,
+        width: screenWidth / 1.38,
+        display: "flex",
+        flexDirection: "row",
+        justifyContent: "center",
         textAlign: "center",
-    },
-    buttonText: {
+      },
+      buttonText: {
         textAlign: "center",
-        fontFamily: "SFPRO",
-        fontSize: 18,
+        fontFamily: "Monrope",
+        fontSize: 16,
+        flex:1,
         color: "#000000",
-    },
+      },
 });

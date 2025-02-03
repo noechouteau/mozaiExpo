@@ -2,6 +2,9 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useFonts } from "expo-font";
 import { useEffect } from "react";
+import { UserProvider } from "@/context/UsersContext";
+import { MosaicProvider } from "@/context/MosaicContext";
+import { StatusBar } from 'expo-status-bar';
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
@@ -19,18 +22,24 @@ export default function RootLayout() {
   }
 
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-      }}
-    >
-      <Stack.Screen name="index" />
-      <Stack.Screen name="tests" />
-      <Stack.Screen name="phone" />
-      <Stack.Screen name="animation" />
-      <Stack.Screen name="home" />
-      <Stack.Screen name="mosaic" />
-      <Stack.Screen name="profile" />
-    </Stack>
+    <UserProvider>
+      <MosaicProvider>
+      <StatusBar translucent/>
+
+        <Stack
+          screenOptions={{
+            headerShown: false,
+          }}
+        >
+          <Stack.Screen name="index" />
+          <Stack.Screen name="tests" />
+          <Stack.Screen name="phone" />
+          <Stack.Screen name="animation" />
+          <Stack.Screen name="home" />
+          <Stack.Screen name="mosaic" />
+          <Stack.Screen name="profile" />
+        </Stack>
+      </MosaicProvider>
+    </UserProvider>
   );
 }

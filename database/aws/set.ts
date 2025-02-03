@@ -18,6 +18,7 @@ export const uploadPicture = async (imageUri: any, key:string) => {
         Key: key, // The key name for the uploaded object (e.g., "folder/image.jpg")
         Body: blob, // The content of the file
         ContentType: "image/png", // Ensure the browser knows it's an image
+        CacheControl: "no-cache",
       } satisfies PutObjectRequest;
     
       try {

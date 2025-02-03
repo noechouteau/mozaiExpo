@@ -1,5 +1,6 @@
 import { db } from "@/db-configs/firebase";
 import { collection, doc, getDoc, getDocs, query, where } from "firebase/firestore";
+import firestore from '@react-native-firebase/firestore';
 
 export const getDbDoc = async ({
   collectionId,

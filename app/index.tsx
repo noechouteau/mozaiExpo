@@ -1,14 +1,15 @@
 import { StyleSheet, View,Text, Button, TextInput,Pressable, ImageBackground, Dimensions } from 'react-native';
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { useFonts } from 'expo-font';
 import Animated from 'react-native-reanimated';
 import { HoldMenuProvider } from 'react-native-hold-menu';
 import { HoldItem } from 'react-native-hold-menu';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const {width: screenWidth, height: screenHeight} = Dimensions.get('window');
-const backgroundImage = require('../assets/images/bg_login_2.png');
+const backgroundImage = require('../assets/images/blueTheme/bg_login_2.png');
 
 export default function Index() {
 
@@ -30,13 +31,24 @@ export default function Index() {
     { id: '3', name: 'Item 3' },
   ]);
 
+  useEffect(() => {
+    async function fast(){
+      const activeUser = await AsyncStorage.getItem("loggedIn");
+      console.log(activeUser);
+      if(activeUser && activeUser!="false" && activeUser!=""){
+        router.replace("/home");
+      }
+    }
+
+    fast();
+  }, []);
+
   return (<HoldMenuProvider theme='dark' safeAreaInsets={{
     top: 0,
     right: 0,
     bottom: 0,
     left: 0
   }}>
-  <StatusBar translucent/>
   <ImageBackground source={backgroundImage} resizeMode="cover" style={{ flex: 1, justifyContent: 'center', alignItems: 'center', width: screenWidth, height: screenHeight+45 }}>
   
   <View style={styles.container}>

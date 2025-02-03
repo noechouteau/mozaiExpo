@@ -6,27 +6,41 @@ import { HoldMenuProvider } from 'react-native-hold-menu';
 import { HoldItem } from 'react-native-hold-menu';
 import { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import LightButton from '@/components/LightButton';
+import LightButton from '@/components/buttons/LightButton';
 import CustomTextInput from '@/components/CustomTextInput';
 import createUser from '@/controllers/Users';
 import { Asset } from 'expo-asset';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import auth from '@react-native-firebase/auth';
+import BackButton from '@/components/buttons/BackButton';
+import { uploadPicture } from '@/database/aws/set';
+import { updateDoc } from '@/database/firebase/set';
+import { useUser } from '@/context/UsersContext';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const {width: screenWidth, height: screenHeight} = Dimensions.get('window');
-const backgroundImage = require('../assets/images/bg_login_2.png');
+
+const blue = require('../assets/images/blueTheme/bg_login_2.png');
+const green = require('../assets/images/greenTheme/bg_login_2.png');
+const red = require('../assets/images/redTheme/bg_login_2.png');
+const orange = require('../assets/images/orangeTheme/bg_login_2.png');
 
 export default function Profile() {
 
-    const [selectedImage, setSelectedImage] = useState<any>(require('../assets/images/newUserBgPic.png'));
-    const [user, setUser] = useState<any>();
+    const [gradientStart, setGradientStart] = useState({ x: 0.2, y: 0 });
+    const [gradientEnd, setGradientEnd] = useState({ x: 1.2, y: 1 });
     const [userName, setUserName] = useState<string>("");
+    const {selectedTheme, changeTheme} = useUser();
+    const {userData, logout, updateUserData } = useUser();
+    const [backgroundImage, setBackgroundImage] = useState<any>();
+    const [bgColor, setBgColor] = useState<string>("");
 
     const setUserData = async () => {
-        const jsonUser = await AsyncStorage.getItem('currentUser');
-        setUser(jsonUser != null ? JSON.parse(jsonUser) : null);
-        console.log("ahah")
-        console.log(user);
+        if(userData){
+            setUserName(userData.name);
+        }
+
     }
 
     const pickImageAsync = async () => {
@@ -36,19 +50,55 @@ export default function Profile() {
             quality: 1,
         });
     
-        if (!result.canceled) {
-            console.log(result.assets[0].uri);
+        if (!result.canceled && userData) {
+            console.log(result.assets[0]," JJEJEJJEJEJJEJEJJEJE");
             let image = await Asset.loadAsync(result.assets[0].uri);
             console.log(image);
-            setSelectedImage(image);
-        } else {
-            alert('You did not select any image.');
+
+            await uploadPicture(image[0].localUri, userData.uid+"/"+userData.uid+"-profile-pic").then(async (res) => {
+                console.log(res.Location, userData.name,userData.phone,userData.uid)
+                await updateUserData({
+                    picture: `${res.Location}?t=${Date.now()}`,
+                }).then(() => {
+                    console.log( "User data updated");
+                })
+            })
         }
     };
+
 
     useEffect(() => {
         setUserData();
     }, []);
+
+    useEffect(() => {
+        console.log("testingshit");
+        if (selectedTheme === 'greenTheme') {
+            setBackgroundImage(green);
+            setBgColor("#DAEDBD");
+        } else if (selectedTheme === 'blueTheme') {
+            setBgColor("#1100ff");
+            setBackgroundImage(blue);
+        } else if (selectedTheme === 'redTheme') {
+            setBackgroundImage(red);
+            setBgColor("#F0265D");
+            // } else if (selectedTheme === 'purpleTheme') {
+        //     backgroundImage = require('../assets/images/purpleTheme/bg_login_2.png');
+        } else {
+            setBackgroundImage(orange);
+            setBgColor("#F94D20");
+        }
+    }, [selectedTheme]);
+
+
+    const onSignOut = async () => {
+        await logout();
+        await AsyncStorage.setItem("loggedIn", "false");
+        await AsyncStorage.setItem("theme", "greenTheme");
+        changeTheme("greenTheme");
+        router.replace("/animation");
+        console.log("Sign out");
+    }
 
   return (<HoldMenuProvider theme='dark' safeAreaInsets={{
     top: 0,
@@ -60,23 +110,57 @@ export default function Profile() {
   <ImageBackground source={backgroundImage} resizeMode="cover" style={{ flex: 1, justifyContent: 'center', alignItems: 'center', width: screenWidth, height: screenHeight+45 }}>
   
    <View style={styles.modalContainer}>
+        <LinearGradient
+            colors={['#000000', bgColor, '#000000']}
+            style={[styles.cardBorder, { borderRadius: 24 }]}
+            start={gradientStart}
+            end={gradientEnd}>
           <View style={styles.modalContent}>
-              <Pressable style={{left:15,top:10, position:"absolute"}} onPress={() => {router.replace("/home")}}>
-                  <Text style={[styles.text,{left:15,top:10, position:"absolute"}]}>X</Text>
-              </Pressable>
+              <View style={{alignSelf: 'flex-start',left:20,top:20}}>  
+                <BackButton onPress={() => {
+                    router.replace("/home");
+                    updateUserData({name:userName});
+                    }}  />
+              </View>
   
               <View style={styles.titleContainer}>
                   <Pressable onPress={pickImageAsync}>
-                      <Image source={{uri:user?.picture}} style={{width: 150, height: 150, alignSelf: 'center', borderRadius:100}} />
+                      <Image source={{uri:userData?.picture}} style={{width: 150, height: 150, alignSelf: 'center', borderRadius:100}} />
+                      <View style={{alignSelf: 'flex-end',top:-37,left:-5}}>  
+                        <BackButton onPress={pickImageAsync} icon="pencil-outline" />
+                    </View>
                   </Pressable>
               </View>
   
               <View style={styles.formContainer}>
-                  <CustomTextInput label="Username" style={styles.input} onChangeText={(text:any) => setUserName(text)} />
-  
-                  <LightButton title="Sign out" />
+                <CustomTextInput label="Username" value={userName} onChangeText={(text:any) => setUserName(text)} style={{width:screenWidth/1.55}}/>
+                  
+                    <View style={{display:"flex",gap:10}}>
+                        <Text style={styles.text}>Theme</Text>
+                        <View style={{display:"flex",flexDirection:"row",gap:10,width:200,height:25}}>
+
+                            <Pressable onPress={() => changeTheme("greenTheme")}>
+                            <View style={[{width:25,height:25,backgroundColor:"#bdda92",borderRadius:50}, selectedTheme=="greenTheme" ? {borderWidth:1,borderColor:"#ffffffff"}:{}]}></View>
+                            </Pressable>
+
+                            <Pressable onPress={() => changeTheme("redTheme")}>
+                            <View style={[{width:25,height:25,backgroundColor:"#F0265D",borderRadius:50}, selectedTheme=="redTheme" ? {borderWidth:1,borderColor:"#ffffffff"}:{}]}></View>
+                            </Pressable>
+
+                            <Pressable onPress={() => changeTheme("blueTheme")}>
+                            <View style={[{width:25,height:25,backgroundColor:"#1100ff",borderRadius:50}, selectedTheme=="blueTheme" ? {borderWidth:1,borderColor:"#ffffffff"}:{}]}></View>
+                            </Pressable>
+
+                            <Pressable onPress={() => changeTheme("orangeTheme")}>
+                                <View style={[{width:25,height:25,backgroundColor:"#F94D20",borderRadius:50}, selectedTheme=="orangeTheme" ? {borderWidth:1,borderColor:"#ffffffff"}:{}]}></View>
+                            </Pressable>
+                        </View>
+                    </View>
+
+                  <LightButton title="Sign out" onPress={() => onSignOut()} />
               </View>
           </View>
+        </LinearGradient>
         </View>
 
   </ImageBackground>
@@ -96,14 +180,20 @@ const styles = StyleSheet.create({
         position: 'absolute',
         zIndex: 10,
     },
-    modalContent: {
-        height: 290,
+    cardBorder: {
+        padding: 3,
+        height: 356,
         width: "85%",
+        display: 'flex',
+    },
+    modalContent: {
+        height: 350,
+        width: "100%",
         borderRadius: 20,
         backgroundColor: '#000',
         display: 'flex',
         alignItems: 'center',
-        boxShadow: '0px 0px 10px #464B3F',
+        
     },
     titleContainer: {
         display: 'flex',
@@ -114,18 +204,15 @@ const styles = StyleSheet.create({
         top:-80
     },
     formContainer: {
-        top: -60,
+        top: -100,
         display: 'flex',
         gap: 20,
     },
-    input:{
-        display: 'flex',
-        gap: 10,
-    },
     text: {
         color: '#fff',
+        // fontWeight: 'bold',
+        fontFamily: 'SFPROBOLD',
+        textAlign: 'left',
         fontSize: 16,
-        margin: 0,
-        padding:0
     }
 });

@@ -17,15 +17,14 @@ const {width: screenWidth, height: screenHeight} = Dimensions.get('window');
 type Props = PropsWithChildren<{
   isVisible: boolean;
   onClose: () => void;
-  user: any;
 }>;
 
-export default function JoinModal({ isVisible, onClose, user }: Props) {
+export default function RenameModal({ isVisible, onClose }: Props) {
     const [errorDisplayed, setErrorDisplayed] = useState<boolean>(false);
     const [errorText, setErrorText] = useState<string>("");
     const [gradientStart, setGradientStart] = useState({ x: 0.2, y: 0 });
     const [gradientEnd, setGradientEnd] = useState({ x: 1.2, y: 1 });
-    const [mosaicId, setMosaicId] = useState<string>("");
+    const [newName, setNewName] = useState<string>("");
     const router = useRouter();
     const { mosaics, updateMosaic } = useMosaic();
     const [bgColor, setBgColor] = useState<string>("");
@@ -45,41 +44,27 @@ export default function JoinModal({ isVisible, onClose, user }: Props) {
     }
     }, [selectedTheme]);
     
-    const joinMosaic = async () => {
-        if(mosaicId.length < 1) {
-            setErrorText("Please enter a code!");
+    const renameMosaic = async () => {
+        const mosaique = await AsyncStorage.getItem("activeMosaic");
+        console.log(mosaique, newName)
+        if(newName.length < 1) {
+            setErrorText("Please enter a new name !");
+            setErrorDisplayed(true);
+            return;
+        } else if (newName.length > 14) {
+            setErrorText("Name is too long !");
             setErrorDisplayed(true);
             return;
         }
 
-        console.log(mosaicId)
-        console.log(user)
-        const mosaic = await firestore().collection("mosaiques").doc(mosaicId).get().then((doc) => doc.data());
-
-        if(!mosaic) {
-            console.log("AHHHHHHHHHHHHHHHH")
-            setErrorText("This mosaic does not exist!");
-            setErrorDisplayed(true);
-        } else if (user && mosaic.users.some((userObj:any) => userObj.id === user.uid)) {
-            setErrorText("You are already in this mosaic!");
-            setErrorDisplayed(true);
-        } else if (user && user != "guest"){
-            console.log(user)
-            setErrorDisplayed(false);
-            const newUser = {id:user.uid, picture:user.picture}
-            await updateMosaic(mosaicId, {
-                users: [...mosaic.users, newUser],
+        if(mosaique){
+            updateMosaic(mosaique, {
+                name: newName,
             }).then(() => {
-                console.log("Successfully joined the mosaic - mosaic side");
-                router.replace("/mosaic");
-                AsyncStorage.setItem("activeMosaic", mosaicId);
+                setErrorDisplayed(false);
+                console.log("Successfully renamed the mosaic - mosaic side");
                 onClose();
             })
-        } else {
-            setErrorDisplayed(false);
-            await AsyncStorage.setItem("activeMosaic", mosaicId);
-            router.replace("/mosaic");
-            onClose();
         }
     } 
 
@@ -96,9 +81,9 @@ export default function JoinModal({ isVisible, onClose, user }: Props) {
                           <View style={{alignSelf: 'flex-start',}}>
                             <BackButton onPress={()=>{setErrorDisplayed(false);onClose()}} ></BackButton>
                           </View>
-                          <CustomTextInput label="Mosaic code" placeholder="XXXXXX" onChangeText={(text:any) => setMosaicId(text.toLowerCase())} />
-                          {errorDisplayed && <Text style={{color:"#7C061E"}}>{errorText}</Text>}
-                          <LightButton title="Join" onPress={joinMosaic} />
+                          <CustomTextInput label="Rename your Mosaic" placeholder="New name" onChangeText={(text:any) => setNewName(text)} />
+                          {errorDisplayed && <Text style={{color:"#EE4266"}}>{errorText}</Text>}
+                          <LightButton title="Rename" onPress={renameMosaic} />
     
                         </View>
                   </LinearGradient>
