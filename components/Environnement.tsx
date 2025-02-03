@@ -1,6 +1,6 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {GLView} from 'expo-gl';
-import {Text, View, ActivityIndicator} from 'react-native';
+import {Text, View, ActivityIndicator, Animated, Easing} from 'react-native';
 import SceneManager from "@/components/gallery/SceneManager";
 import useInteractionHandlers from "@/components/gallery/useInteractionHandlers";
 import DraggableEmoji from "@/components/gallery/DraggableEmojis";
@@ -22,6 +22,17 @@ export default function App({
 
     const {active, action} = backTouch();
 
+    const emojiOpacity = useRef(new Animated.Value(0)).current;
+
+    useEffect(() => {
+        Animated.timing(emojiOpacity, {
+            toValue: active ? 1 : 0,
+            duration: 500,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+        }).start();
+    }, [active]);
+
     useEffect(() => {
         setIsLoading(true);
     }, [images]);
@@ -36,10 +47,33 @@ export default function App({
         }
     };
 
+    useEffect(() => {
+        Animated.timing(emojiOpacity, {
+            toValue: active ? 1 : 0,
+            duration: 1000,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+        }).start();
+    }, [active]);
+
+
     return (
         <View style={{flex: 1, zIndex: 100}}>
 
-            {active ? <DraggableEmoji/> : children}
+            <Animated.View
+                style={{
+                    opacity: emojiOpacity,
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    zIndex: 200,
+                }}
+            >
+                {active && <DraggableEmoji />}
+            </Animated.View>
+
 
             {isLoading && (
                 <LoadingScreen isVisible={isLoading} text={"Loading Images..."} />
