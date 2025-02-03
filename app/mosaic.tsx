@@ -76,7 +76,6 @@ export default function Mosaic({user, mosaicId}: Props) {
     };
 
     const pickImageAsync = async () => {
-        await ImagePicker.requestMediaLibraryPermissionsAsync();
         let result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ['images'],
             allowsMultipleSelection: true,
@@ -102,6 +101,8 @@ export default function Mosaic({user, mosaicId}: Props) {
             setImagesToUpload(images);
 
             setConfirmVisible(true);
+        } else {
+            console.log("bobo")
         }
     };
 

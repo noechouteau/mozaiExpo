@@ -4,6 +4,7 @@ import {Text, View, ActivityIndicator} from 'react-native';
 import SceneManager from "@/components/gallery/SceneManager";
 import useInteractionHandlers from "@/components/gallery/useInteractionHandlers";
 import DraggableEmoji from "@/components/gallery/DraggableEmojis";
+import LoadingScreen from './LoadingScreen';
 
 export default function App({
                                 images,
@@ -41,11 +42,7 @@ export default function App({
             {active ? <DraggableEmoji/> : children}
 
             {isLoading && (
-                // TODO: NOE LOADING
-                <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="large" color="#ffffff" />
-                    <Text style={styles.loadingText}>Loading images...</Text>
-                </View>
+                <LoadingScreen isVisible={isLoading} text={"Loading Images..."} />
             )}
 
             <GLView

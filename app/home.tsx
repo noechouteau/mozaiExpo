@@ -64,7 +64,7 @@ export default function Home() {
     async function onAuthStateChanged(newUserAuth: any) {
 
         const mustLoad = await AsyncStorage.getItem("mustLoad");
-        if(mustLoad){
+        if(mustLoad == "true"){
           setLoadingVisible(true);
           setTimeout(async() => {
             setLoadingVisible(false);
@@ -93,7 +93,6 @@ export default function Home() {
 
     useEffect(() => {
       onAuthStateChanged(authInfos);
-
     }, []);
 
     useEffect(() => {
