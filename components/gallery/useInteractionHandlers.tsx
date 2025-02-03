@@ -5,14 +5,14 @@ import {THREE} from "expo-three";
 import MeshClick from "@/components/gallery/MeshClick";
 import { Gyroscope } from 'expo-sensors';
 const {width, height} = Dimensions.get('window');
-const useInteractionHandlers = ([
-                                    isMeshActive, setIsMeshActive
-                                ]) => {
+const useInteractionHandlers = () => {
     const isTouching = useRef<boolean>(false);
     const isMoving = useRef<boolean>(false);
     const initialTouchDistance = useRef<number>(0);
     const initialCameraZ = useRef<number>(0);
     const mouse = useRef(new THREE.Vector2(-10, -10)).current;
+    const [isMeshActive, setIsMeshActive] = useState(false);
+
     const sizesPan = {
         minZoom: 5,
         maxZoom: 30,

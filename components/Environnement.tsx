@@ -1,89 +1,41 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React from 'react';
 import {GLView} from 'expo-gl';
-import {Text, View, ActivityIndicator, Animated, Easing} from 'react-native';
+import {Text, View} from 'react-native';
 import SceneManager from "@/components/gallery/SceneManager";
-import useInteractionHandlers from "@/components/gallery/useInteractionHandlers";
-import DraggableEmoji from "@/components/gallery/DraggableEmojis";
-import LoadingScreen from './LoadingScreen';
+import useInteractionHandlers from "@/components/gallery/useInteractionHandlers"
 
 export default function App({
-                                images,
-                                children
+                                images
                             }: {
-    images: string[],
-    children: React.ReactNode
+    images: string[]
 }) {
-    const [isMeshActive, setIsMeshActive] = useState<boolean>(false);
-    const [isLoading, setIsLoading] = useState<boolean>(true); // État de chargement
-
-    const {backTouch, handleTouchStart, handleTouchEnd, panHandlers, handleTouchMove} = useInteractionHandlers(
-        [isMeshActive, setIsMeshActive]
-    );
+    const {backTouch, handleTouchStart, handleTouchEnd, panHandlers, handleTouchMove} = useInteractionHandlers();
 
     const {active, action} = backTouch();
 
-    const emojiOpacity = useRef(new Animated.Value(0)).current;
-
-    useEffect(() => {
-        Animated.timing(emojiOpacity, {
-            toValue: active ? 1 : 0,
-            duration: 500,
-            easing: Easing.inOut(Easing.ease),
-            useNativeDriver: true,
-        }).start();
-    }, [active]);
-
-    useEffect(() => {
-        setIsLoading(true);
-    }, [images]);
-
-    const handleContextCreate = async (gl: WebGLRenderingContext) => {
-        try {
-            await SceneManager(gl, images);
-        } catch (error) {
-            console.error("Erreur lors du chargement de la scène :", error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        Animated.timing(emojiOpacity, {
-            toValue: active ? 1 : 0,
-            duration: 1000,
-            easing: Easing.inOut(Easing.ease),
-            useNativeDriver: true,
-        }).start();
-    }, [active]);
-
-
     return (
-        <View style={{flex: 1, zIndex: 100}}>
-
-            <Animated.View
-                style={{
-                    opacity: emojiOpacity,
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    zIndex: 200,
-                }}
+        <View style={{flex: 1,zIndex:100}}>
+            <View style={{
+                position: 'absolute',
+                bottom: "15%",
+                left: "50%",
+                transform: [{translateX: "-50%"}],
+                backgroundColor: 'white',
+                padding: 15,
+                paddingHorizontal: 75,
+                zIndex: 100,
+                borderRadius: 50,
+                opacity: active ? 1 : 0,
+            }}
+                  onTouchStart={action}
             >
-                {active && <DraggableEmoji />}
-            </Animated.View>
-
-
-            {isLoading && (
-                <LoadingScreen isVisible={isLoading} text={"Loading Images..."} />
-            )}
+                <Text>Back</Text>
+            </View>
 
             <GLView
                 {...panHandlers}
-                key={images.length}
                 style={{flex: 1}}
-                onContextCreate={handleContextCreate}
+                onContextCreate={(gl) => SceneManager(gl, images)}
                 onTouchStart={handleTouchStart}
                 onTouchEnd={handleTouchEnd}
                 onTouchMove={handleTouchMove}
@@ -91,23 +43,3 @@ export default function App({
         </View>
     );
 }
-
-const styles = {
-    loadingContainer: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        zIndex: 200,
-    },
-    loadingText: {
-        marginTop: 10,
-        color: '#fff',
-        fontSize: 18,
-        fontWeight: 'bold',
-    },
-};

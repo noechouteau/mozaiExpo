@@ -14,21 +14,7 @@ const cameraRef = {
 const raycaster = new THREE.Raycaster();
 const targetPosition = {current: {x: 0, y: 0, z: 0}};
 
-function loadImage(gl: WebGLRenderingContext) {
-    return new Promise<void>((resolve) => {
-        setTimeout(() => {
-            resolve();
-        }, 1000)
-    });
-}
-
-async function loadImagesInScene(gl: WebGLRenderingContext, images: string[]) {
-    await Promise.all(images.map((image) => loadImage(gl, image)));
-}
-
 const SceneManager = async (gl: ExpoWebGLRenderingContext, images: string[]) => {
-    await loadImagesInScene(gl, images);
-
     const {drawingBufferWidth: bufferWidth, drawingBufferHeight: bufferHeight} = gl;
 
     const renderer = new ExpoTHREE.Renderer({
