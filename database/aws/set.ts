@@ -7,12 +7,10 @@ const albumBucketName: any = process.env.EXPO_PUBLIC_BUCKET_NAME;
 // List the photo albums that exist in the bucket.
 
 export const uploadPicture = async (imageUri: any, key:string) => {
-        
+
     console.log(imageUri);
     const blob = await fetch(imageUri).then((response) => response.blob());
 
-
-    console.log("Blob", blob);
     const params = {
         Bucket: albumBucketName,
         Key: key, // The key name for the uploaded object (e.g., "folder/image.jpg")
@@ -20,15 +18,12 @@ export const uploadPicture = async (imageUri: any, key:string) => {
         ContentType: "image/png", // Ensure the browser knows it's an image
         CacheControl: "no-cache",
       } satisfies PutObjectRequest;
-    
+
       try {
         const result = await s3.upload(params).promise();
-        console.log("Image uploaded successfully:", result);
         return result;
       } catch (error) {
-        console.error("Error uploading image:", error);
         throw error;
       }
 }
 
-  

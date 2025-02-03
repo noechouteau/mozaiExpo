@@ -43,7 +43,7 @@ export default function RenameModal({ isVisible, onClose }: Props) {
         setBgColor("#F94D20");
     }
     }, [selectedTheme]);
-    
+
     const renameMosaic = async () => {
         const mosaique = await AsyncStorage.getItem("activeMosaic");
         console.log(mosaique, newName)
@@ -62,11 +62,10 @@ export default function RenameModal({ isVisible, onClose }: Props) {
                 name: newName,
             }).then(() => {
                 setErrorDisplayed(false);
-                console.log("Successfully renamed the mosaic - mosaic side");
                 onClose();
             })
         }
-    } 
+    }
 
   return (
      <Modal animationType="fade" transparent={true} visible={isVisible}>
@@ -84,7 +83,7 @@ export default function RenameModal({ isVisible, onClose }: Props) {
                           <CustomTextInput label="Rename your Mosaic" placeholder="New name" onChangeText={(text:any) => setNewName(text)} />
                           {errorDisplayed && <Text style={{color:"#EE4266"}}>{errorText}</Text>}
                           <LightButton title="Rename" onPress={renameMosaic} />
-    
+
                         </View>
                   </LinearGradient>
               </View>

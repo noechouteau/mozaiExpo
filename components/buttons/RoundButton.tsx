@@ -36,18 +36,16 @@ export default function RoundButton(props:any) {
     }));
 
     const handlePressIn = () => {
-      console.log("Pressed In");
       scaleAnim.value = withTiming(0.8, { duration: 100 }); // Scale down
     };
 
     const handlePressOut = () => {
-      console.log("Pressed Out");
       scaleAnim.value = withTiming(1, { duration: 100 }); // Scale back to normal
       if(props.onPress)
       props.onPress();
     };
 
-      
+
 
 
     return (
@@ -56,7 +54,7 @@ export default function RoundButton(props:any) {
             onPressIn={handlePressIn}
             onPressOut={handlePressOut}
             style={({ pressed }) => [
-                { 
+                {
                 borderRadius: 50,
                  },
             ]}
@@ -83,6 +81,7 @@ export default function RoundButton(props:any) {
 
 const styles = StyleSheet.create({
     roundButton: {
+        position: "relative",
         backgroundColor:"#0e0e7e",
         borderRadius: 50,
         borderWidth: 1,
@@ -97,5 +96,6 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         textAlign: "center",
         bottom: 0,
+        zIndex: 1,
     },
 });

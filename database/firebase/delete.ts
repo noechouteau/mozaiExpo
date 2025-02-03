@@ -10,6 +10,5 @@ export const deleteDbDoc = async ({
 }) => {
   const docRef = doc(db, collection, docId);
   await deleteDoc(docRef);
-  console.log("Document successfully deleted!");
   return "Document successfully deleted!";
 };

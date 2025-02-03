@@ -86,7 +86,7 @@ class MeshClick {
             duration: 2,
             delay: 2,
             ease: "expo.inOut",
-            onLeave: () => {
+            onComplete: () => {
                 this.onStateChange(this.isActive);
             }
         })

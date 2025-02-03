@@ -16,14 +16,12 @@ export const updateDoc = async ({
 }: SetDoc) => {
   if (!docId) {
     const docRef = await addDoc(collection(db, collectionId), newDatas);
-    console.log("Document written with ID: ", docRef.id);
     callback && callback(docRef.id);
     return docRef.id;
   } else {
     const docRef = doc(db, collectionId, docId);
     await setDoc(docRef, newDatas, { merge: true })
       .then(() => {
-        console.log("Document successfully updated!");
         callback && callback(docRef.id);
       })
       .catch((err) => console.log(err));
