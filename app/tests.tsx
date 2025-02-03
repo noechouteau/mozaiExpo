@@ -12,9 +12,7 @@ import createUser from '@/controllers/Users';
 export default function Tests() {
 
   const getMosaic = async () => {
-    console.log("getMosaic");
     await getDbDoc({ collectionId: "mosaiques", docId:"0"  }).then(async (mosaic) => {
-      console.log("ahh")
       if(mosaic){
         await getDbDoc({ collectionId: "users", docId: mosaic.users[0].id }).then((user) => {
           console.log(user)
@@ -27,10 +25,6 @@ export default function Tests() {
 
       const key = "image.jpg";
       const result = await uploadPicture(localUri, "noePuto/"+"pdp-"+key);
-      // await createUser("noePuto", result.Location).then(() => {
-      //   console.log("User created");
-      // })
-      console.log("Upload successful:", result);
     } catch (error) {
       console.error("Failed to upload image:", error);
     }
@@ -44,6 +38,6 @@ export default function Tests() {
   </View>
     // <WebView
     //   source={{ uri: 'https://mozai-gallery.vercel.app/' }}
-    // /> 
+    // />
   );
 }

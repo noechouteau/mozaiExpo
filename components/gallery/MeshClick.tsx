@@ -21,7 +21,6 @@ class MeshClick {
     }
 
     setPlaneClicked(plane: THREE.Mesh | null) {
-        console.log("setPlaneClicked called with:", plane);
         if (plane) {
             this.planeClicked = plane;
             this.enter();

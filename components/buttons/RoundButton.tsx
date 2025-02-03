@@ -36,24 +36,22 @@ export default function RoundButton(props:any) {
     }));
 
     const handlePressIn = () => {
-      console.log("Pressed In");
       scaleAnim.value = withTiming(0.8, { duration: 100 }); // Scale down
     };
 
     const handlePressOut = () => {
-      console.log("Pressed Out");
       scaleAnim.value = withTiming(1, { duration: 100 }); // Scale back to normal
       props.onPress();
     };
 
-      
+
 
 
     return (
         <Pressable
             onPress={props.onPress}
             style={({ pressed }) => [
-                { 
+                {
                 borderRadius: 50,
                  },
             ]}
@@ -70,7 +68,7 @@ export default function RoundButton(props:any) {
                 props.children
                 :
                 <Ionicons name={props.icon? props.icon :"add"} size={props.size? props.size :45} color="white" style={{width:props.size?props.size:45,height: props.size?props.size:45}} />
-                }     
+                }
             </View>
             </LinearGradient>
         </Animated.View>

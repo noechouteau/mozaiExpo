@@ -8,9 +8,7 @@ export default async function createUser(name: string, picture: string) {
         mosaiques: []
     }
 
-    await updateDoc({newDatas: user, collectionId: "users", callback: (id) => {
-        console.log("User created with id: ", id);
-    }
+    await updateDoc({newDatas: user, collectionId: "users"
     });
 
 }

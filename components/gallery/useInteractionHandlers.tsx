@@ -144,8 +144,8 @@ const useInteractionHandlers = () => {
                 const deltaY = locationY - height / 2;
 
                 const sensitivity = 0.0005;
-                meshClick.planeClicked.rotation.y += deltaX * sensitivity;
-                meshClick.planeClicked.rotation.x += deltaY * sensitivity;
+                // meshClick.planeClicked.rotation.y += deltaX * sensitivity;
+                // meshClick.planeClicked.rotation.x += deltaY * sensitivity;
             }
         } else {
             if (touches.length === 1) {

@@ -44,7 +44,7 @@ export default function JoinModal({ isVisible, onClose, user }: Props) {
         setBgColor("#F94D20");
     }
     }, [selectedTheme]);
-    
+
     const joinMosaic = async () => {
         if(mosaicId.length < 1) {
             setErrorText("Please enter a code!");
@@ -57,7 +57,6 @@ export default function JoinModal({ isVisible, onClose, user }: Props) {
         const mosaic = await firestore().collection("mosaiques").doc(mosaicId).get().then((doc) => doc.data());
 
         if(!mosaic) {
-            console.log("AHHHHHHHHHHHHHHHH")
             setErrorText("This mosaic does not exist!");
             setErrorDisplayed(true);
         } else if (user && mosaic.users.some((userObj:any) => userObj.id === user.uid)) {
@@ -70,7 +69,6 @@ export default function JoinModal({ isVisible, onClose, user }: Props) {
             await updateMosaic(mosaicId, {
                 users: [...mosaic.users, newUser],
             }).then(() => {
-                console.log("Successfully joined the mosaic - mosaic side");
                 router.replace("/mosaic");
                 AsyncStorage.setItem("activeMosaic", mosaicId);
                 onClose();
@@ -81,7 +79,7 @@ export default function JoinModal({ isVisible, onClose, user }: Props) {
             router.replace("/mosaic");
             onClose();
         }
-    } 
+    }
 
   return (
      <Modal animationType="fade" transparent={true} visible={isVisible}>
@@ -99,7 +97,7 @@ export default function JoinModal({ isVisible, onClose, user }: Props) {
                           <CustomTextInput label="Mosaic code" placeholder="XXXXXX" onChangeText={(text:any) => setMosaicId(text.toLowerCase())} />
                           {errorDisplayed && <Text style={{color:"#7C061E"}}>{errorText}</Text>}
                           <LightButton title="Join" onPress={joinMosaic} />
-    
+
                         </View>
                   </LinearGradient>
               </View>

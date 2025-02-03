@@ -15,13 +15,14 @@ import {uploadPicture} from '@/database/aws/set';
 import {updateDoc} from '@/database/firebase/set';
 import {Timestamp} from 'firebase/firestore';
 import Environnement from '@/components/Environnement';
-import { useMosaic } from '@/context/MosaicContext';
+import {useMosaic} from '@/context/MosaicContext';
 import firestore from '@react-native-firebase/firestore';
-import { useUser } from '@/context/UsersContext';
+import {useUser} from '@/context/UsersContext';
 import RoundButton from '@/components/buttons/RoundButton';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MozaiInfosModal from '@/components/MozaiInfosModal';
 import Animated from 'react-native-reanimated';
+import useInteractionHandlers from "@/components/gallery/useInteractionHandlers";
 
 type Props = PropsWithChildren<{
     user: any;
@@ -41,9 +42,10 @@ export default function Mosaic({user, mosaicId}: Props) {
         'SFPRO': require('../assets/fonts/SFPRODISPLAYMEDIUM.otf'),
         "SFPROBOLD": require('../assets/fonts/SFPRODISPLAYBOLD.otf'),
     });
-    const { mosaics, updateMosaic } = useMosaic();
-    const { authInfos, userData, updateUserData } = useUser();
+    const {mosaics, updateMosaic} = useMosaic();
+    const {authInfos, userData, updateUserData} = useUser();
     const [topZindex, setTopZindex] = useState<number>(130);
+
 
     useEffect(() => {
         const fetchData = async () => {
@@ -59,9 +61,7 @@ export default function Mosaic({user, mosaicId}: Props) {
                     if (mosaic.length > 0) {
                         setActiveMosaic(mosaic[0]);
                     }
-                }
-                else if(!user && tempActiveMosaic) {
-                    console.log("ah")
+                } else if (!user && tempActiveMosaic) {
                     const mosaic = await firestore().collection("mosaiques").doc(tempActiveMosaic).get().then((doc) => doc.data())
 
                     if (mosaic) {
@@ -125,8 +125,6 @@ export default function Mosaic({user, mosaicId}: Props) {
 
             await updateMosaic(activeMosaic.id, {
                 images: [...activeMosaic.images, ...newImages],
-            }).then(() => {
-                console.log("Successfully uploaded images");
             });
 
             // await updateDoc({
@@ -142,38 +140,57 @@ export default function Mosaic({user, mosaicId}: Props) {
 
     }
 
+    const {backTouch} = useInteractionHandlers();
+
+    const {active, action} = backTouch();
+
     return (<View style={styles.container}>
 
-            <View style={[styles.topBar,{zIndex:topZindex}]}>
+            <View style={[styles.topBar, {zIndex: topZindex}]}>
                 <RoundButton
-                        onPress={() => userData ? router.replace("/home") : router.replace("/animation")}
-                        title="Home" icon="home" size={25} />
+                    onPress={() => userData ? router.replace("/home") : router.replace("/animation")}
+                    title="Home" icon="home" size={25}/>
             </View>
 
             <View>
                 <ConfirmModal isVisible={isConfirmVisible}
-                text={`Do you want to add ${assetsNumber} images to the mosaic ?`}
-                onClose={(confirmation) => (confirmUpload(confirmation))} user={user}/>
+                              text={`Do you want to add ${assetsNumber} images to the mosaic ?`}
+                              onClose={(confirmation) => (confirmUpload(confirmation))} user={user}/>
             </View>
 
             {activeMosaic?.id &&
-            <View>
-                 <MozaiInfosModal mosaicId={activeMosaic.id} isVisible={isMozaiInfosVisible} onClose={() => {setTopZindex(130); setMozaiInfosVisible(false)}} users={activeMosaic.users}>
-                </MozaiInfosModal>
-             </View>
+                <View>
+                    <MozaiInfosModal mosaicId={activeMosaic.id} isVisible={isMozaiInfosVisible} onClose={() => {
+                        setTopZindex(130);
+                        setMozaiInfosVisible(false)
+                    }} users={activeMosaic.users}>
+                    </MozaiInfosModal>
+                </View>
             }
 
-            <Animated.View style={[styles.smoothCover, isMozaiInfosVisible?{opacity:1}:{opacity:0}]}></Animated.View>
+            <Animated.View
+                style={[styles.smoothCover, isMozaiInfosVisible ? {opacity: 1} : {opacity: 0}]}></Animated.View>
 
             {activeMosaic?.images
-                
+
                 ? <Environnement images={activeMosaic.images}/>
                 : <Text>loading</Text>
             }
 
-            <View style={{position: 'absolute', zIndex:125, top: 45, display: 'flex', flexDirection: 'row', justifyContent: 'center', width: '100%'}}>
-                {activeMosaic && 
-                    <RoundButton style={{zIndex:20,width:"unset", padding:20}} onPress={() => { setTopZindex(110);setMozaiInfosVisible(true)}} >
+            <View style={{
+                position: 'absolute',
+                zIndex: 125,
+                top: 45,
+                display: 'flex',
+                flexDirection: 'row',
+                justifyContent: 'center',
+                width: '100%'
+            }}>
+                {activeMosaic &&
+                    <RoundButton style={{zIndex: 20, width: "unset", padding: 20}} onPress={() => {
+                        setTopZindex(110);
+                        setMozaiInfosVisible(true)
+                    }}>
                         <View style={{display: 'flex', flexDirection: 'row', gap: 8, alignItems: 'center'}}>
                             <Ionicons name="chevron-down" size={25} color="white" style={{width: 25, height: 25}}/>
                             <Text style={styles.text}>{activeMosaic.name}</Text>
@@ -183,12 +200,12 @@ export default function Mosaic({user, mosaicId}: Props) {
             </View>
 
 
-            <View style={styles.buttons}>
-                {userData && <RoundButton onPress={pickImageAsync} style={{width:180,height:50}}>
-                                <Text style={styles.text}>Add</Text>
-                            </RoundButton>
-                    }
-            </View>
+            {userData && !active &&
+                <View style={styles.buttons}><RoundButton onPress={pickImageAsync} style={{width: 180, height: 50}}>
+                    <Text style={styles.text}>Add</Text>
+                </RoundButton></View>
+            }
+
 
         </View>
     );
@@ -199,7 +216,7 @@ const styles = StyleSheet.create({
         position: 'relative',
         flex: 1,
     },
-    smoothCover:{
+    smoothCover: {
         position: 'absolute',
         zIndex: 120,
         width: '100%',
@@ -225,12 +242,12 @@ const styles = StyleSheet.create({
         padding: 15,
         paddingTop: 45,
         position: 'absolute',
-        top: 0,        
+        top: 0,
     },
     text: {
         color: '#fff',
         // fontWeight: 'bold',
         fontFamily: 'SFPROBOLD',
         textAlign: 'center',
-      },
+    },
 });

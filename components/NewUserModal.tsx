@@ -37,7 +37,6 @@ export default function NewUserModal({ isVisible, onClose }: Props) {
             const loggedInUser = await AsyncStorage.getItem("loggedIn");
             if(loggedInUser == "true") return
             changeTheme("greenTheme");
-            console.log("ah")
         }
         setGreenTheme();
     }, [])
@@ -48,7 +47,7 @@ export default function NewUserModal({ isVisible, onClose }: Props) {
             allowsEditing: true,
             quality: 1,
         });
-    
+
         if (!result.canceled) {
             console.log(result.assets[0].uri);
             let image = await Asset.loadAsync(result.assets[0].uri);
@@ -68,7 +67,6 @@ export default function NewUserModal({ isVisible, onClose }: Props) {
 
         if(!activeUser || !phone) return
 
-        console.log("ahah")
         const [{ localUri }] = await Asset.loadAsync(selectedImage)
 
         await uploadPicture(localUri, activeUser+"/"+activeUser+"-profile-pic").then(async (res) => {
@@ -82,11 +80,10 @@ export default function NewUserModal({ isVisible, onClose }: Props) {
                 mosaiques: []
             }
             await createUser(newUser).then(() => {
-                console.log("User created");
                 onClose();
             })
         })
-        
+
     }
 
   return (
