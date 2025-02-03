@@ -2,44 +2,31 @@ import React from 'react';
 import {GLView} from 'expo-gl';
 import {Text, View} from 'react-native';
 import SceneManager from "@/components/gallery/SceneManager";
-import useInteractionHandlers from "@/components/gallery/useInteractionHandlers"
+import useInteractionHandlers from "@/components/gallery/useInteractionHandlers";
+import {GestureHandlerRootView, PinchGestureHandler} from "react-native-gesture-handler";
+import DraggableEmojis from "@/components/gallery/DraggableEmojis";
 
-export default function App({
-                                images
-                            }: {
-    images: string[]
-}) {
-    const {backTouch, handleTouchStart, handleTouchEnd, panHandlers, handleTouchMove} = useInteractionHandlers();
-
-    const {active, action} = backTouch();
+export default function App({images}: { images: string[] }) {
+    const { isMeshActive, panHandlers, onPinchGestureEvent, onPinchHandlerStateChange } = useInteractionHandlers();
 
     return (
-        <View style={{flex: 1,zIndex:100}}>
-            <View style={{
-                position: 'absolute',
-                bottom: "15%",
-                left: "50%",
-                transform: [{translateX: "-50%"}],
-                backgroundColor: 'white',
-                padding: 15,
-                paddingHorizontal: 75,
-                zIndex: 100,
-                borderRadius: 50,
-                opacity: active ? 1 : 0,
-            }}
-                  onTouchStart={action}
-            >
-                <Text>Back</Text>
-            </View>
+        <View style={{flex: 1, zIndex: 100}}>
 
-            <GLView
-                {...panHandlers}
-                style={{flex: 1}}
-                onContextCreate={(gl) => SceneManager(gl, images)}
-                onTouchStart={handleTouchStart}
-                onTouchEnd={handleTouchEnd}
-                onTouchMove={handleTouchMove}
-            />
+            {isMeshActive ? <DraggableEmojis /> : null}
+
+
+            <GestureHandlerRootView style={{flex: 1}}>
+                <PinchGestureHandler
+                    onGestureEvent={onPinchGestureEvent}
+                    onHandlerStateChange={onPinchHandlerStateChange}
+                >
+                    <GLView
+                        {...panHandlers}
+                        style={{flex: 1}}
+                        onContextCreate={(gl) => SceneManager(gl, images)}
+                    />
+                </PinchGestureHandler>
+            </GestureHandlerRootView>
         </View>
     );
 }
