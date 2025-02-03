@@ -108,12 +108,6 @@ const DraggableEmojis = () => {
                         onDrop={handleDrop}
                     />
                 ))}
-                {/*<TouchableOpacity*/}
-                {/*    onPress={() => setModalVisible(true)}*/}
-                {/*    style={styles.addButton}*/}
-                {/*>*/}
-                {/*    <Text style={styles.addButtonText}>+</Text>*/}
-                {/*</TouchableOpacity>*/}
             </View>
             <Modal visible={modalVisible} transparent animationType="slide">
                 <View style={styles.modalContainer}>
@@ -161,10 +155,10 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-start',
     },
     emojiContainer: {
-        padding: 2,
+        padding: 0,
     },
     emojiText: {
-        fontSize: 48,
+        fontSize: 56,
     },
     addButton: {
         marginLeft: 10,

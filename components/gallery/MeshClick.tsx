@@ -21,7 +21,6 @@ class MeshClick {
     }
 
     setPlaneClicked(plane: THREE.Mesh | null) {
-        console.log("setPlaneClicked called with:", plane);
         if (plane) {
             this.planeClicked = plane;
             this.enter();
@@ -31,6 +30,8 @@ class MeshClick {
     enter() {
         this.isActive = true;
         if(this.planeClicked === null) return;
+
+        this.onStateChange(this.isActive);
 
         planes.forEach((plane) => {
             this.storedPositionPlanes[plane.uuid] = {
@@ -51,7 +52,6 @@ class MeshClick {
                     duration: 2,
                     ease: "expo.inOut",
                 });
-
             } else {
                 gsap.to(plane.position, {
                     z: 0,
@@ -70,7 +70,6 @@ class MeshClick {
             ease: "expo.inOut",
         })
 
-        // Ici car targetPosition n'a pas de z
         if (cameraRef.current) {
             gsap.to(cameraRef.current.position, {
                 z: 4,
@@ -86,9 +85,6 @@ class MeshClick {
             duration: 2,
             delay: 2,
             ease: "expo.inOut",
-            onComplete: () => {
-                this.onStateChange(this.isActive);
-            }
         })
     }
 
