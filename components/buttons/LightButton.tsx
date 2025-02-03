@@ -80,19 +80,19 @@ export default function LightButton(props:any) {
 
 const styles = StyleSheet.create({
     loginButton: {
-        borderRadius: 12,
+        borderRadius: 14,
         fontSize: 16,
-        borderColor: "#b3b3b3ff",
+        borderColor: "#868686",
         borderWidth: 1,
-        padding: 10,
+        padding: 13,
         transitionDuration: "0.4s",
         transitionProperty: "backgroundColor",
-        width: screenWidth / 1.35,
+        width: screenWidth / 1.38,
         textAlign: "center",
       },
     buttonText: {
         textAlign: "center",
-        fontFamily: "SFPRO",
+        fontFamily: "Monrope",
         fontSize: 16,
         color: "#ffffff",
       },
