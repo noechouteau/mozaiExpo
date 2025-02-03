@@ -34,10 +34,11 @@ export default function NewUserModal({ isVisible, onClose }: Props) {
 
     useEffect(() => {
         async function setGreenTheme() {
+            const loggedInUser = await AsyncStorage.getItem("loggedIn");
+            if(loggedInUser == "true") return
             changeTheme("greenTheme");
             console.log("ah")
         }
-
         setGreenTheme();
     }, [])
 

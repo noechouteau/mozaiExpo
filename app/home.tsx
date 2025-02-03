@@ -65,10 +65,13 @@ export default function Home() {
         if(loggedIn == "false"|| loggedIn == null) {
           await AsyncStorage.setItem("loggedIn", "true");
         }
-        if (initializing) setInitializing(false);
+        if (initializing) {setInitializing(false)};
 
         if(authInfos && !userData) {
+          console.log("rirh");
           setNewUserModalVisible(true);
+        } else {
+          setNewUserModalVisible(false);
         }
     }
 
