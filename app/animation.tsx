@@ -97,7 +97,6 @@ export default function Animation({onClose}: Props) {
       gradientStartX.value = withTiming(0.5 + x * attenuationFactor, { duration: 500 });
       gradientEndY.value = withTiming(0.5 + y * attenuationFactor, { duration: 500 });
     });
-  
     return () => {
       subscribe?.remove();
     };
@@ -105,6 +104,7 @@ export default function Animation({onClose}: Props) {
 
   async function signInWithPhoneNumber(phoneNumber: any) {
     try {
+      console.log(userData,"userdataa")
       const confirmation = await auth().signInWithPhoneNumber(phoneNumber);
       setConfirm(confirmation);
     } catch (error) {
@@ -115,8 +115,9 @@ export default function Animation({onClose}: Props) {
 
   async function confirmCode() {
     console.log("Confirmation code entered:", code);
+    await AsyncStorage.setItem("mustLoad", "true");
     try {
-      // console.log(userData);
+      console.log(authInfos);
       await AsyncStorage.setItem("activePhone", phoneNumber);
       if (authInfos) {
         await AsyncStorage.setItem("activeUser", authInfos.uid);

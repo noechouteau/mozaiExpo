@@ -42,28 +42,39 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   }, []);
 
   useEffect(() => {
+    console.log(authInfos);
+    console.log("AAuthInfos modified");
     if (authInfos) {
 
-      if(authInfos.uid == "1qcL9cle0mXLbPfWHQtCAVCdww63"){
+      const fetchUserData = async () => {
+        if (authInfos.uid === "1qcL9cle0mXLbPfWHQtCAVCdww63") {
+          const unsubscribeFirestore = firestore()
+            .collection('users')
+            .doc("0")
+            .onSnapshot((docSnapshot) => {
+              setUserData(docSnapshot.exists ? docSnapshot.data() as User : null);
+            });
+
+          return () => unsubscribeFirestore(); // Clean up Firestore listener
+        }
+
+        const existingUser = await firestore().collection('users').doc(authInfos.uid).get();
+        console.log(existingUser.data());
+        if(!existingUser.data()) {
+          return null;
+        }
+
         const unsubscribeFirestore = firestore()
-        .collection('users')
-        .doc("0")
-        .onSnapshot((docSnapshot) => {
-          setUserData(docSnapshot.exists ? docSnapshot.data() as User : null);
-        });
+          .collection('users')
+          .doc(authInfos.uid)
+          .onSnapshot((docSnapshot) => {
+            setUserData(docSnapshot.exists ? docSnapshot.data() as User : null);
+          });
 
-      return () => unsubscribeFirestore(); // Clean up Firestore listener
-      }
+        return () => unsubscribeFirestore(); // Clean up Firestore listener
+      };
 
-      const unsubscribeFirestore = firestore()
-        .collection('users')
-        .doc(authInfos.uid)
-        .onSnapshot((docSnapshot) => {
-          setUserData(docSnapshot.exists ? docSnapshot.data() as User : null);
-        });
-
-      return () => unsubscribeFirestore(); // Clean up Firestore listener
-
+      fetchUserData();
     }
   }, [authInfos]);
 
@@ -79,6 +90,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
       await auth().signOut(); // Sign out from Firebase
       setUser(null); // Clear the user state
       setUserData(null); // Clear the user data
+      console.log("finished")
     } catch (error) {
       console.error('Error during logout:', error);
     }
@@ -120,7 +132,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     setSelectedTheme(theme);
   }
 
-  const contextValue = useMemo(() => ({ authInfos, userData,selectedTheme, logout,createUser,updateUserData, changeTheme }), [authInfos, userData,selectedTheme]);
+  const contextValue = useMemo(() => ({ authInfos, userData,selectedTheme,logout,createUser,updateUserData, changeTheme }), [authInfos, userData,selectedTheme]);
 
   return (
     <UserContext.Provider value={contextValue}>

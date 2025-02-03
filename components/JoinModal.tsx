@@ -66,7 +66,7 @@ export default function JoinModal({ isVisible, onClose, user }: Props) {
         } else if (user && user != "guest"){
             console.log(user)
             setErrorDisplayed(false);
-            const newUser = {id:user.uid, picture:user.picture}
+            const newUser = {id:user.uid, picture:`${user.picture}?t=${Date.now()}`}
             await updateMosaic(mosaicId, {
                 users: [...mosaic.users, newUser],
             }).then(() => {

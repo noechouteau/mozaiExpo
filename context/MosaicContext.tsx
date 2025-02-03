@@ -7,6 +7,7 @@ interface MosaicContextType {
   mosaics: Mosaique[] | null; 
   updateMosaic: (mosaicId: string, updatedFields: Partial<Mosaique>) => Promise<void>;
   createMosaic: (newMosaic: Mosaique, customDocId: string) => Promise<void>;
+  deleteMosaic: (mosaicId: string) => Promise<void>;
 }
 
 const MosaicContext = createContext<MosaicContextType | undefined>(undefined);
@@ -21,23 +22,25 @@ export const MosaicProvider: React.FC<MosaicProviderProps> = ({ children }) => {
 
   const fetchMosaics = async () => {
     if (!userData?.uid) return;
-
+  
     try {
-      const mosaicsSnapshot = await firestore()
-        .collection('mosaiques')
-        .where('users', 'array-contains', { id: userData.uid, picture: userData.picture })
-        .get();
-
-      const mosaicsData: Mosaique[] = mosaicsSnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Mosaique[];
-
+      const mosaicsSnapshot = await firestore().collection('mosaiques').get();
+  
+      const mosaicsData: any[] = mosaicsSnapshot.docs
+        .map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }))
+        .filter((mosaique:any) =>
+          mosaique.users.some((user:any) => user.id === userData.uid) // Manually filter
+        );
+  
       setMosaics(mosaicsData);
     } catch (error) {
       console.error('Error fetching mosaics:', error);
     }
   };
+  
 
   useEffect(() => {
 
@@ -45,6 +48,7 @@ export const MosaicProvider: React.FC<MosaicProviderProps> = ({ children }) => {
   }, [userData]);
 
   useEffect(() => {
+    console.log(mosaics)
   }, [mosaics]);
 
   const updateMosaic = async (mosaicId: string, updatedFields: Partial<Mosaique>): Promise<void> => {
@@ -76,7 +80,18 @@ export const MosaicProvider: React.FC<MosaicProviderProps> = ({ children }) => {
     }
   };
 
-  const contextValue = useMemo(() => ({ mosaics, updateMosaic, createMosaic }), [mosaics]);
+  const deleteMosaic = async (mosaicId: string): Promise<void> => {
+    try {
+      await firestore().collection('mosaiques').doc(mosaicId).delete();
+      setMosaics((prevMosaics) =>
+        prevMosaics ? prevMosaics.filter((mosaic) => mosaic.id !== mosaicId) : null
+      );
+    } catch (error) {
+      console.error(`Error deleting mosaic with ID ${mosaicId}:`, error);
+    }
+  }
+
+  const contextValue = useMemo(() => ({ mosaics, updateMosaic, createMosaic,deleteMosaic }), [mosaics]);
 
   return (
     <MosaicContext.Provider value={contextValue}>

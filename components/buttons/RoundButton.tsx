@@ -43,6 +43,7 @@ export default function RoundButton(props:any) {
     const handlePressOut = () => {
       console.log("Pressed Out");
       scaleAnim.value = withTiming(1, { duration: 100 }); // Scale back to normal
+      if(props.onPress)
       props.onPress();
     };
 
@@ -52,6 +53,8 @@ export default function RoundButton(props:any) {
     return (
         <Pressable
             onPress={props.onPress}
+            onPressIn={handlePressIn}
+            onPressOut={handlePressOut}
             style={({ pressed }) => [
                 { 
                 borderRadius: 50,
@@ -65,13 +68,13 @@ export default function RoundButton(props:any) {
             start={gradientStart}
             end={gradientEnd}
             >
-            <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+            <Animated.View style={[animatedStyle,{ flex: 1, justifyContent: "center", alignItems: "center" }]}>
                 { props.children?
                 props.children
                 :
                 <Ionicons name={props.icon? props.icon :"add"} size={props.size? props.size :45} color="white" style={{width:props.size?props.size:45,height: props.size?props.size:45}} />
                 }     
-            </View>
+            </Animated.View>
             </LinearGradient>
         </Animated.View>
         </Pressable>

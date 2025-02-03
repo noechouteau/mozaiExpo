@@ -1,7 +1,7 @@
 import { StyleSheet, View, Text, Button, TextInput, Pressable, Image, ImageBackground, Dimensions, ScrollView } from 'react-native';
 import { Link, router } from 'expo-router';
 import { getAuth } from "firebase/auth";
-import { useFonts } from 'expo-font';
+import { isLoading, useFonts } from 'expo-font';
 import Animated from 'react-native-reanimated';
 import auth from '@react-native-firebase/auth';
 import React, { Suspense, useEffect, useState } from 'react';
@@ -27,19 +27,21 @@ import GesturePan from '@/components/GesturePan';
 import { useUser } from '@/context/UsersContext';
 import { useMosaic } from '@/context/MosaicContext';
 import RenameModal from '@/components/RenameModal';
+import LoadingScreen from '@/components/LoadingScreen';
 
 const {width: screenWidth, height: screenHeight} = Dimensions.get('window');
 
 export default function Home() {
     const [initializing, setInitializing] = useState(true);
     const { authInfos, userData, updateUserData } = useUser();
-    const { mosaics, updateMosaic } = useMosaic();
+    const { mosaics, updateMosaic,deleteMosaic } = useMosaic();
 
   
     const [loaded, error] = useFonts({
         'SFPRO': require('../assets/fonts/SFPRODISPLAYMEDIUM.otf'),
         "SFPROBOLD": require('../assets/fonts/SFPRODISPLAYBOLD.otf'),
     });
+    const [loadingVisible, setLoadingVisible] = useState<boolean>(false);
     const [isCreateModalVisible, setCreateModalVisible] = useState<boolean>(false);
     const [isJoinModalVisible, setJoinModalVisible] = useState<boolean>(false);
     const [isConfirmDeleteModalVisible, setConfirmDeleteModalVisible] = useState<boolean>(false);
@@ -60,28 +62,49 @@ export default function Home() {
 
     // Handle user state changes
     async function onAuthStateChanged(newUserAuth: any) {
+
+        const mustLoad = await AsyncStorage.getItem("mustLoad");
+        if(mustLoad){
+          setLoadingVisible(true);
+          setTimeout(async() => {
+            setLoadingVisible(false);
+            await AsyncStorage.setItem("mustLoad", "false");
+          }, 1000);
+        }
         
+        console.log("salut")
+        console.log(newUserAuth)
         const loggedIn = await AsyncStorage.getItem("loggedIn");
         if(loggedIn == "false"|| loggedIn == null) {
           await AsyncStorage.setItem("loggedIn", "true");
         }
         if (initializing) {setInitializing(false)};
 
-        if(authInfos && !userData) {
+        console.log("hellowBrow")
+        if(newUserAuth && !userData) {
           console.log("rirh");
+          await AsyncStorage.setItem("activeUser", newUserAuth.uid);
           setNewUserModalVisible(true);
         } else {
+          console.log(userData,newUserAuth)
           setNewUserModalVisible(false);
         }
     }
 
     useEffect(() => {
       onAuthStateChanged(authInfos);
+
     }, []);
+
+    useEffect(() => {
+      onAuthStateChanged(authInfos);
+    }, [authInfos]);
+
 
 
     useEffect(() => {
       if (userData) {
+        console.log(userData)
         console.log('Snapshot updated:', userData);
         console.log(userData.picture);
         console.log("ARGHHHHH", mosaics)
@@ -105,8 +128,14 @@ export default function Home() {
         if(completeMosToDel) {
             await updateMosaic(mosaiqueToDelete, {
             users: completeMosToDel.users.filter((user: any) => user.id !== userData.uid)
-            }).then(() => {
+            }).then(async() => {
             console.log("Mosaic quitted");
+            console.log(completeMosToDel.users.length);
+            if(completeMosToDel.users.length == 1){
+                await deleteMosaic(mosaiqueToDelete).then(() => {
+                console.log("Mosaic deleted");
+                });
+            }
             });
         }
         // await deleteDbDoc({ collection: "mosaiques", docId: mosaiqueToDelete }).then(async () => {
@@ -126,13 +155,14 @@ export default function Home() {
     }
 
 
-    return (
-    <HoldMenuProvider theme='dark' safeAreaInsets={{
-      top: 0,
-      right: 0,
-      bottom: 0,
-      left: 0
-    }}>
+    return (<>
+        <LoadingScreen text={"Fetching data..."} isVisible={loadingVisible}></LoadingScreen>
+        <HoldMenuProvider theme='dark' safeAreaInsets={{
+          top: 0,
+          right: 0,
+          bottom: 0,
+          left: 0
+        }}>
         <View><NewUserModal isVisible={isNewUserModalVisible} onClose={async() => {
             console.log("aaa")
             setNewUserModalVisible(false)
@@ -175,13 +205,14 @@ export default function Home() {
 
               <TextInput style={styles.homeTextInput}></TextInput>
 
-              {userData && (
+              {userData && !loadingVisible && (
               <HoldItem key={"Test"} items={AddItems} hapticFeedback="Heavy" activateOn="tap" menuAnchorPosition="bottom-right" containerStyles={{position: 'absolute', bottom: 15, right:15,zIndex: 10}}>
                   <RoundButton title="+"/>
               </HoldItem>
               )}
         </Animated.View>
     </HoldMenuProvider>
+    </>
     );
 }
 

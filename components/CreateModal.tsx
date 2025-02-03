@@ -80,7 +80,7 @@ export default function CreateModal({ isVisible, onClose, user }: Props) {
             images : [],
             users: [{
               id:user.uid,
-              picture:user.picture,
+              picture:`${user.picture}?t=${Date.now()}`,
             }],
         }
 
