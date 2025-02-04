@@ -6,6 +6,9 @@ export function lerp(v0: number, v1: number, t: number): number {
     return v0 + (v1 - v0) * t;
 }
 
+const localImage = require('../../assets/images/cardTest.png');
+
+
 const planes: THREE.Mesh[] = [];
 const cameraRef = { current: null } as { current: THREE.PerspectiveCamera | null };
 const raycaster = new THREE.Raycaster();
@@ -19,7 +22,38 @@ const sizesPan = {
 };
 
 const textureCache = new Map<string, THREE.Texture>();
+
 let frameCount = 0;
+let processedPlanesIndex = 0;
+
+const vertexShader = `
+    varying vec2 vUv;
+    void main() {
+        vUv = uv;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+`;
+
+const fragmentShader = `
+   uniform sampler2D frontTexture;
+    uniform sampler2D backTexture;
+    uniform float uOpacity;
+    varying vec2 vUv;
+
+    void main() {
+        vec4 frontColor = texture2D(frontTexture, vUv);
+        vec4 backColor = texture2D(backTexture, vUv);
+
+        frontColor = vec4(frontColor.rgb, frontColor.a * uOpacity);
+        backColor = vec4(backColor.rgb, backColor.a * uOpacity);
+
+        if (gl_FrontFacing) {
+            gl_FragColor = frontColor;
+        } else {
+            gl_FragColor = backColor;
+        }
+    }
+`;
 
 const SceneManager = async (gl: ExpoWebGLRenderingContext, images: string[]) => {
     const renderer = new ExpoTHREE.Renderer({
@@ -59,57 +93,6 @@ const SceneManager = async (gl: ExpoWebGLRenderingContext, images: string[]) => 
 
     createRandomGrid({ spacing: 2.5, scene, images });
 
-    const checkVisibilityAndLoadTextures = () => {
-        if (frameCount % 10 !== 0 || !cameraRef.current) return;
-
-        const camera = cameraRef.current;
-
-        const raycastBounds = [
-            { x: -0.5, y: -0.5 },
-            { x: 0.5, y: -0.5 },
-            { x: -0.5, y: 0.5 },
-            { x: 0.5, y: 0.5 },
-        ];
-
-        const detectedObjects = new Set<THREE.Object3D>();
-
-        raycastBounds.forEach((bounds) => {
-            raycaster.setFromCamera(bounds, camera);
-            const intersects = raycaster.intersectObjects(planes);
-
-            intersects.forEach((intersect) => {
-                detectedObjects.add(intersect.object);
-            });
-        });
-
-        detectedObjects.forEach((object) => {
-            const plane = object as THREE.Mesh;
-            const material = plane.material as THREE.MeshBasicMaterial;
-
-            if (!material.map) {
-                const imageIndex = planes.indexOf(plane);
-                const imageUrl = images[imageIndex]?.url || 'https://placehold.jp/150x150.png';
-
-                if (!textureCache.has(imageUrl)) {
-                    new ExpoTHREE.TextureLoader().load(imageUrl, (texture) => {
-                        texture.minFilter = THREE.LinearFilter;
-                        texture.magFilter = THREE.LinearFilter;
-                        texture.generateMipmaps = false;
-                        textureCache.set(imageUrl, texture);
-
-                        material.map = texture;
-                        material.needsUpdate = true;
-                        material.color.setHex(0xffffff);
-                    });
-                } else {
-                    material.map = textureCache.get(imageUrl)!;
-                    material.needsUpdate = true;
-                }
-            }
-        });
-    };
-
-
     const animate = () => {
         frameCount++;
 
@@ -132,15 +115,28 @@ const SceneManager = async (gl: ExpoWebGLRenderingContext, images: string[]) => 
                 cameraRef.current.position.y = newY;
             }
 
-            checkVisibilityAndLoadTextures();
+            renderer.render(scene, camera);
         }
 
-        renderer.render(scene, camera);
         gl.endFrameEXP();
         requestAnimationFrame(animate);
     };
 
     animate();
+};
+
+const loadTexture = (url: string, callback: (texture: THREE.Texture) => void) => {
+    if (textureCache.has(url)) {
+        callback(textureCache.get(url)!);
+    } else {
+        new ExpoTHREE.TextureLoader().load(url, (texture) => {
+            texture.minFilter = THREE.LinearFilter;
+            texture.magFilter = THREE.LinearFilter;
+            texture.generateMipmaps = false;
+            textureCache.set(url, texture);
+            callback(texture);
+        });
+    }
 };
 
 const createRandomGrid = ({
@@ -157,6 +153,8 @@ const createRandomGrid = ({
     const maxCols = Math.ceil(totalImages / maxRows);
 
     let index = 0;
+
+    const backTexture = new ExpoTHREE.TextureLoader().load(localImage);
 
     for (let i = 0; i < maxRows; i++) {
         for (let j = 0; j < maxCols; j++) {
@@ -181,23 +179,38 @@ const createRandomGrid = ({
                 planeWidth = maxDimension * aspectRatio;
             }
 
-            const material = new THREE.MeshBasicMaterial({
-                color: '#343434',
+            const geometry = new THREE.PlaneGeometry(planeWidth, planeHeight);
+
+            const material = new THREE.ShaderMaterial({
+                uniforms: {
+                    frontTexture: { value: null },
+                    backTexture: { value: backTexture },
+                    uOpacity: { value: 1.0 },
+                },
+                vertexShader,
+                fragmentShader,
                 side: THREE.DoubleSide,
                 transparent: true,
-                opacity: 0.85,
+                depthWrite: false,
+                depthTest: true,
+                blending: THREE.NormalBlending,
             });
 
-            const plane = new THREE.Mesh(new THREE.PlaneGeometry(planeWidth, planeHeight), material);
-            plane.frustumCulled = true;
+
+            const mesh = new THREE.Mesh(geometry, material);
+
+            loadTexture(dataImage.url, (texture) => {
+                material.uniforms.frontTexture.value = texture;
+                material.needsUpdate = true;
+            });
 
             const x = j * spacing * 1.5 - (maxCols * spacing) / 2 + Math.random() * (spacing * 0.5);
             const y = i * spacing * 1.5 - (maxRows * spacing) / 2 + Math.random() * (spacing * 0.5);
             const z = Math.random() * 3 - 1.5;
 
-            plane.position.set(x, y, z);
-            planes.push(plane);
-            scene.add(plane);
+            mesh.position.set(x, y, z);
+            planes.push(mesh);
+            scene.add(mesh);
         }
     }
 };

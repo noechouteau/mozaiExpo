@@ -130,8 +130,6 @@ export default function Mosaic({user, mosaicId}: Props) {
                 images: [...activeMosaic.images, ...newImages],
             };
 
-            console.log('Updated mosaic:', updatedMosaic);
-
             setActiveMosaic(updatedMosaic);
 
             await updateMosaic(activeMosaic.id, {

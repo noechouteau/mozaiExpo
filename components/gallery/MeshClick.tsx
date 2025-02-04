@@ -1,6 +1,6 @@
-import { THREE } from 'expo-three';
-import { cameraRef, targetPosition } from '@/components/gallery/SceneManager';
-import { gsap } from 'gsap-rn';
+import {THREE} from 'expo-three';
+import {cameraRef, targetPosition} from '@/components/gallery/SceneManager';
+import {gsap} from 'gsap-rn';
 
 class MeshClick {
     planeClicked: THREE.Mesh | null = null;
@@ -11,7 +11,7 @@ class MeshClick {
     isMeshActive: boolean;
     setIsMeshActive: (value: boolean) => void;
 
-    constructor({ planes, camera, isMeshActive, setIsMeshActive }: {
+    constructor({planes, camera, isMeshActive, setIsMeshActive}: {
         planes: THREE.Mesh[];
         camera: THREE.PerspectiveCamera | null;
         isMeshActive: boolean;
@@ -34,9 +34,11 @@ class MeshClick {
         this.isActive = true;
         this.setIsMeshActive(true);
 
+
         if (this.planeClicked === null) return;
 
         this.planes.forEach((plane) => {
+
             this.storedPositionPlanes[plane.uuid] = {
                 x: plane.position.x,
                 y: plane.position.y,
@@ -50,14 +52,21 @@ class MeshClick {
                     ease: "expo.inOut",
                 });
 
-                gsap.to(plane.material, {
-                    opacity: 0.0,
+                gsap.to(plane.material.uniforms.uOpacity, {
+                    value: 0,
                     duration: 2,
                     ease: "expo.inOut",
-                });
+                })
             } else {
                 gsap.to(plane.position, {
                     z: 0,
+                    y: plane.position.y + .5,
+                    duration: 2,
+                    ease: "expo.inOut",
+                });
+
+                gsap.to(plane.rotation, {
+                    y: Math.PI * 2,
                     duration: 2,
                     ease: "expo.inOut",
                 });
@@ -73,27 +82,26 @@ class MeshClick {
 
         if (cameraRef.current) {
             gsap.to(cameraRef.current.position, {
-                z: 5,
+                z: 4,
                 duration: 2,
                 ease: "expo.inOut",
             });
         }
 
-        gsap.to(this.planeClicked.rotation, {
-            y: Math.PI * 2,
-            duration: 2,
-            ease: "expo.inOut",
-        });
+        this.planeClicked.material.transparent = false;
     }
 
     leave() {
+        console.log("LEAVE called");
+        if (!this.planeClicked) return;
+
         this.isActive = false;
         this.setIsMeshActive(false);
 
         this.planes.forEach((plane) => {
-            gsap.to(plane.material, {
-                opacity: 1.0,
-                duration: 1,
+            gsap.to(plane.material.uniforms.uOpacity, {
+                value: 1.0,
+                duration: 2,
                 ease: "expo.inOut",
             });
 
@@ -106,21 +114,41 @@ class MeshClick {
 
         if (cameraRef.current) {
             gsap.to(cameraRef.current.position, {
-                z: 15,
+                z: 10,
                 duration: 1,
                 ease: "expo.inOut",
             });
         }
 
-        gsap.to(this.planeClicked?.rotation, {
-            y: 0,
-            x: 0,
-            z: 0,
+        if (this.planeClicked) {
+            gsap.to(this.planeClicked.rotation, {
+                y: 0,
+                x: 0,
+                z: 0,
+                duration: 2,
+                ease: "expo.inOut",
+            });
+
+            gsap.to(this.planeClicked.position, {
+                y: this.planeClicked.position.y - 0.5,
+                duration: 2,
+                ease: "expo.inOut",
+                onComplete: () => {
+                    this.planeClicked = null;
+                },
+            });
+        }
+    }
+
+
+    turn(plane) {
+        if (!this.planeClicked) return;
+
+        gsap.to(plane.rotation, {
+            y: plane.rotation.y + Math.PI,
             duration: 2,
             ease: "expo.inOut",
         });
-
-        this.planeClicked = null;
     }
 }
 

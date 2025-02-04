@@ -9,7 +9,7 @@ import { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reani
 
 const {width: screenWidth, height: screenHeight} = Dimensions.get('window');
 
-export default function RoundButton(props:any) {
+export default function FRoundButton(props:any) {
       const [gradientStart, setGradientStart] = useState({ x: 0.3, y: 0 });
       const [gradientEnd, setGradientEnd] = useState({ x: 4.6, y: 2 });
       const [bgColor, setBgColor] = useState("#DAEDBD");
@@ -71,7 +71,7 @@ export default function RoundButton(props:any) {
                 props.children
                 :
                 <Ionicons name={props.icon? props.icon :"add"} size={props.size? props.size :45} color="white" style={{width:props.size?props.size:45,height: props.size?props.size:45}} />
-                }     
+                }
             </Animated.View>
             </LinearGradient>
         </Animated.View>
