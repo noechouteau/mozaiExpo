@@ -92,7 +92,6 @@ class MeshClick {
     }
 
     leave() {
-        console.log("LEAVE called");
         if (!this.planeClicked) return;
 
         this.isActive = false;

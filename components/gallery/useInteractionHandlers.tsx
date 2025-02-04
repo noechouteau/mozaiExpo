@@ -57,11 +57,11 @@ const useInteractionHandlers = () => {
             const clickedObject = intersection.object as THREE.Mesh;
 
             if (!meshClick.isActive || meshClick.planeClicked === null) {
-                console.log("SET PLANE ACTIVE")
                 meshClick.setPlaneClicked(clickedObject);
+            } else if (meshClick.planeClicked === clickedObject) {
+                meshClick.turn(clickedObject);
             }
 
-            // meshClick.turn(clickedObject);
         }
     };
 

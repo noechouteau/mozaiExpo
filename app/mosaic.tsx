@@ -171,7 +171,13 @@ export default function Mosaic({user, mosaicId}: Props) {
 
             {activeMosaic?.images
 
-                ? <Environnement images={activeMosaic.images}/>
+                ? <Environnement images={activeMosaic.images}> {userData && (
+                    <View style={styles.buttons}>
+                        <RoundButton onPress={pickImageAsync} style={{width: 180, height: 50}}>
+                            <Text style={styles.text}>Add</Text>
+                        </RoundButton>
+                    </View>
+                )} </Environnement>
                 : <Text>loading</Text>
             }
 
