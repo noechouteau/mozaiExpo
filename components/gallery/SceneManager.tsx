@@ -18,33 +18,101 @@ const sizesPan = {
     maxY: 10,
 };
 
-const SceneManager = async (gl: ExpoWebGLRenderingContext, images: string[]) => {
-    const { drawingBufferWidth: bufferWidth, drawingBufferHeight: bufferHeight } = gl;
+const textureCache = new Map<string, THREE.Texture>();
+let frameCount = 0;
 
+const SceneManager = async (gl: ExpoWebGLRenderingContext, images: string[]) => {
     const renderer = new ExpoTHREE.Renderer({
         gl,
-        antialias: true,
-        powerPreference: 'high-performance',
+        antialias: false,
+        powerPreference: 'low-power',
     });
 
-    renderer.setSize(bufferWidth, bufferHeight);
-    renderer.setPixelRatio(1);
-    renderer.setClearColor(0x000000);
+    const updateRendererSize = () => {
+        const width = window.innerWidth;
+        const height = window.innerHeight;
 
-    const camera = new THREE.PerspectiveCamera(70, bufferWidth / bufferHeight, 0.01, 1000);
-    camera.position.z = 10;
+        renderer.setClearColor(0x000000);
+        renderer.setSize(width, height);
+        renderer.setPixelRatio(window.devicePixelRatio || 1);
+
+        if (cameraRef.current) {
+            cameraRef.current.aspect = width / height;
+            cameraRef.current.updateProjectionMatrix();
+        }
+    };
+
+    updateRendererSize();
+
+    window.addEventListener('resize', updateRendererSize);
+
+    const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 1000);
+    camera.position.z = 8;
     camera.lookAt(0, 0, 0);
     cameraRef.current = camera;
 
     const scene = new THREE.Scene();
 
-    const light = new THREE.DirectionalLight(0xffffff, 1);
+    const light = new THREE.DirectionalLight(0xffffff, 0.8);
     light.position.set(0, 0, 10);
     scene.add(light);
 
     createRandomGrid({ spacing: 2.5, scene, images });
 
+    const checkVisibilityAndLoadTextures = () => {
+        if (frameCount % 10 !== 0 || !cameraRef.current) return;
+
+        const camera = cameraRef.current;
+
+        const raycastBounds = [
+            { x: -0.5, y: -0.5 },
+            { x: 0.5, y: -0.5 },
+            { x: -0.5, y: 0.5 },
+            { x: 0.5, y: 0.5 },
+        ];
+
+        const detectedObjects = new Set<THREE.Object3D>();
+
+        raycastBounds.forEach((bounds) => {
+            raycaster.setFromCamera(bounds, camera);
+            const intersects = raycaster.intersectObjects(planes);
+
+            intersects.forEach((intersect) => {
+                detectedObjects.add(intersect.object);
+            });
+        });
+
+        detectedObjects.forEach((object) => {
+            const plane = object as THREE.Mesh;
+            const material = plane.material as THREE.MeshBasicMaterial;
+
+            if (!material.map) {
+                const imageIndex = planes.indexOf(plane);
+                const imageUrl = images[imageIndex]?.url || 'https://placehold.jp/150x150.png';
+
+                if (!textureCache.has(imageUrl)) {
+                    new ExpoTHREE.TextureLoader().load(imageUrl, (texture) => {
+                        texture.minFilter = THREE.LinearFilter;
+                        texture.magFilter = THREE.LinearFilter;
+                        texture.generateMipmaps = false;
+                        textureCache.set(imageUrl, texture);
+
+                        material.map = texture;
+                        material.needsUpdate = true;
+                        material.color.setHex(0xffffff);
+                    });
+                } else {
+                    material.map = textureCache.get(imageUrl)!;
+                    material.needsUpdate = true;
+                }
+            }
+        });
+    };
+
+
     const animate = () => {
+        frameCount++;
+
         if (cameraRef.current) {
             targetPosition.current.x = Math.max(
                 Math.min(targetPosition.current.x, sizesPan.maxX),
@@ -55,16 +123,16 @@ const SceneManager = async (gl: ExpoWebGLRenderingContext, images: string[]) => 
                 sizesPan.minY
             );
 
-            cameraRef.current.position.x = lerp(
-                cameraRef.current.position.x,
-                targetPosition.current.x,
-                0.1
-            );
-            cameraRef.current.position.y = lerp(
-                cameraRef.current.position.y,
-                targetPosition.current.y,
-                0.1
-            );
+            const newX = lerp(cameraRef.current.position.x, targetPosition.current.x, 0.1);
+            const newY = lerp(cameraRef.current.position.y, targetPosition.current.y, 0.1);
+
+            if (Math.abs(cameraRef.current.position.x - newX) > 0.01 ||
+                Math.abs(cameraRef.current.position.y - newY) > 0.01) {
+                cameraRef.current.position.x = newX;
+                cameraRef.current.position.y = newY;
+            }
+
+            checkVisibilityAndLoadTextures();
         }
 
         renderer.render(scene, camera);
@@ -97,17 +165,10 @@ const createRandomGrid = ({
             const dataImage = images[index];
             index++;
 
-            const url = dataImage?.url || 'https://placehold.jp/150x150.png';
-            const texture = new ExpoTHREE.TextureLoader().load(url, (tex) => {
-                tex.minFilter = THREE.LinearFilter;
-                tex.magFilter = THREE.LinearFilter;
-                tex.generateMipmaps = false;
-            });
-
             const width = dataImage?.width || 150;
             const height = dataImage?.height || 150;
             const aspectRatio = width / height;
-            const maxDimension = 3;
+            const maxDimension = 2.5;
 
             let planeWidth: number;
             let planeHeight: number;
@@ -121,9 +182,10 @@ const createRandomGrid = ({
             }
 
             const material = new THREE.MeshBasicMaterial({
-                map: texture,
+                color: '#343434',
                 side: THREE.DoubleSide,
                 transparent: true,
+                opacity: 0.85,
             });
 
             const plane = new THREE.Mesh(new THREE.PlaneGeometry(planeWidth, planeHeight), material);
@@ -131,7 +193,7 @@ const createRandomGrid = ({
 
             const x = j * spacing * 1.5 - (maxCols * spacing) / 2 + Math.random() * (spacing * 0.5);
             const y = i * spacing * 1.5 - (maxRows * spacing) / 2 + Math.random() * (spacing * 0.5);
-            const z = Math.random() * 4 - 2;
+            const z = Math.random() * 3 - 1.5;
 
             plane.position.set(x, y, z);
             planes.push(plane);
