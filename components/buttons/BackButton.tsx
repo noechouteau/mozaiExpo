@@ -36,12 +36,10 @@ export default function BackButton(props: any) {
   }));
 
   const handlePressIn = () => {
-    console.log("Pressed In");
     scaleAnim.value = withTiming(0.8, { duration: 100 }); // Scale down
   };
 
   const handlePressOut = () => {
-    console.log("Pressed Out");
     scaleAnim.value = withTiming(1, { duration: 100 }); // Scale back to normal
     props.onPress();
   };

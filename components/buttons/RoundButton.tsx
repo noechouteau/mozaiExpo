@@ -9,7 +9,7 @@ import { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reani
 
 const {width: screenWidth, height: screenHeight} = Dimensions.get('window');
 
-export default function RoundButton(props:any) {
+export default function FRoundButton(props:any) {
       const [gradientStart, setGradientStart] = useState({ x: 0.3, y: 0 });
       const [gradientEnd, setGradientEnd] = useState({ x: 4.6, y: 2 });
       const [bgColor, setBgColor] = useState("#DAEDBD");
@@ -36,24 +36,25 @@ export default function RoundButton(props:any) {
     }));
 
     const handlePressIn = () => {
-      console.log("Pressed In");
       scaleAnim.value = withTiming(0.8, { duration: 100 }); // Scale down
     };
 
     const handlePressOut = () => {
-      console.log("Pressed Out");
       scaleAnim.value = withTiming(1, { duration: 100 }); // Scale back to normal
+      if(props.onPress)
       props.onPress();
     };
 
-      
+
 
 
     return (
         <Pressable
             onPress={props.onPress}
+            onPressIn={handlePressIn}
+            onPressOut={handlePressOut}
             style={({ pressed }) => [
-                { 
+                {
                 borderRadius: 50,
                  },
             ]}
@@ -65,13 +66,13 @@ export default function RoundButton(props:any) {
             start={gradientStart}
             end={gradientEnd}
             >
-            <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+            <Animated.View style={[animatedStyle,{ flex: 1, justifyContent: "center", alignItems: "center" }]}>
                 { props.children?
                 props.children
                 :
                 <Ionicons name={props.icon? props.icon :"add"} size={props.size? props.size :45} color="white" style={{width:props.size?props.size:45,height: props.size?props.size:45}} />
-                }     
-            </View>
+                }
+            </Animated.View>
             </LinearGradient>
         </Animated.View>
         </Pressable>
@@ -80,6 +81,7 @@ export default function RoundButton(props:any) {
 
 const styles = StyleSheet.create({
     roundButton: {
+        position: "relative",
         backgroundColor:"#0e0e7e",
         borderRadius: 50,
         borderWidth: 1,
@@ -94,5 +96,6 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         textAlign: "center",
         bottom: 0,
+        zIndex: 1,
     },
 });

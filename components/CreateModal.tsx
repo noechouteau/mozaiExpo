@@ -53,8 +53,6 @@ export default function CreateModal({ isVisible, onClose, user }: Props) {
       }, [selectedTheme]);
 
     async function createClicked() {
-        console.log("Create a mosaic");
-
         if(mosaicName.length < 1) {
           setErrorText("Please enter a name !");
           setErrorDisplayed(true);
@@ -80,12 +78,11 @@ export default function CreateModal({ isVisible, onClose, user }: Props) {
             images : [],
             users: [{
               id:user.uid,
-              picture:user.picture,
+              picture:`${user.picture}?t=${Date.now()}`,
             }],
         }
 
         await createMosaic(newMosaic,id).then(async () => {
-          console.log("Mosaic created - mosaic side");
           await AsyncStorage.setItem("activeMosaic", id);
           router.replace("/mosaic");
           onClose();

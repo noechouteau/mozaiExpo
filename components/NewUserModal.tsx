@@ -16,6 +16,7 @@ import BackButton from './buttons/BackButton';
 import { useUser } from '@/context/UsersContext';
 import { User } from '@/types/types';
 import { LinearGradient } from 'expo-linear-gradient';
+import LoadingScreen from './LoadingScreen';
 
 type Props = PropsWithChildren<{
   isVisible: boolean;
@@ -31,13 +32,13 @@ export default function NewUserModal({ isVisible, onClose }: Props) {
     const [gradientEnd, setGradientEnd] = useState({ x: 1.2, y: 1 });
     const [errorDisplayed, setErrorDisplayed] = useState<boolean>(false);
     const {selectedTheme, createUser,changeTheme} = useUser();
+    const [loadingVisible, setLoadingVisible] = useState<boolean>(false);
 
     useEffect(() => {
         async function setGreenTheme() {
             const loggedInUser = await AsyncStorage.getItem("loggedIn");
             if(loggedInUser == "true") return
             changeTheme("greenTheme");
-            console.log("ah")
         }
         setGreenTheme();
     }, [])
@@ -48,7 +49,7 @@ export default function NewUserModal({ isVisible, onClose }: Props) {
             allowsEditing: true,
             quality: 1,
         });
-    
+
         if (!result.canceled) {
             console.log(result.assets[0].uri);
             let image = await Asset.loadAsync(result.assets[0].uri);
@@ -68,29 +69,31 @@ export default function NewUserModal({ isVisible, onClose }: Props) {
 
         if(!activeUser || !phone) return
 
-        console.log("ahah")
         const [{ localUri }] = await Asset.loadAsync(selectedImage)
+        setLoadingVisible(true);
 
         await uploadPicture(localUri, activeUser+"/"+activeUser+"-profile-pic").then(async (res) => {
             console.log(res.Location, activeUser,phone,userName)
             const newUser: User =
             {
                 name: userName,
-                picture: res.Location,
+                picture: `${res.Location}?t=${Date.now()}`,
                 uid: activeUser,
                 phone: phone,
                 mosaiques: []
             }
             await createUser(newUser).then(() => {
                 console.log("User created");
+                setLoadingVisible(false);
                 onClose();
             })
         })
-        
+
     }
 
   return (
     <Modal animationType="fade" transparent={true} visible={isVisible}>
+    <LoadingScreen text={"Creating account..."} isVisible={loadingVisible}></LoadingScreen>
       <View style={styles.modalContainer}>
         <View style={[styles.modalContent,errorDisplayed? {height: 310} : {height: 270}]}>
                 <LinearGradient
@@ -130,7 +133,6 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: 'center',
         borderTopLeftRadius: 18,
-        position: 'absolute',
         zIndex: 10,
         backgroundColor: 'rgba(0,0,0,0.8)',
     },

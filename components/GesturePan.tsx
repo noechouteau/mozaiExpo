@@ -135,10 +135,18 @@ export default function GesturePan({ searchChain, deleteFunction }: any) {
   const getImagePositions = (mosaicId: string, images: any[]) => {
     if (!imagePositionsCache.current[mosaicId]) {
       // If positions are not cached, calculate and store them
-      imagePositionsCache.current[mosaicId] = images.map(() => ({
-        top: Math.random() * 50,
-        left: Math.random() * 200,
-      }));
+      const positions = [];
+      const usedPositions = new Set();
+      for (const image of images) {
+        let top, left;
+        do {
+          top = Math.random() * 50;
+          left = Math.random() * 200;
+        } while (usedPositions.has(`${top}-${left}`));
+        usedPositions.add(`${top}-${left}`);
+        positions.push({ top, left });
+      }
+      imagePositionsCache.current[mosaicId] = positions;
     }
     return imagePositionsCache.current[mosaicId];
   };
@@ -179,7 +187,7 @@ export default function GesturePan({ searchChain, deleteFunction }: any) {
                             end={{ x: -1.1, y: 4.8 }}
                             style={styles.background}
                           />
-                            {mosaique?.images?.reverse().map((image:any, index:any) => {
+                            {mosaique?.images?.slice(-4).reverse().map((image:any, index:any) => {
                             const positions = getImagePositions(mosaique.id, mosaique.images);
                             return (
                               <Image
@@ -242,7 +250,7 @@ export default function GesturePan({ searchChain, deleteFunction }: any) {
                         
                       <ImageBackground source={backgroundImage} resizeMode="stretch" style={{backgroundColor:"#0D0D0D"}} imageStyle={{  borderTopLeftRadius: 15, borderTopRightRadius: 15}}>
                         <View style={styles.mosaicPreview}>
-                        {mosaique?.images?.reverse().map((image:any, index:any) => {
+                        {mosaique?.images?.slice(-4).reverse().map((image:any, index:any) => {
                             const positions = getImagePositions(mosaique.id, mosaique.images);
                             return (
                               <Image

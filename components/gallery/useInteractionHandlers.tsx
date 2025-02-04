@@ -1,197 +1,128 @@
 import {Dimensions, PanResponder} from 'react-native';
-import {useRef, useEffect, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {cameraRef, planes, raycaster, targetPosition} from './SceneManager';
-import {THREE} from "expo-three";
-import MeshClick from "@/components/gallery/MeshClick";
-import { Gyroscope } from 'expo-sensors';
+import {THREE} from 'expo-three';
+import MeshClick from '@/components/gallery/MeshClick';
 
 const {width, height} = Dimensions.get('window');
 
+const sizesPan = {
+    minZoom: 5,
+    maxZoom: 30,
+    minX: -10,
+    maxX: 10,
+    minY: -10,
+    maxY: 10,
+};
+
 const useInteractionHandlers = () => {
-    const isTouching = useRef<boolean>(false);
-    const isMoving = useRef<boolean>(false);
-    const [isMeshActive, setIsMeshActive] = useState(false);
-    const initialTouchDistance = useRef<number>(0);
     const initialCameraZ = useRef<number>(0);
 
     const mouse = useRef(new THREE.Vector2(-10, -10)).current;
 
-    const sizesPan = {
-        minZoom: 5,
-        maxZoom: 30,
-        minX: -10,
-        maxX: 10,
-        minY: -10,
-        maxY: 10,
+    const [isMeshActive, setIsMeshActive] = useState<boolean>(false);
+
+    const startPosition = useRef({x: 0, y: 0});
+    const clickThreshold = 5;
+    const isMoving = useRef<boolean>(false);
+
+
+
+    const meshClickRef = useRef<MeshClick | null>(null);
+
+    if (!meshClickRef.current) {
+        meshClickRef.current = new MeshClick({
+            planes: planes,
+            camera: cameraRef.current,
+            isMeshActive: isMeshActive,
+            setIsMeshActive,
+        });
     }
 
-    const meshClick = new MeshClick({
-        planes: planes,
-        camera: cameraRef.current,
-        onStateChange: setIsMeshActive,
-    });
+    const meshClick = meshClickRef.current;
 
-
-    useEffect(() => {
-        const gyroSensitivity = 0.02;
-        let gyroSubscription: any;
-
-
-        const updateGyroscope = ({ x, y }: { x: number; y: number }) => {
-            if (cameraRef.current && !isTouching.current && !isMeshActive) {
-                targetPosition.current.x -= y * gyroSensitivity;
-                targetPosition.current.y += x * gyroSensitivity;
-
-                targetPosition.current.x = Math.max(
-                    Math.min(targetPosition.current.x, sizesPan.maxX),
-                    sizesPan.minX
-                );
-                targetPosition.current.y = Math.max(
-                    Math.min(targetPosition.current.y, sizesPan.maxY),
-                    sizesPan.minY
-                );
-            }
-        };
-
-        Gyroscope.setUpdateInterval(16);
-
-        const subscribeGyroscope = () => {
-            gyroSubscription = Gyroscope.addListener(updateGyroscope);
-        };
-
-        const unsubscribeGyroscope = () => {
-            if (gyroSubscription) {
-                gyroSubscription.remove();
-            }
-        };
-
-        subscribeGyroscope();
-
-        return () => {
-            unsubscribeGyroscope();
-        };
-    }, [isMeshActive]);
-
-    const handleTouchStart = ({nativeEvent}: {
-        nativeEvent: { locationX: number, locationY: number, touches: { locationX: number, locationY: number }[] }
-    }) => {
-        if (meshClick.isActive) return;
-
-        const {locationX, locationY, touches} = nativeEvent;
-
-        if (touches.length === 1) {
-            mouse.set(
-                (locationX / width) * 2 - 1,
-                -(locationY / height) * 2 + 1
-            );
-            isTouching.current = true;
-            isMoving.current = false;
-
-            checkClick();
-        } else if (touches.length === 2) {
-            initialTouchDistance.current = Math.hypot(
-                touches[0].locationX - touches[1].locationX,
-                touches[0].locationY - touches[1].locationY
-            );
-            initialCameraZ.current = cameraRef.current?.position.z || 10;
-        }
-    };
-
-    const handleTouchEnd = () => {
-        isTouching.current = false;
-        isMoving.current = false;
-        mouse.set(-10, -10);
+    const updateMouse = (x: number, y: number) => {
+        const rendererSize = {width: cameraRef.current?.aspect * height || width, height};
+        mouse.x = (x / rendererSize.width) * 2 - 1;
+        mouse.y = -(y / rendererSize.height) * 2 + 1;
     };
 
     const checkClick = () => {
-        if (cameraRef.current) {
-            raycaster.setFromCamera(mouse, cameraRef.current);
+        if (!cameraRef.current) return;
 
-            const intersects = raycaster.intersectObjects(planes, true);
-            if (intersects.length > 0 && !meshClick.isActive) {
-                const intersectedObject = intersects[0].object;
-                meshClick.setPlaneClicked(intersectedObject as THREE.Mesh);
+        raycaster.setFromCamera(mouse, cameraRef.current);
+        const [intersection] = raycaster.intersectObjects(planes, true);
+
+        if (intersection) {
+            const clickedObject = intersection.object as THREE.Mesh;
+
+            if (!meshClick.isActive || meshClick.planeClicked === null) {
+                console.log("SET PLANE ACTIVE")
+                meshClick.setPlaneClicked(clickedObject);
             }
+
+            // meshClick.turn(clickedObject);
         }
     };
 
+
+
     const panHandlers = PanResponder.create({
         onStartShouldSetPanResponder: () => true,
+        onPanResponderGrant: (evt, gestureState) => {
+            startPosition.current = {
+                x: gestureState.x0,
+                y: gestureState.y0,
+            };
+
+            if (isMeshActive) return;
+            updateMouse(gestureState.x0, gestureState.y0);
+        },
         onPanResponderMove: (evt, gestureState) => {
-            if (meshClick.isActive) return;
 
-            const {vx, vy} = gestureState;
+            const {vx, vy, dx, dy, x0, y0} = gestureState;
 
-            isMoving.current = !(vx === 0 && vy === 0);
+            if (Math.abs(dx) > clickThreshold || Math.abs(dy) > clickThreshold) {
+                isMoving.current = true;
+            }
 
-            targetPosition.current.x -= vx * 0.5;
-            targetPosition.current.y += vy * 0.5;
+            if (isMeshActive) return;
+
+            if (isMoving.current) {
+                targetPosition.current.x -= vx * 0.5;
+                targetPosition.current.y += vy * 0.5;
+            }
+
+            updateMouse(x0, y0);
         },
         onPanResponderRelease: () => {
+
+            if (!isMoving.current) {
+                checkClick();
+            } else {
+                // Glissement détecté
+            }
+
             isMoving.current = false;
         },
     }).panHandlers;
 
-    const handleTouchMove = ({ nativeEvent }: {
-        nativeEvent: { touches: { locationX: number, locationY: number }[] }
-    }) => {
-        const { touches } = nativeEvent;
-
-        if (isMeshActive && meshClick.planeClicked) {
-            if (touches.length === 1) {
-                const { locationX, locationY } = touches[0];
-                const deltaX = locationX - width / 2;
-                const deltaY = locationY - height / 2;
-
-                const sensitivity = 0.0005;
-                meshClick.planeClicked.rotation.y += deltaX * sensitivity;
-                meshClick.planeClicked.rotation.x += deltaY * sensitivity;
-            }
-        } else {
-            if (touches.length === 1) {
-                const { locationX, locationY } = touches[0];
-                const sensitivity = 0.001;
-
-                targetPosition.current.x -= (locationX - width / 2) * sensitivity;
-                targetPosition.current.y += (locationY - height / 2) * sensitivity;
-
-                targetPosition.current.x = Math.max(Math.min(targetPosition.current.x, sizesPan.maxX), sizesPan.minX);
-                targetPosition.current.y = Math.max(Math.min(targetPosition.current.y, sizesPan.maxY), sizesPan.minY);
-            } else if (touches.length === 2) {
-                const distance = Math.hypot(
-                    touches[0].locationX - touches[1].locationX,
-                    touches[0].locationY - touches[1].locationY
-                );
-
-                const zoomFactor = (initialTouchDistance.current - distance) * 0.05;
-
-                if (cameraRef.current) {
-                    let newCameraZ = initialCameraZ.current + zoomFactor;
-                    newCameraZ = Math.min(Math.max(newCameraZ, sizesPan.minZoom), sizesPan.maxZoom);
-                    cameraRef.current.position.z = newCameraZ;
-                }
-            }
+    const onPinchGestureEvent = (event) => {
+        const {scale} = event.nativeEvent;
+        if (cameraRef.current) {
+            const newZ = initialCameraZ.current / scale;
+            cameraRef.current.position.z = Math.max(sizesPan.minZoom, Math.min(sizesPan.maxZoom, newZ));
         }
     };
 
-
-    const backTouch = () => {
-        if (meshClick.isActive) {
-            meshClick.leave();
+    const onPinchHandlerStateChange = (event) => {
+        const {state} = event.nativeEvent;
+        if (state === 2) {
+            initialCameraZ.current = cameraRef.current.position.z;
         }
-
-        const backTouchAction = () => {
-            meshClick.leave();
-        };
-
-        return {
-            active: isMeshActive,
-            action: backTouchAction,
-        };
     };
 
-    return { handleTouchStart, handleTouchEnd, panHandlers, handleTouchMove, backTouch };
+    return {panHandlers, meshClick, isMeshActive, onPinchGestureEvent, onPinchHandlerStateChange};
 };
-
 
 export default useInteractionHandlers;

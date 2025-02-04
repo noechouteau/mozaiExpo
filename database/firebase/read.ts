@@ -12,13 +12,11 @@ export const getDbDoc = async ({
   const docRef = doc(db, collectionId, docId);
   const docSnap = await getDoc(docRef);
   if (docSnap.exists()) {
-    console.log("Document data:", docSnap.data());
     return docSnap.data();
   } else {
-    console.log("No such document!");
     return null;
   }
-}; 
+};
 
 export const getDbDocs = async ({ collectionId }: { collectionId: string }) => {
   const collectionRef = collection(db, collectionId);
@@ -32,7 +30,6 @@ export const getDbDocs = async ({ collectionId }: { collectionId: string }) => {
     });
   });
   if (datas.length === 0) {
-    console.log("No document in this collection");
     return [];
   }
   return datas;
@@ -53,10 +50,8 @@ export const queryDbDocsByField = async ({
 
     if (!querySnapshot.empty) {
       const results = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      console.log("Matching documents:", results);
       return results;
     } else {
-      console.log("No matching documents found!");
       return [];
     }
   } catch (error) {
