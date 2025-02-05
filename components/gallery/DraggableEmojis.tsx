@@ -138,7 +138,7 @@ const DraggableEmojis = () => {
 const styles = StyleSheet.create({
     container: {
         position: 'absolute',
-        bottom: 50,
+        bottom: 150,
         left: '50%',
         transform: [{ translateX: "-50%" }],
         zIndex: 100,

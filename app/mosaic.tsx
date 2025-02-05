@@ -130,8 +130,6 @@ export default function Mosaic({user, mosaicId}: Props) {
                 images: [...activeMosaic.images, ...newImages],
             };
 
-            console.log('Updated mosaic:', updatedMosaic);
-
             setActiveMosaic(updatedMosaic);
 
             await updateMosaic(activeMosaic.id, {
@@ -172,18 +170,21 @@ export default function Mosaic({user, mosaicId}: Props) {
             <Animated.View style={[styles.smoothCover, isMozaiInfosVisible ? {opacity: 1} : {opacity: 0}]}/>
 
             {activeMosaic?.images ? (
-                <Environnement key={activeMosaic.images.lenght} images={activeMosaic.images}>
-                    {userData && (
-                        <View style={styles.buttons}>
-                            <RoundButton onPress={pickImageAsync} style={{width: 180, height: 50}}>
-                                <Text style={styles.text}>Add</Text>
-                            </RoundButton>
-                        </View>
-                    )}
+                <Environnement images={activeMosaic.images}>
+
+                        {userData ? (
+                            <View style={styles.buttons}>
+                                <RoundButton onPress={pickImageAsync} style={{ width: 180, height: 50 }}>
+                                    <Text style={styles.text}>Add</Text>
+                                </RoundButton>
+                            </View>
+                        ) : <View></View>}
+
                 </Environnement>
             ) : (
                 <Text>loading</Text>
             )}
+
 
             <View style={styles.infoButtonContainer}>
                 {activeMosaic && (

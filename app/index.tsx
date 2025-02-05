@@ -7,11 +7,15 @@ import { HoldItem } from 'react-native-hold-menu';
 import { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Onboarding from '../components/OnBoarding';
 
 const {width: screenWidth, height: screenHeight} = Dimensions.get('window');
 const backgroundImage = require('../assets/images/blueTheme/bg_login_2.png');
 
 export default function Index() {
+  const [isFirstLaunch, setIsFirstLaunch] = useState(null);
+  // Tester l'onBoarding
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   const [loaded, error] = useFonts({
     'SFPRO': require('../assets/fonts/SFPRODISPLAYMEDIUM.otf'),
@@ -43,6 +47,30 @@ export default function Index() {
     fast();
   }, []);
 
+  useEffect(() => {
+    const checkOnboardingStatus = async () => {
+      const hasCompletedOnboarding = await AsyncStorage.getItem('@onboardingCompleted');
+      setIsFirstLaunch(hasCompletedOnboarding === null);  // Si la clé n'existe pas, c'est la première fois
+    };
+
+    checkOnboardingStatus();
+  }, []);
+
+  const handleOnboardingComplete = async () => {
+    await AsyncStorage.setItem('@onboardingCompleted', 'true');
+    setIsFirstLaunch(false);
+    setShowOnboarding(false); // Ferme l'onboarding après le test
+    router.replace('/animation');
+  };
+
+  if (isFirstLaunch === null) {
+    return null;  // Éviter le rendu avant de vérifier AsyncStorage
+  }
+
+  if (isFirstLaunch || showOnboarding) {
+    return <Onboarding onComplete={handleOnboardingComplete} />;
+  }
+
   return (<HoldMenuProvider theme='dark' safeAreaInsets={{
     top: 0,
     right: 0,
@@ -60,6 +88,10 @@ export default function Index() {
       <Text style={styles.text}>Create a mosaic</Text>
     </Pressable>
     </Link>
+
+    <Pressable style={styles.homeButton} onPress={() => setShowOnboarding(true)}>
+  <Text style={styles.text}>Tester l'Onboarding</Text>
+</Pressable>
 
     <Link href="/tests" asChild>
       <Button title="Test Connexion"/>

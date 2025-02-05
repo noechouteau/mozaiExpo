@@ -1,113 +1,86 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React from 'react';
 import {GLView} from 'expo-gl';
-import {Text, View, ActivityIndicator, Animated, Easing} from 'react-native';
+import {Text, View} from 'react-native';
 import SceneManager from "@/components/gallery/SceneManager";
 import useInteractionHandlers from "@/components/gallery/useInteractionHandlers";
-import DraggableEmoji from "@/components/gallery/DraggableEmojis";
-import LoadingScreen from './LoadingScreen';
+import {GestureHandlerRootView, PinchGestureHandler} from "react-native-gesture-handler";
+import DraggableEmojis from "@/components/gallery/DraggableEmojis";
+import RoundButton from "@/components/buttons/RoundButton";
 
-export default function App({
-                                images,
-                                children
-                            }: {
+export default function App({images, children}: {
     images: string[],
-    children: React.ReactNode
+    children?: React.ReactNode
 }) {
-    const [isMeshActive, setIsMeshActive] = useState<boolean>(false);
-    const [isLoading, setIsLoading] = useState<boolean>(true); // État de chargement
-
-    const {backTouch, handleTouchStart, handleTouchEnd, panHandlers, handleTouchMove} = useInteractionHandlers(
-        [isMeshActive, setIsMeshActive]
-    );
-
-    const {active, action} = backTouch();
-
-    const emojiOpacity = useRef(new Animated.Value(0)).current;
-
-    useEffect(() => {
-        Animated.timing(emojiOpacity, {
-            toValue: active ? 1 : 0,
-            duration: 500,
-            easing: Easing.inOut(Easing.ease),
-            useNativeDriver: true,
-        }).start();
-    }, [active]);
-
-    useEffect(() => {
-        setIsLoading(true);
-    }, [images]);
-
-    const handleContextCreate = async (gl: WebGLRenderingContext) => {
-        try {
-            await SceneManager(gl, images);
-        } catch (error) {
-            console.error("Erreur lors du chargement de la scène :", error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        Animated.timing(emojiOpacity, {
-            toValue: active ? 1 : 0,
-            duration: 1000,
-            easing: Easing.inOut(Easing.ease),
-            useNativeDriver: true,
-        }).start();
-    }, [active]);
-
+    const {
+        isMeshActive,
+        meshClick,
+        panHandlers,
+        onPinchGestureEvent,
+        onPinchHandlerStateChange
+    } = useInteractionHandlers();
 
     return (
         <View style={{flex: 1, zIndex: 100}}>
 
-            <Animated.View
-                style={{
-                    opacity: emojiOpacity,
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    zIndex: 200,
-                }}
-            >
-                {active && <DraggableEmoji />}
-            </Animated.View>
+            {isMeshActive ? (
+                    <>
+                        <DraggableEmojis/>
+                        <View style={{
+                            position: 'absolute',
+                            bottom: 80,
+                            gap: 8,
+                            left: "50%",
+                            transform: [{translateX: "-50%"}],
+                            width: '90%',
+                            height: 'auto',
+                            flexDirection: 'row',
+                            zIndex: 100,
+                        }}>
+                            <View style={{
+                                width: "49%",
+                            }}>
+                                <RoundButton style={{width: "100%"}} onPress={() => {
+                                    meshClick.leave()
+                                }}>
+                                    <Text style={{color: 'white', fontSize: 20, textAlign: 'center'}}>Back</Text>
+                                </RoundButton>
+                            </View>
+
+                            {/* TODO : NOAI DELETE BUTTON*/}
+                            <View style={{
+                                width: "49%",
+                                height: 60,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                backgroundColor: 'white',
+                                borderRadius: 50,
+                            }}>
+                                <Text style={{
+                                    color: 'black',
+                                    fontSize: 20,
+                                    textAlign: 'center',
+                                }}>Delete</Text>
+                            </View>
+                        </View>
+                    </>
+                ) : children
+            }
 
 
-            {isLoading && (
-                <LoadingScreen isVisible={isLoading} text={"Loading Images..."} />
-            )}
-
-            <GLView
-                {...panHandlers}
-                key={images.length}
-                style={{flex: 1}}
-                onContextCreate={handleContextCreate}
-                onTouchStart={handleTouchStart}
-                onTouchEnd={handleTouchEnd}
-                onTouchMove={handleTouchMove}
-            />
+            <GestureHandlerRootView style={{flex: 1}}>
+                <PinchGestureHandler
+                    onGestureEvent={onPinchGestureEvent}
+                    onHandlerStateChange={onPinchHandlerStateChange}
+                >
+                    <GLView
+                        {...panHandlers}
+                        style={{flex: 1}}
+                        onContextCreate={(gl) => SceneManager(gl, images)}
+                    />
+                </PinchGestureHandler>
+            </GestureHandlerRootView>
         </View>
     );
 }
 
-const styles = {
-    loadingContainer: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        zIndex: 200,
-    },
-    loadingText: {
-        marginTop: 10,
-        color: '#fff',
-        fontSize: 18,
-        fontWeight: 'bold',
-    },
-};
