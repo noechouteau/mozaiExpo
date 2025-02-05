@@ -15,7 +15,7 @@ import {useUser} from '@/context/UsersContext';
 import RoundButton from '@/components/buttons/RoundButton';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MozaiInfosModal from '@/components/MozaiInfosModal';
-import Animated from 'react-native-reanimated';
+import Animated, { useSharedValue } from 'react-native-reanimated';
 import {addNewImage} from "@/components/gallery/SceneManager";
 
 type Props = PropsWithChildren<{
@@ -27,11 +27,13 @@ export default function Mosaic({user, mosaicId}: Props) {
     const [isConfirmVisible, setConfirmVisible] = useState(false);
     const [mosaiqueToDelete, setMosaiqueToDelete] = useState("");
     const [isConfirmDeleteModalVisible, setConfirmDeleteModalVisible] = useState(false);
+    const [isConfirmDeleteImageModalVisible, setConfirmDeleteImageModalVisible] = useState(false);
     const [isMozaiInfosVisible, setMozaiInfosVisible] = useState(false);
     const [activeMosaic, setActiveMosaic] = useState<any>(null);
     const [activeUser, setActiveUser] = useState<any>(user);
     const [assetsNumber, setAssetsNumber] = useState(0);
     const [imagesToUpload, setImagesToUpload] = useState<any>();
+    const imageToDelete = useSharedValue("");
     const [loaded] = useFonts({
         'SFPRO': require('../assets/fonts/SFPRODISPLAYMEDIUM.otf'),
         "SFPROBOLD": require('../assets/fonts/SFPRODISPLAYBOLD.otf'),
@@ -77,18 +79,22 @@ export default function Mosaic({user, mosaicId}: Props) {
     }, [activeMosaic?.id]);
 
     async function deleteImage(imageUrl: string) {
-        console.log("delete image", imageUrl);
-        // const updatedImages = activeMosaic.images.filter((image: any) => image.url !== imageUrl);
-        // const updatedMosaic = {
-        //     ...activeMosaic,
-        //     images: updatedImages,
-        // };
+        imageToDelete.value = imageUrl;
+        setConfirmDeleteImageModalVisible(true);
+    }
+    
+    async function confirmDeleteImage(){
+        const updatedImages = activeMosaic.images.filter((image: any) => image.url !== imageToDelete.value);
+        const updatedMosaic = {
+            ...activeMosaic,
+            images: updatedImages,
+        };
 
-        // setActiveMosaic(updatedMosaic);
+        setActiveMosaic(updatedMosaic);
 
-        // await updateMosaic(activeMosaic.id, {
-        //     images: updatedImages,
-        // });
+        await updateMosaic(activeMosaic.id, {
+            images: updatedImages,
+        });
     }
 
     async function confirmDelete(confirmation: boolean) {
@@ -178,18 +184,40 @@ export default function Mosaic({user, mosaicId}: Props) {
                     title="Home" icon="home" size={25}
                 />
             </View>
-            <ConfirmModal
-                isVisible={isConfirmVisible}
-                text={`Do you want to add ${assetsNumber} images to the mosaic ?`}
-                onClose={(confirmation) => confirmUpload(confirmation)}
-                user={user}
-            />
-            <ConfirmModal
-                isVisible={isConfirmDeleteModalVisible}
-                text={"Are you sure you want to quit/delete this mosaic?"}
-                onClose={(confirmation) => confirmDelete(confirmation)}
-                user={userData}
-            />
+
+            <View>
+                <ConfirmModal
+                    isVisible={isConfirmVisible}
+                    text={`Do you want to add ${assetsNumber} images to the mosaic ?`}
+                    onClose={(confirmation) => confirmUpload(confirmation)}
+                    user={user}
+                />
+            </View>
+
+            <View>
+                <ConfirmModal
+                    isVisible={isConfirmDeleteModalVisible}
+                    text={"Are you sure you want to quit/delete this mosaic?"}
+                    onClose={(confirmation) => confirmDelete(confirmation)}
+                    user={userData}
+                />
+            </View>
+
+            <View>
+                <ConfirmModal
+                    isVisible={isConfirmDeleteImageModalVisible}
+                    text={"Are you sure you want to delete this image?"}
+                    onClose={(confirmation) => {
+                        if (confirmation) {
+                            confirmDeleteImage();
+                        }
+                        setConfirmDeleteImageModalVisible(false);
+                    }}
+                    user={userData}
+                />
+            </View>
+
+
             {activeMosaic?.id && (
                 <MozaiInfosModal
                     mosaicId={activeMosaic.id}

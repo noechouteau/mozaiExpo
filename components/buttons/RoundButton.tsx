@@ -23,7 +23,7 @@ export default function FRoundButton(props:any) {
         } else if (selectedTheme === 'redTheme') {
           setBgColor("#F0265D");
         } else if (selectedTheme === 'beigeTheme') {
-          setBgColor("#795749");
+          setBgColor("#c19887");
         } else {
           setBgColor("#F94D20");
         }

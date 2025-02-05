@@ -189,12 +189,6 @@ export default function GesturePan({ searchChain, deleteFunction }: any) {
                         imageStyle={{ borderTopLeftRadius: 15, borderTopRightRadius: 15 }}
                       >
                         <View style={styles.mosaicPreview}>
-                          <LinearGradient
-                            colors={[bgColor, "#0d0d0d", bgColor]}
-                            start={{ x: 0.4, y: -4.7 }}
-                            end={{ x: -1.1, y: 4.8 }}
-                            style={styles.background}
-                          />
                             {mosaique?.images?.slice(-4).reverse().map((image:any, index:any) => {
                             const positions = getImagePositions(mosaique.id, mosaique.images);
                             return (
