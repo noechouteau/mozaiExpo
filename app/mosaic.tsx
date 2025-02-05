@@ -18,6 +18,7 @@ import RoundButton from '@/components/buttons/RoundButton';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MozaiInfosModal from '@/components/MozaiInfosModal';
 import Animated from 'react-native-reanimated';
+import {addNewImage} from "@/components/gallery/SceneManager";
 
 type Props = PropsWithChildren<{
     user: any;
@@ -40,7 +41,7 @@ export default function Mosaic({user, mosaicId}: Props) {
     });
     const {mosaics, updateMosaic,deleteMosaic} = useMosaic();
     const {userData} = useUser();
-    
+
     const [topZindex, setTopZindex] = useState<number>(130);
 
     useEffect(() => {
@@ -69,6 +70,22 @@ export default function Mosaic({user, mosaicId}: Props) {
         }
     };
 
+    useEffect(() => {
+        if (!activeMosaic?.id) return;
+        const unsubscribe = firestore()
+            .collection("mosaiques")
+            .doc(activeMosaic.id)
+            .onSnapshot((docSnapshot) => {
+                if (docSnapshot.exists) {
+                    setActiveMosaic({
+                        id: docSnapshot.id,
+                        ...docSnapshot.data(),
+                    });
+                }
+            });
+        return () => unsubscribe();
+    }, [activeMosaic?.id]);
+
     async function confirmDelete(confirmation: boolean){
         setConfirmDeleteModalVisible(false)
         if(confirmation && mosaics && userData){
@@ -92,7 +109,7 @@ export default function Mosaic({user, mosaicId}: Props) {
 
 
     const pickImageAsync = async () => {
-        let result = await ImagePicker.launchImageLibraryAsync({
+        const result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ['images'],
             allowsMultipleSelection: true,
             allowsEditing: false,
@@ -100,12 +117,9 @@ export default function Mosaic({user, mosaicId}: Props) {
         });
 
         if (!result.canceled) {
-            setAssetsNumber(result.assets.length);
-
-            const assetPromises = result.assets.map(async asset => {
-                const loadedAsset: any = await Asset.loadAsync(asset.uri);
-
-                const {width, height} = asset;
+            const assetPromises = result.assets.map(async (asset) => {
+                const loadedAsset = await Asset.loadAsync(asset.uri);
+                const { width, height } = asset;
                 return {
                     uri: loadedAsset[0].uri,
                     localUri: loadedAsset[0].localUri,
@@ -114,44 +128,48 @@ export default function Mosaic({user, mosaicId}: Props) {
                 };
             });
             const images = await Promise.all(assetPromises);
-            images.forEach(image => console.log(image));
             setImagesToUpload(images);
-
-            setConfirmVisible(true);
+            await addImagesDirectly(images);
         } else {
             alert('You did not select any image.');
         }
     };
 
-    const confirmUpload = async (confirmation: boolean) => {
-        setConfirmVisible(false);
-        if (!confirmation) return;
+    const addImagesDirectly = async (pickedImages: any[]) => {
+        if (!activeMosaic?.id) return;
 
-        const assetPromises = imagesToUpload.map((asset: any) =>
-            uploadPicture(asset.localUri, `${activeMosaic.id}/${activeUser}/${asset.uri.split("/").pop()}`)
-        );
+        const s3Promises = pickedImages.map((asset: any) => {
+            return uploadPicture(
+                asset.localUri,
+                `${activeMosaic.id}/${activeUser}/${asset.uri.split("/").pop()}`
+            );
+        });
 
-        await Promise.all(assetPromises).then(async (res) => {
-            const newImages = res.map((image: any, index: number) => ({
-                date: new Timestamp(new Date().getTime() / 1000, 0),
-                informations: "",
-                reactions: [],
-                url: image.Location,
-                user: activeUser,
-                width: imagesToUpload[index].width,
-                height: imagesToUpload[index].height,
-            }));
+        const results = await Promise.all(s3Promises);
 
-            const updatedMosaic = {
-                ...activeMosaic,
-                images: [...activeMosaic.images, ...newImages],
-            };
+        const newImages = results.map((image: any, index: number) => ({
+            date: new Timestamp(new Date().getTime() / 1000, 0),
+            informations: "",
+            reactions: [],
+            url: image.Location,
+            user: activeUser,
+            width: pickedImages[index].width,
+            height: pickedImages[index].height,
+        }));
 
-            setActiveMosaic(updatedMosaic);
+        results.forEach((res, i) => {
+            const { width, height } = pickedImages[i];
+            addNewImage(res.Location, width, height, results.length);
+        });
 
-            await updateMosaic(activeMosaic.id, {
-                images: updatedMosaic.images,
-            });
+        const updatedMosaic = {
+            ...activeMosaic,
+            images: [...(activeMosaic.images || []), ...newImages],
+        };
+        setActiveMosaic(updatedMosaic);
+
+        await updateMosaic(activeMosaic.id, {
+            images: updatedMosaic.images,
         });
     };
 
@@ -176,7 +194,7 @@ export default function Mosaic({user, mosaicId}: Props) {
             <View>
             <ConfirmModal isVisible={isConfirmDeleteModalVisible} text={"Are you sure you want to quit/delete this mosaic?"} onClose={(confirmation)=>(confirmDelete(confirmation))} user={userData} />
             </View>
-            
+
 
             {activeMosaic?.id && (
                 <MozaiInfosModal
