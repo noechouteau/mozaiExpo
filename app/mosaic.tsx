@@ -98,11 +98,12 @@ export default function Mosaic({user, mosaicId}: Props) {
                 };
             });
             const images = await Promise.all(assetPromises);
+            images.forEach(image => console.log(image));
             setImagesToUpload(images);
 
             setConfirmVisible(true);
         } else {
-            console.log("bobo")
+            alert('You did not select any image.');
         }
     };
 
@@ -139,7 +140,6 @@ export default function Mosaic({user, mosaicId}: Props) {
     };
 
 
-
     return (
         <View style={styles.container}>
             <View style={[styles.topBar, {zIndex: topZindex}]}>
@@ -169,17 +169,16 @@ export default function Mosaic({user, mosaicId}: Props) {
 
             <Animated.View style={[styles.smoothCover, isMozaiInfosVisible ? {opacity: 1} : {opacity: 0}]}/>
 
+
             {activeMosaic?.images ? (
                 <Environnement images={activeMosaic.images}>
-
-                        {userData ? (
-                            <View style={styles.buttons}>
-                                <RoundButton onPress={pickImageAsync} style={{ width: 180, height: 50 }}>
-                                    <Text style={styles.text}>Add</Text>
-                                </RoundButton>
-                            </View>
-                        ) : <View></View>}
-
+                    {userData ? (
+                        <View style={styles.buttons}>
+                            <RoundButton onPress={pickImageAsync} style={{width: 180, height: 50}}>
+                                <Text style={styles.text}>Add</Text>
+                            </RoundButton>
+                        </View>
+                    ) : <View></View>}
                 </Environnement>
             ) : (
                 <Text>loading</Text>
