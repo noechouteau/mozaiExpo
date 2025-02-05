@@ -27,6 +27,8 @@ type Props = PropsWithChildren<{
 export default function Mosaic({user, mosaicId}: Props) {
 
     const [isConfirmVisible, setConfirmVisible] = useState<boolean>(false);
+    const [mosaiqueToDelete, setMosaiqueToDelete] = useState<string>("");
+    const [isConfirmDeleteModalVisible, setConfirmDeleteModalVisible] = useState<boolean>(false);
     const [isMozaiInfosVisible, setMozaiInfosVisible] = useState<boolean>(false);
     const [activeMosaic, setActiveMosaic] = useState<any>(null);
     const [activeUser, setActiveUser] = useState<any>(user);
@@ -36,8 +38,9 @@ export default function Mosaic({user, mosaicId}: Props) {
         'SFPRO': require('../assets/fonts/SFPRODISPLAYMEDIUM.otf'),
         "SFPROBOLD": require('../assets/fonts/SFPRODISPLAYBOLD.otf'),
     });
-    const {mosaics, updateMosaic} = useMosaic();
+    const {mosaics, updateMosaic,deleteMosaic} = useMosaic();
     const {userData} = useUser();
+    
     const [topZindex, setTopZindex] = useState<number>(130);
 
     useEffect(() => {
@@ -66,14 +69,27 @@ export default function Mosaic({user, mosaicId}: Props) {
         }
     };
 
-    const refreshActiveMosaic = async () => {
-        if (activeMosaic?.id) {
-            const updatedMosaic = await firestore().collection("mosaiques").doc(activeMosaic.id).get().then((doc) => doc.data());
-            if (updatedMosaic) {
-                setActiveMosaic(updatedMosaic);
-            }
-        }
-    };
+    async function confirmDelete(confirmation: boolean){
+        setConfirmDeleteModalVisible(false)
+        if(confirmation && mosaics && userData){
+          const completeMosToDel = mosaics.find((mosaique: any) => mosaique.id === mosaiqueToDelete);
+          if(completeMosToDel) {
+              await updateMosaic(mosaiqueToDelete, {
+              users: completeMosToDel.users.filter((user: any) => user.id !== userData.uid)
+              }).then(async() => {
+              console.log("Mosaic quitted");
+              console.log(completeMosToDel.users.length);
+              if(completeMosToDel.users.length == 1 || completeMosToDel.users.length == 0) {
+                  await deleteMosaic(mosaiqueToDelete).then(() => {
+                  console.log("Mosaic deleted");
+                  router.replace("/home");
+                  });
+              }
+              });
+          }
+          }
+      }
+
 
     const pickImageAsync = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
@@ -149,11 +165,18 @@ export default function Mosaic({user, mosaicId}: Props) {
                 />
             </View>
 
+            <View>
             <ConfirmModal isVisible={isConfirmVisible}
                           text={`Do you want to add ${assetsNumber} images to the mosaic ?`}
                           onClose={(confirmation) => confirmUpload(confirmation)}
                           user={user}
             />
+            </View>
+
+            <View>
+            <ConfirmModal isVisible={isConfirmDeleteModalVisible} text={"Are you sure you want to quit/delete this mosaic?"} onClose={(confirmation)=>(confirmDelete(confirmation))} user={userData} />
+            </View>
+            
 
             {activeMosaic?.id && (
                 <MozaiInfosModal
@@ -164,6 +187,7 @@ export default function Mosaic({user, mosaicId}: Props) {
                         setMozaiInfosVisible(false);
                     }}
                     users={activeMosaic.users}
+                    deleteFunction={(tempId:any)=>{setMosaiqueToDelete(tempId);setConfirmDeleteModalVisible(true)}}
                 />
             )}
 

@@ -20,9 +20,10 @@ type Props = PropsWithChildren<{
   onClose: () => void;
   users: any;
   mosaicId?: string;
+ deleteFunction: (id:any) => void;
 }>;
 
-export default function MozaiInfosModal({ isVisible, onClose, users,mosaicId }: Props) {
+export default function MozaiInfosModal({ isVisible, onClose, users,mosaicId,deleteFunction }: Props) {
     const [gradientStart, setGradientStart] = useState({ x: 0.2, y: 0 });
     const [gradientEnd, setGradientEnd] = useState({ x: 1.2, y: 1 });
     const router = useRouter();
@@ -67,9 +68,6 @@ export default function MozaiInfosModal({ isVisible, onClose, users,mosaicId }: 
     }
     }, [selectedTheme]);
     
-    const joinMosaic = async () => {
-        console.log(mosaicId)
-    } 
 
   return (
      <Modal animationIn="slideInDown" backdropColor={"#00000000"} animationOut="slideOutUp" onBackButtonPress={onClose} useNativeDriver hideModalContentWhileAnimating isVisible={isVisible}>
@@ -107,9 +105,11 @@ export default function MozaiInfosModal({ isVisible, onClose, users,mosaicId }: 
                                     <Ionicons name="copy-outline" size={20} color="white" />
                                 </Animated.View>
                             </Pressable>
-                          <GraytButton style={{display:"flex",width:220}} textStyle={{color:"#EE4266"}} onPress={joinMosaic}>
-                                <Ionicons name="exit-outline" size={20} color="#EE4266" style={{width:20,height:20,position:'absolute',left:20,top:10}} />
-                                <Text style={[{color: "#EE4266",fontFamily: "SFPRO", fontSize: 16,}]}>Leave mosaic</Text>
+                          <GraytButton style={{display:"flex",width:220}} textStyle={{color:"#EE4266"}} onPress={() => deleteFunction(mosaicId)}>
+                                <Ionicons name="exit-outline" size={20} color="#EE4266" style={{width:20,height:20,position:'absolute',left:20,top:14}} />
+                                {users.length > 1 ? <Text style={[{color: "#EE4266",fontFamily: "SFPRO", fontSize: 16,}]}>Leave mosaic</Text> 
+                                : <Text style={[{color: "#EE4266",fontFamily: "SFPRO", fontSize: 16,}]}>Delete mosaic</Text>
+                                }
                             </GraytButton>
     
                         </View>

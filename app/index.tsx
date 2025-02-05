@@ -13,7 +13,7 @@ const {width: screenWidth, height: screenHeight} = Dimensions.get('window');
 const backgroundImage = require('../assets/images/blueTheme/bg_login_2.png');
 
 export default function Index() {
-  const [isFirstLaunch, setIsFirstLaunch] = useState(null);
+  const [isFirstLaunch, setIsFirstLaunch] = useState<boolean | null>(null);
   // Tester l'onBoarding
   const [showOnboarding, setShowOnboarding] = useState(false);
 

@@ -39,6 +39,12 @@ export default function GesturePan({ searchChain, deleteFunction }: any) {
     { text: 'Quit', icon: 'trash', isDestructive: true, onPress: (mosaiqueId:any) => {deleteFunction(mosaiqueId)} },
   ];
 
+  const soloMenuItems = [
+    { text: 'Actions', icon: 'home', isTitle: true, onPress: () => {} },
+    { text: 'Rename', icon: 'edit', onPress: async(mosaiqueId:any) => {await AsyncStorage.setItem("activeMosaic",mosaiqueId);setRenameModalVisible(true)} },
+    { text: 'Delete', icon: 'trash', isDestructive: true, onPress: (mosaiqueId:any) => {deleteFunction(mosaiqueId)} },
+  ]
+
   const { mosaics } = useMosaic();
   let displayedMosaics = mosaics ? mosaics.filter((mosaique: any) => mosaique.name.toLowerCase().includes(searchChain.toLowerCase())) : [];
   const onLeft = useSharedValue(true);
@@ -242,10 +248,10 @@ export default function GesturePan({ searchChain, deleteFunction }: any) {
                   .map((mosaique: any) => (
                     mosaique.users &&
                     mosaique.users.length == 1 &&
-                    <HoldItem items={MenuItems} hapticFeedback="Heavy" key={mosaique?.id} menuAnchorPosition={mosaique == displayedMosaics[displayedMosaics.length-1] && displayedMosaics.length-1 > 1 ? "bottom-left" : "top-left"}
+                    <HoldItem items={soloMenuItems} hapticFeedback="Heavy" key={mosaique?.id} menuAnchorPosition={mosaique == displayedMosaics[displayedMosaics.length-1] && displayedMosaics.length-1 > 1 ? "bottom-left" : "top-left"}
                     actionParams={{
                       Rename: [mosaique.id],
-                      Quit: [mosaique.id],
+                      QuitDelete: [mosaique.id],
                     }}>
                       <Pressable style={styles.mosaicTag}  key={mosaique?.id} onPress={async() => {await AsyncStorage.setItem("activeMosaic", mosaique?.id);router.replace("/mosaic")}}>
                         

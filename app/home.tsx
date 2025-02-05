@@ -131,20 +131,13 @@ export default function Home() {
             }).then(async() => {
             console.log("Mosaic quitted");
             console.log(completeMosToDel.users.length);
-            if(completeMosToDel.users.length == 1){
+            if(completeMosToDel.users.length == 1 || completeMosToDel.users.length == 0) {
                 await deleteMosaic(mosaiqueToDelete).then(() => {
                 console.log("Mosaic deleted");
                 });
             }
             });
         }
-        // await deleteDbDoc({ collection: "mosaiques", docId: mosaiqueToDelete }).then(async () => {
-        //   await updateUserData({
-        //     mosaiques: user.mosaiques.filter((mosaique: any) => mosaique.id !== mosaiqueToDelete)
-        //   }).then(() => {
-        //     console.log("Mosaic deleted");
-        //   });
-        // });
         }
     }
 
@@ -169,7 +162,7 @@ export default function Home() {
             }}/></View>
         <View><CreateModal isVisible={isCreateModalVisible} onClose={() => setCreateModalVisible(false)} user={userData} /></View>
         <View><JoinModal isVisible={isJoinModalVisible} onClose={() => setJoinModalVisible(false)} user={userData} /></View>
-        <View><ConfirmModal isVisible={isConfirmDeleteModalVisible} text={"Are you sure you want to quit this mosaic?"} onClose={(confirmation)=>(confirmDelete(confirmation))} user={userData} /></View>
+        <View><ConfirmModal isVisible={isConfirmDeleteModalVisible} text={"Are you sure you want to quit/delete this mosaic?"} onClose={(confirmation)=>(confirmDelete(confirmation))} user={userData} /></View>
 
         <Animated.View style={styles.container}>
             <View style={{display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: screenWidth, gap: 10, position: mosaics && mosaics.length>0 ? "relative" : "absolute", top: 0}}>
