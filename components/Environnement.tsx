@@ -50,9 +50,9 @@ export default function App({images, children, delImageFunc}: {
 
                             {/* TODO : NOAI DELETE BUTTON*/}
 
-                            <Pressable onPress={() => () => {delImageFunc("test")}}>
+                            <Pressable onPress={() => {delImageFunc(meshClick.planeClicked?.urlImage)}}>
                             <View style={{
-                                width: "49%",
+                                width: 150,
                                 height: 60,
                                 display: 'flex',
                                 alignItems: 'center',

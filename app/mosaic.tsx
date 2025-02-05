@@ -1,8 +1,6 @@
-import {StyleSheet, View, Text, Pressable} from 'react-native';
+import {StyleSheet, View, Text} from 'react-native';
 import {router} from 'expo-router';
-
 import {useFonts} from 'expo-font';
-
 import {PropsWithChildren, useEffect, useState} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
@@ -18,6 +16,7 @@ import RoundButton from '@/components/buttons/RoundButton';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MozaiInfosModal from '@/components/MozaiInfosModal';
 import Animated from 'react-native-reanimated';
+import {addNewImage} from "@/components/gallery/SceneManager";
 
 type Props = PropsWithChildren<{
     user: any;
@@ -25,23 +24,21 @@ type Props = PropsWithChildren<{
 }>;
 
 export default function Mosaic({user, mosaicId}: Props) {
-
-    const [isConfirmVisible, setConfirmVisible] = useState<boolean>(false);
-    const [mosaiqueToDelete, setMosaiqueToDelete] = useState<string>("");
-    const [isConfirmDeleteModalVisible, setConfirmDeleteModalVisible] = useState<boolean>(false);
-    const [isMozaiInfosVisible, setMozaiInfosVisible] = useState<boolean>(false);
+    const [isConfirmVisible, setConfirmVisible] = useState(false);
+    const [mosaiqueToDelete, setMosaiqueToDelete] = useState("");
+    const [isConfirmDeleteModalVisible, setConfirmDeleteModalVisible] = useState(false);
+    const [isMozaiInfosVisible, setMozaiInfosVisible] = useState(false);
     const [activeMosaic, setActiveMosaic] = useState<any>(null);
     const [activeUser, setActiveUser] = useState<any>(user);
-    const [assetsNumber, setAssetsNumber] = useState<number>(0);
+    const [assetsNumber, setAssetsNumber] = useState(0);
     const [imagesToUpload, setImagesToUpload] = useState<any>();
-    const [loaded, error] = useFonts({
+    const [loaded] = useFonts({
         'SFPRO': require('../assets/fonts/SFPRODISPLAYMEDIUM.otf'),
         "SFPROBOLD": require('../assets/fonts/SFPRODISPLAYBOLD.otf'),
     });
-    const {mosaics, updateMosaic,deleteMosaic} = useMosaic();
+    const {mosaics, updateMosaic, deleteMosaic} = useMosaic();
     const {userData} = useUser();
-    
-    const [topZindex, setTopZindex] = useState<number>(130);
+    const [topZindex, setTopZindex] = useState(130);
 
     useEffect(() => {
         fetchData();
@@ -52,73 +49,85 @@ export default function Mosaic({user, mosaicId}: Props) {
             const tempActiveMosaic = await AsyncStorage.getItem("activeMosaic");
             const user = await AsyncStorage.getItem("activeUser") ?? "";
             setActiveUser(user);
-
             if (tempActiveMosaic && mosaics) {
-                const mosaic = mosaics.find((mosaic: any) => mosaic.id === tempActiveMosaic);
+                const mosaic = mosaics.find((m: any) => m.id === tempActiveMosaic);
                 if (mosaic) {
                     setActiveMosaic(mosaic);
                 }
             } else if (!user && tempActiveMosaic) {
                 const mosaic = await firestore().collection("mosaiques").doc(tempActiveMosaic).get().then((doc) => doc.data());
                 if (mosaic) {
-                    setActiveMosaic(mosaic);
+                    setActiveMosaic({id: tempActiveMosaic, ...mosaic});
                 }
             }
-        } catch (error) {
-            console.error("Error fetching data: ", error);
-        }
+        } catch {}
     };
 
-    async function confirmDelete(confirmation: boolean){
-        setConfirmDeleteModalVisible(false)
-        if(confirmation && mosaics && userData){
-          const completeMosToDel = mosaics.find((mosaique: any) => mosaique.id === mosaiqueToDelete);
-          if(completeMosToDel) {
-              await updateMosaic(mosaiqueToDelete, {
-              users: completeMosToDel.users.filter((user: any) => user.id !== userData.uid)
-              }).then(async() => {
-              console.log("Mosaic quitted");
-              console.log(completeMosToDel.users.length);
-              if(completeMosToDel.users.length == 1 || completeMosToDel.users.length == 0) {
-                  await deleteMosaic(mosaiqueToDelete).then(() => {
-                  console.log("Mosaic deleted");
-                  router.replace("/home");
-                  });
-              }
-              });
-          }
-          }
-      }
+    useEffect(() => {
+        if (!activeMosaic?.id) return;
+        const unsubscribe = firestore()
+            .collection("mosaiques")
+            .doc(activeMosaic.id)
+            .onSnapshot((docSnapshot) => {
+                if (docSnapshot.exists) {
+                    setActiveMosaic({id: docSnapshot.id, ...docSnapshot.data()});
+                }
+            });
+        return () => unsubscribe();
+    }, [activeMosaic?.id]);
 
     async function deleteImage(imageUrl: string) {
-        const updatedImages = activeMosaic.images.filter((image: any) => image.url !== imageUrl);
-        const updatedMosaic = {
-            ...activeMosaic,
-            images: updatedImages,
-        };
+        console.log("delete image", imageUrl);
+        // const updatedImages = activeMosaic.images.filter((image: any) => image.url !== imageUrl);
+        // const updatedMosaic = {
+        //     ...activeMosaic,
+        //     images: updatedImages,
+        // };
 
-        setActiveMosaic(updatedMosaic);
+        // setActiveMosaic(updatedMosaic);
 
-        await updateMosaic(activeMosaic.id, {
-            images: updatedImages,
-        });
+        // await updateMosaic(activeMosaic.id, {
+        //     images: updatedImages,
+        // });
     }
 
+    async function confirmDelete(confirmation: boolean) {
+        setConfirmDeleteModalVisible(false);
+        if (confirmation && mosaics && userData) {
+            const completeMosToDel = mosaics.find((m: any) => m.id === mosaiqueToDelete);
+            if (completeMosToDel) {
+                await updateMosaic(mosaiqueToDelete, {
+                    users: completeMosToDel.users.filter((u: any) => u.id !== userData.uid)
+                }).then(async() => {
+                    if (completeMosToDel.users.length <= 1) {
+                        await deleteMosaic(mosaiqueToDelete).then(() => {
+                            router.replace("/home");
+                        });
+                    }
+                });
+            }
+        }
+    }
+
+    function confirmUpload(confirmation: boolean) {
+        setConfirmVisible(false);
+        if (!confirmation) return;
+        if (imagesToUpload && imagesToUpload.length > 0) {
+            addImagesDirectly(imagesToUpload);
+        }
+    }
 
     const pickImageAsync = async () => {
-        let result = await ImagePicker.launchImageLibraryAsync({
+        const result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ['images'],
             allowsMultipleSelection: true,
             allowsEditing: false,
             quality: 1,
         });
-
         if (!result.canceled) {
             setAssetsNumber(result.assets.length);
-
-            const assetPromises = result.assets.map(async asset => {
-                const loadedAsset: any = await Asset.loadAsync(asset.uri);
-
+            const assetPromises = result.assets.map(async (asset) => {
+                const loadedAsset = await Asset.loadAsync(asset.uri);
                 const {width, height} = asset;
                 return {
                     uri: loadedAsset[0].uri,
@@ -128,47 +137,38 @@ export default function Mosaic({user, mosaicId}: Props) {
                 };
             });
             const images = await Promise.all(assetPromises);
-            images.forEach(image => console.log(image));
             setImagesToUpload(images);
-
             setConfirmVisible(true);
-        } else {
-            alert('You did not select any image.');
         }
     };
 
-    const confirmUpload = async (confirmation: boolean) => {
-        setConfirmVisible(false);
-        if (!confirmation) return;
-
-        const assetPromises = imagesToUpload.map((asset: any) =>
-            uploadPicture(asset.localUri, `${activeMosaic.id}/${activeUser}/${asset.uri.split("/").pop()}`)
-        );
-
-        await Promise.all(assetPromises).then(async (res) => {
-            const newImages = res.map((image: any, index: number) => ({
-                date: new Timestamp(new Date().getTime() / 1000, 0),
-                informations: "",
-                reactions: [],
-                url: image.Location,
-                user: activeUser,
-                width: imagesToUpload[index].width,
-                height: imagesToUpload[index].height,
-            }));
-
-            const updatedMosaic = {
-                ...activeMosaic,
-                images: [...activeMosaic.images, ...newImages],
-            };
-
-            setActiveMosaic(updatedMosaic);
-
-            await updateMosaic(activeMosaic.id, {
-                images: updatedMosaic.images,
-            });
+    const addImagesDirectly = async (pickedImages: any[]) => {
+        if (!activeMosaic?.id) return;
+        const s3Promises = pickedImages.map((asset: any) => {
+            return uploadPicture(asset.localUri, `${activeMosaic.id}/${activeUser}/${asset.uri.split("/").pop()}`);
+        });
+        const results = await Promise.all(s3Promises);
+        const newImages = results.map((image: any, i: number) => ({
+            date: new Timestamp(new Date().getTime() / 1000, 0),
+            informations: "",
+            reactions: [],
+            url: image.Location,
+            user: activeUser,
+            width: pickedImages[i].width,
+            height: pickedImages[i].height,
+        }));
+        results.forEach((res, i) => {
+            addNewImage(res.Location, pickedImages[i].width, pickedImages[i].height, results.length);
+        });
+        const updatedMosaic = {
+            ...activeMosaic,
+            images: [...(activeMosaic.images || []), ...newImages],
+        };
+        setActiveMosaic(updatedMosaic);
+        await updateMosaic(activeMosaic.id, {
+            images: updatedMosaic.images,
         });
     };
-
 
     return (
         <View style={styles.container}>
@@ -178,20 +178,18 @@ export default function Mosaic({user, mosaicId}: Props) {
                     title="Home" icon="home" size={25}
                 />
             </View>
-
-            <View>
-            <ConfirmModal isVisible={isConfirmVisible}
-                          text={`Do you want to add ${assetsNumber} images to the mosaic ?`}
-                          onClose={(confirmation) => confirmUpload(confirmation)}
-                          user={user}
+            <ConfirmModal
+                isVisible={isConfirmVisible}
+                text={`Do you want to add ${assetsNumber} images to the mosaic ?`}
+                onClose={(confirmation) => confirmUpload(confirmation)}
+                user={user}
             />
-            </View>
-
-            <View>
-            <ConfirmModal isVisible={isConfirmDeleteModalVisible} text={"Are you sure you want to quit/delete this mosaic?"} onClose={(confirmation)=>(confirmDelete(confirmation))} user={userData} />
-            </View>
-            
-
+            <ConfirmModal
+                isVisible={isConfirmDeleteModalVisible}
+                text={"Are you sure you want to quit/delete this mosaic?"}
+                onClose={(confirmation) => confirmDelete(confirmation)}
+                user={userData}
+            />
             {activeMosaic?.id && (
                 <MozaiInfosModal
                     mosaicId={activeMosaic.id}
@@ -201,13 +199,18 @@ export default function Mosaic({user, mosaicId}: Props) {
                         setMozaiInfosVisible(false);
                     }}
                     users={activeMosaic.users}
-                    deleteFunction={(tempId:any)=>{setMosaiqueToDelete(tempId);setConfirmDeleteModalVisible(true)}}
+                    deleteFunction={(tempId: any) => {
+                        setMosaiqueToDelete(tempId);
+                        setConfirmDeleteModalVisible(true);
+                    }}
                 />
             )}
-
-            <Animated.View style={[styles.smoothCover, isMozaiInfosVisible ? {opacity: 1} : {opacity: 0}]}/>
-
-
+            <Animated.View
+                style={[
+                    styles.smoothCover,
+                    isMozaiInfosVisible ? {opacity: 1} : {opacity: 0}
+                ]}
+            />
             {activeMosaic?.images ? (
                 <Environnement images={activeMosaic.images} delImageFunc={deleteImage}>
                     {userData ? (
@@ -216,13 +219,11 @@ export default function Mosaic({user, mosaicId}: Props) {
                                 <Text style={styles.text}>Add</Text>
                             </RoundButton>
                         </View>
-                    ) : <View></View>}
+                    ) : <View />}
                 </Environnement>
             ) : (
                 <Text>loading</Text>
             )}
-
-
             <View style={styles.infoButtonContainer}>
                 {activeMosaic && (
                     <RoundButton
@@ -262,12 +263,10 @@ const styles = StyleSheet.create({
         zIndex: 100,
         left: "50%",
         transform: [{translateX: "-50%"}],
-        display: 'flex',
         flexDirection: 'column',
         gap: 8,
     },
     topBar: {
-        display: 'flex',
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
@@ -285,13 +284,11 @@ const styles = StyleSheet.create({
         position: 'absolute',
         zIndex: 125,
         top: 45,
-        display: 'flex',
         flexDirection: 'row',
         justifyContent: 'center',
         width: '100%',
     },
     infoButtonContent: {
-        display: 'flex',
         flexDirection: 'row',
         gap: 8,
         alignItems: 'center',
