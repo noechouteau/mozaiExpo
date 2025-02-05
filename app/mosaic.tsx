@@ -16,7 +16,7 @@ import RoundButton from '@/components/buttons/RoundButton';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MozaiInfosModal from '@/components/MozaiInfosModal';
 import Animated, { useSharedValue } from 'react-native-reanimated';
-import {addNewImage} from "@/components/gallery/SceneManager";
+import {addNewImage, removeImage} from "@/components/gallery/SceneManager";
 
 type Props = PropsWithChildren<{
     user: any;
@@ -82,19 +82,19 @@ export default function Mosaic({user, mosaicId}: Props) {
         imageToDelete.value = imageUrl;
         setConfirmDeleteImageModalVisible(true);
     }
-    
-    async function confirmDeleteImage(){
-        const updatedImages = activeMosaic.images.filter((image: any) => image.url !== imageToDelete.value);
+
+    async function confirmDeleteImage() {
+        const updatedImages = activeMosaic.images.filter(
+            (image: any) => image.url !== imageToDelete.value
+        );
         const updatedMosaic = {
             ...activeMosaic,
             images: updatedImages,
         };
-
         setActiveMosaic(updatedMosaic);
+        await updateMosaic(activeMosaic.id, { images: updatedImages });
 
-        await updateMosaic(activeMosaic.id, {
-            images: updatedImages,
-        });
+        removeImage(imageToDelete.value);
     }
 
     async function confirmDelete(confirmation: boolean) {

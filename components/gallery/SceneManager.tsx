@@ -86,6 +86,8 @@ function createPlane({ scene, image, position }) {
     });
     const mesh = new THREE.Mesh(geometry, material);
     mesh.urlImage = image.url;
+    mesh.userData = { url: image.url };
+
     loadTexture(image.url, (tex) => {
         material.uniforms.frontTexture.value = tex;
         material.needsUpdate = true;
@@ -114,6 +116,15 @@ function createRandomGrid({ spacing, scene, images }) {
                 position: new THREE.Vector3(x, y, z),
             });
         }
+    }
+}
+
+export function removeImage(url: string) {
+    const index = planes.findIndex((mesh) => (mesh?.urlImage === url));
+    if (index !== -1 && sceneRef) {
+        sceneRef.remove(planes[index]);
+        planes.splice(index, 1);
+
     }
 }
 
