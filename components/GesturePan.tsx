@@ -155,11 +155,11 @@ export default function GesturePan({ searchChain, deleteFunction }: any) {
     <GestureDetector gesture={panGesture}>
       <Animated.View style={{marginTop:10}}>
       <SelectButton knobPosition={knobPosition} setKnobPosition={setKnobPosition} />
+      <View><RenameModal isVisible={isRenameModalVisible} onClose={() => setRenameModalVisible(false)} ></RenameModal></View>
       <Animated.View style={[styles.container, animatedStyle]}>
       {allLoaded &&
         <>
         <Animated.View style={[styles.box]} >
-          <View><RenameModal isVisible={isRenameModalVisible} onClose={() => setRenameModalVisible(false)} ></RenameModal></View>
           <ScrollView contentContainerStyle={styles.mosaiquesContainer}>
               {displayedMosaics
                 .filter((mosaique: any) => mosaique !== null && mosaique !== undefined) // Avoid null/undefined
@@ -244,6 +244,7 @@ export default function GesturePan({ searchChain, deleteFunction }: any) {
                     mosaique.users.length == 1 &&
                     <HoldItem items={MenuItems} hapticFeedback="Heavy" key={mosaique?.id} menuAnchorPosition={mosaique == displayedMosaics[displayedMosaics.length-1] && displayedMosaics.length-1 > 1 ? "bottom-left" : "top-left"}
                     actionParams={{
+                      Rename: [mosaique.id],
                       Quit: [mosaique.id],
                     }}>
                       <Pressable style={styles.mosaicTag}  key={mosaique?.id} onPress={async() => {await AsyncStorage.setItem("activeMosaic", mosaique?.id);router.replace("/mosaic")}}>
