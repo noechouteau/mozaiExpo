@@ -3,6 +3,7 @@ import {useEffect, useRef, useState} from 'react';
 import {cameraRef, planes, raycaster, targetPosition} from './SceneManager';
 import {THREE} from 'expo-three';
 import MeshClick from '@/components/gallery/MeshClick';
+import {Gyroscope} from "expo-sensors";
 
 const {width, height} = Dimensions.get('window');
 
@@ -28,6 +29,37 @@ const useInteractionHandlers = () => {
     const isMoving = useRef<boolean>(false);
 
 
+    useEffect(() => {
+        const gyroSensitivity = 0.02;
+        let gyroSubscription: any;
+        const updateGyroscope = ({ x, y }: { x: number; y: number }) => {
+            if (cameraRef.current && !isMoving.current && !isMeshActive) {
+                targetPosition.current.x -= y * gyroSensitivity;
+                targetPosition.current.y += x * gyroSensitivity;
+                targetPosition.current.x = Math.max(
+                    Math.min(targetPosition.current.x, sizesPan.maxX),
+                    sizesPan.minX
+                );
+                targetPosition.current.y = Math.max(
+                    Math.min(targetPosition.current.y, sizesPan.maxY),
+                    sizesPan.minY
+                );
+            }
+        };
+        Gyroscope.setUpdateInterval(16);
+        const subscribeGyroscope = () => {
+            gyroSubscription = Gyroscope.addListener(updateGyroscope);
+        };
+        const unsubscribeGyroscope = () => {
+            if (gyroSubscription) {
+                gyroSubscription.remove();
+            }
+        };
+        subscribeGyroscope();
+        return () => {
+            unsubscribeGyroscope();
+        };
+    }, [isMeshActive]);
 
     const meshClickRef = useRef<MeshClick | null>(null);
 
