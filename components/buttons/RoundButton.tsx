@@ -41,8 +41,7 @@ export default function FRoundButton(props:any) {
 
     const handlePressOut = () => {
       scaleAnim.value = withTiming(1, { duration: 100 }); // Scale back to normal
-      if(props.onPress)
-      props.onPress();
+
     };
 
 
