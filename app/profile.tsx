@@ -25,6 +25,7 @@ const blue = require('../assets/images/blueTheme/bg_login_2.png');
 const green = require('../assets/images/greenTheme/bg_login_2.png');
 const red = require('../assets/images/redTheme/bg_login_2.png');
 const orange = require('../assets/images/orangeTheme/bg_login_2.png');
+const beige = require('../assets/images/beigeTheme/bg_login_2.png');
 
 export default function Profile() {
 
@@ -81,8 +82,9 @@ export default function Profile() {
         } else if (selectedTheme === 'redTheme') {
             setBackgroundImage(red);
             setBgColor("#F0265D");
-            // } else if (selectedTheme === 'purpleTheme') {
-        //     backgroundImage = require('../assets/images/purpleTheme/bg_login_2.png');
+        } else if (selectedTheme === 'beigeTheme') {
+            setBackgroundImage(beige);
+            setBgColor("#795749");
         } else {
             setBackgroundImage(orange);
             setBgColor("#F94D20");
@@ -154,6 +156,10 @@ export default function Profile() {
 
                             <Pressable onPress={() => changeTheme("orangeTheme")}>
                                 <View style={[{width:25,height:25,backgroundColor:"#F94D20",borderRadius:50}, selectedTheme=="orangeTheme" ? {borderWidth:1,borderColor:"#ffffffff"}:{}]}></View>
+                            </Pressable>
+
+                            <Pressable onPress={() => changeTheme("beigeTheme")}>
+                                <View style={[{width:25,height:25,backgroundColor:"#795749",borderRadius:50}, selectedTheme=="beigeTheme" ? {borderWidth:1,borderColor:"#ffffffff"}:{}]}></View>
                             </Pressable>
                         </View>
                     </View>

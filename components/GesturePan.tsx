@@ -78,8 +78,10 @@ export default function GesturePan({ searchChain, deleteFunction }: any) {
       setBgColor("#F0265D");
       setRadialBg(require('../assets/images/redTheme/radialBg.png'));
       setBackgroundImage(require('../assets/images/redTheme/mosaicMinia.png'));
-    // } else if (selectedTheme === 'purpleTheme') {
-    //   setBgColor("#761DA7");
+    } else if (selectedTheme === 'beigeTheme') {
+      setBgColor("#795749");
+      setRadialBg(require('../assets/images/beigeTheme/radialBg.png'));
+      setBackgroundImage(require('../assets/images/beigeTheme/mosaicMinia.png'));
     } else {
       setBgColor("#F94D20");
       setRadialBg(require('../assets/images/orangeTheme/radialBg.png'));

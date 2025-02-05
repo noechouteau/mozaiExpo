@@ -21,6 +21,7 @@ const blue = require('../assets/images/blueTheme/bg_login_2.png');
 const green = require('../assets/images/greenTheme/bg_login_2.png');
 const red = require('../assets/images/redTheme/bg_login_2.png');
 const orange = require('../assets/images/orangeTheme/bg_login_2.png');
+const beige = require('../assets/images/beigeTheme/bg_login_2.png');
 
 export default function LoadingScreen(props:any) {
     const {selectedTheme, changeTheme} = useUser();
@@ -37,8 +38,9 @@ export default function LoadingScreen(props:any) {
         } else if (selectedTheme === 'redTheme') {
             setBackgroundImage(red);
             setBgColor("#F0265D");
-            // } else if (selectedTheme === 'purpleTheme') {
-        //     backgroundImage = require('../assets/images/purpleTheme/bg_login_2.png');
+        } else if (selectedTheme === 'beigeTheme') {
+            setBackgroundImage(beige);
+            setBgColor("#795749");
         } else {
             setBackgroundImage(orange);
             setBgColor("#F94D20");

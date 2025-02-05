@@ -90,6 +90,20 @@ export default function Mosaic({user, mosaicId}: Props) {
           }
       }
 
+    async function deleteImage(imageUrl: string) {
+        const updatedImages = activeMosaic.images.filter((image: any) => image.url !== imageUrl);
+        const updatedMosaic = {
+            ...activeMosaic,
+            images: updatedImages,
+        };
+
+        setActiveMosaic(updatedMosaic);
+
+        await updateMosaic(activeMosaic.id, {
+            images: updatedImages,
+        });
+    }
+
 
     const pickImageAsync = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
@@ -195,7 +209,7 @@ export default function Mosaic({user, mosaicId}: Props) {
 
 
             {activeMosaic?.images ? (
-                <Environnement images={activeMosaic.images}>
+                <Environnement images={activeMosaic.images} delImageFunc={deleteImage}>
                     {userData ? (
                         <View style={styles.buttons}>
                             <RoundButton onPress={pickImageAsync} style={{width: 180, height: 50}}>

@@ -1,15 +1,17 @@
 import React from 'react';
 import {GLView} from 'expo-gl';
-import {Text, View} from 'react-native';
+import {Pressable, Text, View} from 'react-native';
 import SceneManager from "@/components/gallery/SceneManager";
 import useInteractionHandlers from "@/components/gallery/useInteractionHandlers";
 import {GestureHandlerRootView, PinchGestureHandler} from "react-native-gesture-handler";
 import DraggableEmojis from "@/components/gallery/DraggableEmojis";
 import RoundButton from "@/components/buttons/RoundButton";
+import GraytButton from './buttons/GrayButton';
 
-export default function App({images, children}: {
+export default function App({images, children, delImageFunc}: {
     images: string[],
-    children?: React.ReactNode
+    children?: React.ReactNode,
+    delImageFunc: (imgUrl: string) => void
 }) {
     const {
         isMeshActive,
@@ -47,6 +49,8 @@ export default function App({images, children}: {
                             </View>
 
                             {/* TODO : NOAI DELETE BUTTON*/}
+
+                            <Pressable onPress={() => () => {delImageFunc("test")}}>
                             <View style={{
                                 width: "49%",
                                 height: 60,
@@ -62,6 +66,7 @@ export default function App({images, children}: {
                                     textAlign: 'center',
                                 }}>Delete</Text>
                             </View>
+                            </Pressable>
                         </View>
                     </>
                 ) : children

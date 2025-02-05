@@ -22,8 +22,8 @@ export default function LightButton(props:any) {
         setRadialBg(require('../../assets/images/blueTheme/radialBg.png'));
       } else if (selectedTheme === 'redTheme') {
         setRadialBg(require('../../assets/images/redTheme/radialBg.png'));
-      // } else if (selectedTheme === 'purpleTheme') {
-      //   setBgColor("#761DA7");
+      } else if (selectedTheme === 'beigeTheme') {
+        setRadialBg(require('../../assets/images/beigeTheme/radialBg.png'));
       } else {
         setRadialBg(require('../../assets/images/orangeTheme/radialBg.png'));
       }

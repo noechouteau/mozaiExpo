@@ -17,8 +17,8 @@ const SelectButton = (props: any) => {
     radialBg = require('../../assets/images/blueTheme/radialBg.png');
   } else if (selectedTheme === 'redTheme') {
     radialBg = require('../../assets/images/redTheme/radialBg.png');
-  // } else if (selectedTheme === 'purpleTheme') {
-  //   radialBg = require('../../assets/images/purpleTheme/radialBg.png');
+  } else if (selectedTheme === 'beigeTheme') {
+    radialBg = require('../../assets/images/beigeTheme/radialBg.png');
   } else {
     radialBg = require('../../assets/images/orangeTheme/radialBg.png');
   }

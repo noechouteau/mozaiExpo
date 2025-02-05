@@ -37,8 +37,8 @@ export default function RenameModal({ isVisible, onClose }: Props) {
         setBgColor("#1100ff");
     } else if (selectedTheme === 'redTheme') {
         setBgColor("#F0265D");
-    // } else if (selectedTheme === 'purpleTheme') {
-    //   setBgColor("#761DA7");
+    } else if (selectedTheme === 'beigeTheme') {
+        setBgColor("#795749");
     } else {
         setBgColor("#F94D20");
     }
