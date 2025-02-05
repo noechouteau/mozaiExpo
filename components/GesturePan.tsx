@@ -247,7 +247,7 @@ export default function GesturePan({ searchChain, deleteFunction }: any) {
                     <HoldItem items={soloMenuItems} hapticFeedback="Heavy" key={mosaique?.id} menuAnchorPosition={mosaique == displayedMosaics[displayedMosaics.length-1] && displayedMosaics.length-1 > 1 ? "bottom-left" : "top-left"}
                     actionParams={{
                       Rename: [mosaique.id],
-                      QuitDelete: [mosaique.id],
+                      Delete: [mosaique.id],
                     }}>
                       <Pressable style={styles.mosaicTag}  key={mosaique?.id} onPress={async() => {await AsyncStorage.setItem("activeMosaic", mosaique?.id);router.replace("/mosaic")}}>
                         

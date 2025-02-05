@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { act, useEffect } from 'react';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -6,6 +6,10 @@ import Animated, {
   withDecay,
   useAnimatedReaction,
   runOnJS,
+  interpolateColor,
+  withRepeat,
+  withTiming,
+  interpolate,
 } from 'react-native-reanimated';
 import {
   Gesture,
@@ -47,18 +51,21 @@ export default function GestureMosaic() {
   const [oldLeftPhotos, setOldLeftPhotos] = React.useState<any[]>([]);
   const [oldTopLeftPhotos, setOldTopLeftPhotos] = React.useState<any[]>([]);
 
-  const testOldPhotos = useSharedValue<any[]>([]);
-
   const baseIndex = useSharedValue(0);
   const leftIndex = useSharedValue(0);
   const topIndex = useSharedValue(0);
   const topLeftIndex = useSharedValue(0);
 
 
-  const [positions, setPositions] = React.useState<any[][]>([]);
+  const [positions, setPositions] = React.useState<any[]>([]);
   const [topPositions, setTopPositions] = React.useState<any[]>([]);
   const [leftPositions, setLeftPositions] = React.useState<any[]>([]);
   const [topLeftPositions, setTopLeftPositions] = React.useState<any[]>([]);
+
+  const [oldPositions, setOldPositions] = React.useState<any[][]>([]);
+  const [oldTopPositions, setOldTopPositions] = React.useState<any[][]>([]);
+  const [oldLeftPositions, setOldLeftPositions] = React.useState<any[][]>([]);
+  const [oldTopLeftPositions, setOldTopLeftPositions] = React.useState<any[][]>([])
 
   const scale = useSharedValue(1);
   const prevScale = useSharedValue(1); 
@@ -81,6 +88,7 @@ export default function GestureMosaic() {
 
   const opacity = useSharedValue(1);
   const currentEvent:any = useSharedValue({});
+  const progress = useSharedValue(0);
 
 
   const generateGridPositions = (images: any) => {
@@ -117,80 +125,92 @@ export default function GestureMosaic() {
     });
 
     const lastPosition = positions[positions.length-1]
-    constantHeightOffset.value = lastPosition.y + 150 + SPACING
-    topOffset.value = lastPosition.y + 150 + SPACING
+    constantHeightOffset.value = 6*150 +15
+    topOffset.value = 6*150+10
     console.log(constantHeightOffset)
     console.log(positions)
   
     return positions;
   };
 
-  async function getPhotos(func:any, oldFunc:any, posFunc:any, passedPhotos:any,passedPositions:any) {
-    setPhotos([]);
-    if (status === null) {
-      await requestPermission();
-    }
-  
-    const fetchedPhotos = await MediaLibrary.getAssetsAsync({
-      first : 1,
-    });
-
-    setTotal(fetchedPhotos.totalCount)
-
-    let randImages = []
-    let randIndexes = [0]
-    console.log("FETCHED",fetchedPhotos.totalCount)
-    for(let i = 0; i< 60; i++){
-      let tempRand = Math.floor(Math.random() * fetchedPhotos.totalCount)
-
-      let rand = await MediaLibrary.getAssetsAsync({
-        // after: fetchedPhotos.assets[tempRand].id,
-        after: tempRand.toFixed(),
-        first: 1,
-      })
-      randImages.push(rand.assets[0])
-      randIndexes.push(tempRand)
-    }
-  
-    let newPhotos = [];
-  
-    for (const element of randImages) {
-      let asset = element;
-  
-      let scaledWidth = asset.width;
-      let scaledHeight = asset.height;
-  
-      // Scale down if too large, but keep aspect ratio
-      if (asset.height > 150) {
-        const aspectRatio = asset.width / asset.height;
-        // if (aspectRatio > 1) {
-        //   scaledWidth = 150;
-        //   scaledHeight = 150 / aspectRatio;
-        // } else {
-          scaledHeight = 150;
-          scaledWidth = 150 * aspectRatio;
-        // }
+  async function getPhotos(func:any, oldFunc:any, posFunc:any, oldPosFunc:any,passedPhotos:any,passedPositions:any) {
+      if (status === null) {
+        await requestPermission();
       }
-  
-      newPhotos.push({
-        uri: asset.uri,
-        width: scaledWidth,
-        height: scaledHeight,
-      });
-    }
-    func(newPhotos);
-    oldFunc([...passedPhotos, newPhotos]);
-    console.log("JUSTGOTNEW")
-    console.log(oldPhotos)
-    console.log(newPhotos)
-    console.log([...oldPhotos, newPhotos])
 
-    posFunc([...passedPositions, generateGridPositions(newPhotos)]);
+      let actualTotal = total
+      if(total == 0){
+        const fetchedPhotos = await MediaLibrary.getAssetsAsync({
+          first : 1,
+        });
+        setTotal(fetchedPhotos.totalCount)
+        actualTotal = fetchedPhotos.totalCount
+      }
+
+
+      let randImages = []
+      let randIndexes = [0]
+      for(let i = 0; i< 60; i++){
+        console.log(i)
+        let tempRand = Math.floor(Math.random() * actualTotal)
+
+        let rand = await MediaLibrary.getAssetsAsync({
+          // after: fetchedPhotos.assets[tempRand].id,
+          after: tempRand.toFixed(),
+          first: 1,
+        })
+        randImages.push(rand.assets[0])
+        randIndexes.push(tempRand)
+      }
+    
+      let newPhotos = [];
+      console.log("still here")
+      // if(baseIndex.value <= 0){
+
+      for (const element of randImages) {
+        let asset = element;
+    
+        let scaledWidth = asset.width;
+        let scaledHeight = asset.height;
+    
+        // Scale down if too large, but keep aspect ratio
+        if (asset.height > 150) {
+          const aspectRatio = asset.width / asset.height;
+
+            scaledHeight = 150;
+            scaledWidth = 150 * aspectRatio;
+        }
+    
+        newPhotos.push({
+          uri: asset.uri,
+          width: scaledWidth,
+          height: scaledHeight,
+        });
+      }
+      console.log("1")
+      oldFunc([...(passedPhotos || []), newPhotos]);
+      console.log("2")
+      func(newPhotos);
+      console.log("JUSTGOTNEW")
+      console.log(oldPhotos)
+      console.log(newPhotos)
+      console.log([...oldPhotos, newPhotos])
+
+      console.log("3")
+      posFunc(generateGridPositions(newPhotos))
+      oldPosFunc([...(passedPositions || []), generateGridPositions(newPhotos)])
+    // }
   }
 
     useEffect(() => {
-        getPhotos(setPhotos, setOldPhotos, setPositions,oldPhotos, positions);
+      // progress.value = withRepeat(
+      //   withTiming(1, { duration: 1000, }),
+      //   -1,
+      //   true
+      // );
+        getPhotos(setPhotos, setOldPhotos, setPositions,setOldPositions,oldPhotos, positions);
         console.log("useEffect")
+
     }, []);
 
     useEffect(() => {
@@ -207,30 +227,39 @@ export default function GestureMosaic() {
       // console.log(-topOffset.value-700, -heihtBaseOffset.value-700)
     
       if(translationX.value < -leftOffset.value-700 && baseOffset.value < leftOffset.value ){
-        console.log("houas")
         baseOffset.value = leftOffset.value + constantOffset
         baseIndex.value++
 
         if(oldPhotos[baseIndex.value] == undefined){
           console.log("BAYBAEHEHEHE")
-          runOnJS(getPhotos)(setPhotos, setOldLeftPhotos, setPositions,oldPhotos,positions);
+          runOnJS(getPhotos)(setPhotos, setOldPhotos, setPositions,setOldPositions,oldPhotos || [], positions || []);
+        } else {
+          runOnJS(setPhotos)(oldPhotos[baseIndex.value])
+          runOnJS(setPositions)(oldPositions[baseIndex.value])
         }
       } else if(translationX.value > -leftOffset.value-700 && baseOffset.value > leftOffset.value){
-        console.log("jveux domrir")
         baseOffset.value = leftOffset.value - constantOffset
         baseIndex.value--
-        console.log(baseIndex.value)
+        runOnJS(setPhotos)(oldPhotos[baseIndex.value])
+        runOnJS(setPositions)(oldPositions[baseIndex.value])
+
       } else if(translationX.value < -baseOffset.value-700 && baseOffset.value > leftOffset.value){
         leftOffset.value = baseOffset.value + constantOffset
         leftIndex.value++
 
         if(oldLeftPhotos[leftIndex.value] == undefined){
-          console.log("BAYBAEHEHEHE")
-          runOnJS(getPhotos)(setLeftPhotos, setOldLeftPhotos, setLeftPositions,oldLeftPhotos, leftPositions);
+          console.log("BAYBAEHEHEHE LEFT")
+          runOnJS(getPhotos)(setLeftPhotos, setOldLeftPhotos,setLeftPositions,setOldLeftPositions,oldLeftPhotos, leftPositions);
+        } else {
+          runOnJS(setLeftPhotos)(oldLeftPhotos[leftIndex.value])
+          runOnJS(setLeftPositions)(oldLeftPositions[leftIndex.value])
         }
+
       } else if(translationX.value > -baseOffset.value-700 && baseOffset.value < leftOffset.value){
         leftOffset.value = baseOffset.value - constantOffset
         leftIndex.value--
+        runOnJS(setLeftPhotos)(oldLeftPhotos[leftIndex.value])
+        runOnJS(setLeftPositions)(oldLeftPositions[leftIndex.value])
       }
 
       if(translationY.value < -topOffset.value-700 && heihtBaseOffset.value < topOffset.value ){
@@ -262,10 +291,8 @@ export default function GestureMosaic() {
     .onStart(() => {
       prevTranslationX.value = translationX.value;
       prevTranslationY.value = translationY.value;
-      console.log(baseIndex.value)
-      console.log(oldPhotos[baseIndex.value])
-      console.log(oldPhotos[baseIndex.value]?.length>1)
-      console.log(testOldPhotos.value)
+
+
     })
     .onUpdate((event) => {
       translationX.value = prevTranslationX.value + event.translationX;
@@ -330,44 +357,55 @@ export default function GestureMosaic() {
       ],
       opacity: opacity.value,
     }));
-    
+
+    const animatedColor = useAnimatedStyle(() => {
+      return {
+        backgroundColor: interpolateColor(
+          progress.value,
+          [0, 1],
+          ['#959595', '#606060']
+        ),
+      };
+    });
+
+
     return (
       <GestureHandlerRootView style={styles.container}>
       <GestureDetector gesture={Gesture.Simultaneous(panGesture, pinchGesture)}>
         <Animated.View style={[{display: "flex", flexDirection: "row"}, animatedScale]}>
 
         <Animated.View style={[styles.mosaicContainer, animatedStyle]}>
-          {oldPhotos[baseIndex.value]?.length>1? oldPhotos[baseIndex.value]?.map((photo:any, index:any) => (
+          {photos?.length>1? photos?.map((photo:any, index:any) => (
             <Image
               key={index}
               source={{ uri: photo.uri }}
               style={[
                 styles.image,
-                { width: photo.width, height: photo.height, left: positions[baseIndex.value][index]?.x, top: positions[baseIndex.value][index]?.y },
+                { width: photo.width, height: photo.height, left: positions[index]?.x, top: positions[index]?.y },
               ]}
             />
           ))
           : //Loop to create 60 empty boxes
-          <View style={{display: "flex", flexDirection: "column", gap: 15}}>
+          <Animated.View style={{display: "flex", flexDirection: "column", gap: 15}}>
 {            [...Array(7)].map((_, index) => (
-              <View style={{display: "flex", flexDirection: "row", gap: 15}} key={index}>
+              <Animated.View style={{display: "flex", flexDirection: "row", gap: 15}} key={index}>
                 {[...Array(9)].map((_, index) => (
-                  <View style={styles.box2} key={index}></View>
+                  <Animated.View style={[styles.box2,animatedColor,{backgroundColor:"black"}]} key={index}></Animated.View>
                 ))}
-            </View>
+            </Animated.View>
           ))}
-          </View>
+          </Animated.View>
         }
         </Animated.View>
 
         <Animated.View style={[styles.mosaicContainer, leftAnimatedStyle]}>
-          {oldLeftPhotos[leftIndex.value]?.length>1? oldLeftPhotos[leftIndex.value]?.map((photo:any, index:any) => (
+          {leftPhotos?.length>1? leftPhotos?.map((photo:any, index:any) => (
             <Image
               key={index}
               source={{ uri: photo.uri }}
               style={[
                 styles.image,
-                { width: photo.width, height: photo.height, left: leftPositions[leftIndex.value][index]?.x, top: leftPositions[leftIndex.value][index]?.y },
+                { width: photo.width, height: photo.height, left: leftPositions[index]?.x, top: leftPositions[index]?.y },
               ]}
             />
           ))
@@ -376,7 +414,7 @@ export default function GestureMosaic() {
 {            [...Array(7)].map((_, index) => (
               <View style={{display: "flex", flexDirection: "row", gap: 15}} key={index}>
                 {[...Array(9)].map((_, index) => (
-                  <View style={styles.box2} key={index}></View>
+                  <Animated.View style={[styles.box2,animatedColor]} key={index}></Animated.View>
                 ))}
             </View>
           ))}
@@ -400,7 +438,7 @@ export default function GestureMosaic() {
 {            [...Array(7)].map((_, index) => (
               <View style={{display: "flex", flexDirection: "row", gap: 15}} key={index}>
                 {[...Array(9)].map((_, index) => (
-                  <View style={styles.box2} key={index}></View>
+                  <Animated.View style={[styles.box2,animatedColor]} key={index}></Animated.View>
                 ))}
             </View>
           ))}
@@ -424,7 +462,7 @@ export default function GestureMosaic() {
 {            [...Array(7)].map((_, index) => (
               <View style={{display: "flex", flexDirection: "row", gap: 15}} key={index}>
                 {[...Array(9)].map((_, index) => (
-                  <View style={styles.box2} key={index}></View>
+                  <Animated.View style={[styles.box2,animatedColor]} key={index}></Animated.View>
                 ))}
             </View>
           ))}
@@ -451,7 +489,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     backgroundColor:"#1a1a1a",
     width:GridWidth, 
-    height: height,
+    height: 6*150,
     overflow: "hidden",
   },
   image: {
@@ -463,9 +501,7 @@ const styles = StyleSheet.create({
   box2: {
     width: 145,
     height: 145,
-    backgroundColor: '#b58df1',
     borderRadius: 20,
-
   },
 
 });

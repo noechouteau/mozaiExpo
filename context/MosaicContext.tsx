@@ -70,11 +70,8 @@ export const MosaicProvider: React.FC<MosaicProviderProps> = ({ children }) => {
 
   const createMosaic = async (newMosaic: Mosaique, customDocId: string): Promise<void> => {
     try {
-      const mosaicRef = await firestore().collection('mosaiques').doc(customDocId).set(newMosaic);
-  
-      setMosaics((prevMosaics) =>
-        prevMosaics ? [...prevMosaics, { id: customDocId, ...newMosaic }] : [{ id: customDocId, ...newMosaic }]
-      );
+      await firestore().collection('mosaiques').doc(customDocId).set(newMosaic);
+      setMosaics((prevMosaics) => (prevMosaics ? [...prevMosaics, { ...newMosaic, id: customDocId }] : [{ ...newMosaic, id: customDocId }]));
     } catch (error) {
       console.error('Error creating mosaic:', error);
     }

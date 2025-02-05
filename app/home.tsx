@@ -129,13 +129,13 @@ export default function Home() {
             await updateMosaic(mosaiqueToDelete, {
             users: completeMosToDel.users.filter((user: any) => user.id !== userData.uid)
             }).then(async() => {
-            console.log("Mosaic quitted");
-            console.log(completeMosToDel.users.length);
-            if(completeMosToDel.users.length == 1 || completeMosToDel.users.length == 0) {
-                await deleteMosaic(mosaiqueToDelete).then(() => {
-                console.log("Mosaic deleted");
-                });
-            }
+              console.log("Mosaic quitted");
+              console.log(completeMosToDel.users.length);
+              if(completeMosToDel.users.length == 1 || completeMosToDel.users.length == 0) {
+                  await deleteMosaic(mosaiqueToDelete).then(() => {
+                  console.log("Mosaic deleted");
+                  });
+              }
             });
         }
         }
