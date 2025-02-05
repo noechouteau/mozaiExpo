@@ -1,4 +1,5 @@
-import React, { useRef, useState } from 'react';
+// DraggableEmojis.tsx
+import React, {useEffect, useRef, useState} from 'react';
 import {
     Text,
     Animated,
@@ -10,15 +11,7 @@ import {
     TouchableOpacity,
 } from 'react-native';
 
-const DraggableEmoji = ({
-                            emoji,
-                            initialPosition,
-                            onDrop,
-                        }: {
-    emoji: string;
-    initialPosition: { x: number; y: number };
-    onDrop: (emoji: string, position: { x: number; y: number }) => void;
-}) => {
+const DraggableEmoji = ({emoji, initialPosition, onDrop}) => {
     const pan = useRef(new Animated.ValueXY(initialPosition)).current;
     const [isDraggable, setIsDraggable] = useState(true);
 
@@ -29,11 +22,11 @@ const DraggableEmoji = ({
                 if (isDraggable) {
                     pan.stopAnimation((value) => {
                         pan.setOffset(value);
-                        pan.setValue({ x: 0, y: 0 });
+                        pan.setValue({x: 0, y: 0});
                     });
                 }
             },
-            onPanResponderMove: Animated.event([null, { dx: pan.x, dy: pan.y }], {
+            onPanResponderMove: Animated.event([null, {dx: pan.x, dy: pan.y}], {
                 useNativeDriver: false,
             }),
             onPanResponderRelease: () => {
@@ -59,46 +52,50 @@ const DraggableEmoji = ({
     );
 };
 
-const DraggableEmojis = () => {
-    const [emojiPositions, setEmojiPositions] = useState<
-        { emoji: string; position: { x: number; y: number } }[]
-    >([]);
-    const [emojis, setEmojis] = useState<
-        { emoji: string; initialPosition: { x: number; y: number } }[]
-    >([
-        { emoji: '😀', initialPosition: { x: 0, y: 0 } },
-        { emoji: '😎', initialPosition: { x: 0, y: 0 } },
-        { emoji: '❤️', initialPosition: { x: 0, y: 0 } },
-        { emoji: '🔥', initialPosition: { x: 0, y: 0 } },
-        { emoji: '✨', initialPosition: { x: 0, y: 0 } },
+const DraggableEmojis = ({ show }) => {
+    const fadeAnim = useRef(new Animated.Value(show ? 1 : 0)).current;
+    const [emojiPositions, setEmojiPositions] = useState([]);
+    const [emojis, setEmojis] = useState([
+        {emoji: '😀', initialPosition: {x: 0, y: 0}},
+        {emoji: '😎', initialPosition: {x: 0, y: 0}},
+        {emoji: '❤️', initialPosition: {x: 0, y: 0}},
+        {emoji: '🔥', initialPosition: {x: 0, y: 0}},
+        {emoji: '✨', initialPosition: {x: 0, y: 0}},
     ]);
     const [modalVisible, setModalVisible] = useState(false);
     const [newEmoji, setNewEmoji] = useState('');
 
-    const handleDrop = (emoji: string, position: { x: number; y: number }) => {
+    const handleDrop = (emoji, position) => {
         setEmojiPositions((prevPositions) => {
-            const updatedPositions = prevPositions.filter(
-                (item) => item.emoji !== emoji
-            );
-            updatedPositions.push({ emoji, position });
-            console.log('Updated Emoji Positions:', updatedPositions);
-            return updatedPositions;
+            const updated = prevPositions.filter((item) => item.emoji !== emoji);
+            updated.push({emoji, position});
+            return updated;
         });
     };
 
     const addEmoji = () => {
         if (newEmoji.trim() !== '') {
-            setEmojis((prev) => [
-                ...prev,
-                { emoji: newEmoji, initialPosition: { x: 0, y: 0 } },
-            ]);
+            setEmojis((prev) => [...prev, {emoji: newEmoji, initialPosition: {x: 0, y: 0}}]);
             setNewEmoji('');
             setModalVisible(false);
         }
     };
 
+    useEffect(() => {
+        Animated.timing(fadeAnim, {
+            toValue: show ? 0 : 1,
+            duration: 300,
+            delay: show ? 0 : 1000,
+            useNativeDriver: true,
+        }).start(() => {
+            if (!show) {
+                setEmojiPositions([]);
+            }
+        });
+    }, [show]);
+
     return (
-        <View style={styles.container}>
+        <Animated.View style={[styles.container, {opacity: fadeAnim}]}>
             <View style={styles.emojiRow}>
                 {emojis.map((item, index) => (
                     <DraggableEmoji
@@ -131,7 +128,7 @@ const DraggableEmojis = () => {
                     </View>
                 </View>
             </Modal>
-        </View>
+        </Animated.View>
     );
 };
 
@@ -140,38 +137,23 @@ const styles = StyleSheet.create({
         position: 'absolute',
         bottom: 150,
         left: '50%',
-        transform: [{ translateX: "-50%" }],
+        transform: [{translateX: '-50%'}],
         zIndex: 100,
         borderRadius: 50,
         width: 'auto',
         backgroundColor: 'white',
-        justifyContent: 'flex-start',
         alignItems: 'center',
         padding: 20,
     },
     emojiRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'flex-start',
     },
     emojiContainer: {
         padding: 0,
     },
     emojiText: {
         fontSize: 56,
-    },
-    addButton: {
-        marginLeft: 10,
-        backgroundColor: '#e0e0e0',
-        borderRadius: 25,
-        width: 50,
-        height: 50,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    addButtonText: {
-        fontSize: 30,
-        color: '#333',
     },
     modalContainer: {
         flex: 1,

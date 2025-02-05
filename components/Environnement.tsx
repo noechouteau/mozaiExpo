@@ -6,7 +6,6 @@ import useInteractionHandlers from "@/components/gallery/useInteractionHandlers"
 import {GestureHandlerRootView, PinchGestureHandler} from "react-native-gesture-handler";
 import DraggableEmojis from "@/components/gallery/DraggableEmojis";
 import RoundButton from "@/components/buttons/RoundButton";
-import GraytButton from './buttons/GrayButton';
 
 export default function App({images, children, delImageFunc}: {
     images: string[],
@@ -16,6 +15,7 @@ export default function App({images, children, delImageFunc}: {
     const {
         isMeshActive,
         meshClick,
+        isTurned,
         panHandlers,
         onPinchGestureEvent,
         onPinchHandlerStateChange
@@ -26,7 +26,7 @@ export default function App({images, children, delImageFunc}: {
 
             {isMeshActive ? (
                     <>
-                        <DraggableEmojis/>
+                        <DraggableEmojis show={isTurned}/>
                         <View style={{
                             position: 'absolute',
                             bottom: 80,

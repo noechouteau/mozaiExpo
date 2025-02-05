@@ -9,18 +9,22 @@ class MeshClick {
     camera: THREE.PerspectiveCamera | null;
     isActive: boolean = false;
     isMeshActive: boolean;
+    setIsTurned: (v: boolean) => void;
     setIsMeshActive: (value: boolean) => void;
+    isTurned: boolean = false;
 
-    constructor({planes, camera, isMeshActive, setIsMeshActive}: {
+    constructor({planes, camera, isMeshActive, setIsMeshActive, setIsTurned}: {
         planes: THREE.Mesh[];
         camera: THREE.PerspectiveCamera | null;
         isMeshActive: boolean;
         setIsMeshActive: (value: boolean) => void;
+        setIsTurned: (v: boolean) => void;
     }) {
         this.planes = planes;
         this.camera = camera;
         this.isMeshActive = isMeshActive;
         this.setIsMeshActive = setIsMeshActive;
+        this.setIsTurned = setIsTurned;
     }
 
     setPlaneClicked(plane: THREE.Mesh | null) {
@@ -142,6 +146,7 @@ class MeshClick {
 
     turn(plane) {
         if (!this.planeClicked) return;
+        this.setIsTurned(!this.isTurned);
 
         gsap.to(plane.rotation, {
             y: plane.rotation.y + Math.PI,

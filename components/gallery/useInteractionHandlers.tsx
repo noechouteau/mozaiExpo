@@ -21,6 +21,7 @@ const useInteractionHandlers = () => {
     const mouse = useRef(new THREE.Vector2(-10, -10)).current;
 
     const [isMeshActive, setIsMeshActive] = useState<boolean>(false);
+    const [isTurned, setIsTurned] = useState<boolean>(false);
 
     const startPosition = useRef({x: 0, y: 0});
     const clickThreshold = 5;
@@ -32,11 +33,15 @@ const useInteractionHandlers = () => {
 
     if (!meshClickRef.current) {
         meshClickRef.current = new MeshClick({
-            planes: planes,
+            planes,
             camera: cameraRef.current,
-            isMeshActive: isMeshActive,
+            isMeshActive,
             setIsMeshActive,
+            setIsTurned,
         });
+    } else {
+        meshClickRef.current.isMeshActive = isMeshActive;
+        meshClickRef.current.isTurned = isTurned;
     }
 
     const meshClick = meshClickRef.current;
@@ -122,7 +127,7 @@ const useInteractionHandlers = () => {
         }
     };
 
-    return {panHandlers, meshClick, isMeshActive, onPinchGestureEvent, onPinchHandlerStateChange};
+    return {panHandlers, meshClick, isMeshActive, onPinchGestureEvent, onPinchHandlerStateChange, isTurned};
 };
 
 export default useInteractionHandlers;
