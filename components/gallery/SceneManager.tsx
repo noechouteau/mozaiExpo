@@ -124,7 +124,6 @@ export function removeImage(url: string) {
     if (index !== -1 && sceneRef) {
         sceneRef.remove(planes[index]);
         planes.splice(index, 1);
-
     }
 }
 

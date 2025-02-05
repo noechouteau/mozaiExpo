@@ -171,7 +171,7 @@ export default function GesturePan({ searchChain, deleteFunction }: any) {
           <ScrollView contentContainerStyle={styles.mosaiquesContainer}>
               {displayedMosaics
                 .filter((mosaique: any) => mosaique !== null && mosaique !== undefined) // Avoid null/undefined
-                .map((mosaique: any) => { 
+                .map((mosaique: any) => {
                   return(
                   mosaique.users &&
                   mosaique.users.length > 1 &&
@@ -181,7 +181,7 @@ export default function GesturePan({ searchChain, deleteFunction }: any) {
                     Quit: [mosaique.id],
                   }}>
                     <Pressable style={styles.mosaicTag}  key={mosaique?.id} onPress={async() => {await AsyncStorage.setItem("activeMosaic", mosaique?.id);router.replace("/mosaic")}}>
-                      
+
                     <ImageBackground
                         source={backgroundImage}
                         resizeMode="cover"
@@ -196,14 +196,14 @@ export default function GesturePan({ searchChain, deleteFunction }: any) {
                               key={index}
                               source={{ uri: image.url || 'https://placehold.co/100x100' }}
                               style={{
-                              width: 100, 
+                              width: 100,
                               height: 100,
                               top: positions[mosaique.images.length - 1 - index].top,
                               left: positions[mosaique.images.length - 1 - index].left,
                               position: "absolute",
                               }}
                             />
-                            ); })}                                 
+                            ); })}
                         </View>
                       </ImageBackground>
 
@@ -250,7 +250,7 @@ export default function GesturePan({ searchChain, deleteFunction }: any) {
                       Delete: [mosaique.id],
                     }}>
                       <Pressable style={styles.mosaicTag}  key={mosaique?.id} onPress={async() => {await AsyncStorage.setItem("activeMosaic", mosaique?.id);router.replace("/mosaic")}}>
-                        
+
                       <ImageBackground source={backgroundImage} resizeMode="stretch" style={{backgroundColor:"#0D0D0D"}} imageStyle={{  borderTopLeftRadius: 15, borderTopRightRadius: 15}}>
                         <View style={styles.mosaicPreview}>
                         {mosaique?.images?.slice(-4).reverse().map((image:any, index:any) => {
@@ -260,14 +260,14 @@ export default function GesturePan({ searchChain, deleteFunction }: any) {
                               key={index}
                               source={{ uri: image.url || 'https://placehold.co/100x100' }}
                               style={{
-                              width: 100, 
+                              width: 100,
                               height: 100,
                               top: positions[mosaique.images.length - 1 - index].top,
                               left: positions[mosaique.images.length - 1 - index].left,
                               position: "absolute",
                               }}
                             />
-                            ); })} 
+                            ); })}
                         </View>
                       </ImageBackground >
 

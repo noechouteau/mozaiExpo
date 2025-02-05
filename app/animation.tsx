@@ -20,15 +20,13 @@ import Animated, {
   withTiming,
   Easing,
 } from "react-native-reanimated";
-import { useVideoPlayer, VideoSource, VideoView } from "expo-video";
 import auth from "@react-native-firebase/auth";
-import { Redirect, usePathname, useRouter } from "expo-router";
+import { usePathname, useRouter } from "expo-router";
 import GraytButton from "@/components/buttons/GrayButton";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import JoinModal from "@/components/JoinModal";
 import { Gyroscope } from "expo-sensors";
 import { LinearGradient } from "expo-linear-gradient";
-import NewUserModal from "@/components/NewUserModal";
 import { useUser } from "@/context/UsersContext";
 import BackButton from "@/components/buttons/BackButton";
 
@@ -48,7 +46,6 @@ export default function Animation({onClose}: Props) {
   const [gradientStart, setGradientStart] = useState({ x: 0.7, y: 0 });
   const [gradientEnd, setGradientEnd] = useState({ x: 0.3, y: 1 });
   const [dynamicBorderRadius, setDynamicBorderRadius] = useState(24); // Default border radius
-  const [subscription, setSubscription]: any = useState(null);
   const router = useRouter();
   const pathname = usePathname();
   const [initializing, setInitializing] = useState(true);
@@ -62,8 +59,6 @@ export default function Animation({onClose}: Props) {
     easing: Easing.inOut(Easing.quad),
   });
   const [isJoinModalVisible, setJoinModalVisible] = useState<boolean>(false);
-  const [isNewUserModalVisible, setNewUserModalVisible] =
-    useState<boolean>(true);
 
   const [loaded, error] = useFonts({
     SFPRO: require("../assets/fonts/SFPRODISPLAYMEDIUM.otf"),
@@ -74,10 +69,8 @@ export default function Animation({onClose}: Props) {
     if (pathname == "/firebaseauth/link") router.back();
   }, [pathname]);
 
-  // Handle user state changes
   async function onAuthStateChanged(user: any) {
     const activeUser = await AsyncStorage.getItem("loggedIn");
-    console.log(activeUser);
     if (activeUser && activeUser != "false" && activeUser != "") {
       router.replace("/home");
     }
@@ -85,57 +78,43 @@ export default function Animation({onClose}: Props) {
     if (initializing) setInitializing(false);
   }
 
-  const gradientStartX = useSharedValue(0.1);
-  const gradientEndY = useSharedValue(0.1);
-  // gradientStartY.value = withTiming(1, {
-  //   duration: 1500 * slowFactor,
-  //   easing: Easing.inOut(Easing.cubic),
-  // });
-  
-  useEffect(() => {
-    const slowFactor = 0.1; // Réduit l'impact des mouvements
-    const smoothingFactor = 0.5; // Lisser les transitions
-  
-    let currentStartX = 0.9; 
-    let currentEndY = 0.8;
-  
-    const subscribe = Gyroscope.addListener(({ x, y }) => {
-      // Calcul des nouvelles valeurs avec le slowFactor
-      const targetStartX = Math.max(0, Math.min(1, 0.5 + x * slowFactor));
-      const targetEndY = Math.max(0, Math.min(1, 0.5 + y * slowFactor));
-  
-      // Interpolation douce pour lisser le mouvement
-      currentStartX += (targetStartX - currentStartX) * smoothingFactor;
-      currentEndY += (targetEndY - currentEndY) * smoothingFactor;
-  
-      // Mise à jour du gradient
-      setGradientStart({ x: currentStartX, y: 0 });
-      setGradientEnd({ x: 1.0, y: currentEndY });
-    });
-  
-    Gyroscope.setUpdateInterval(10); // Réduire la fréquence à 10 updates/sec
-  
-    return () => {
-      subscribe?.remove();
-    };
-  }, []);
+  // useEffect(() => {
+  //   const slowFactor = 0.1;
+  //   const smoothingFactor = 0.5;
+  //
+  //   let currentStartX = 0.9;
+  //   let currentEndY = 0.8;
+  //
+  //   const subscribe = Gyroscope.addListener(({ x, y }) => {
+  //     const targetStartX = Math.max(0, Math.min(1, 0.5 + x * slowFactor));
+  //     const targetEndY = Math.max(0, Math.min(1, 0.5 + y * slowFactor));
+  //
+  //     currentStartX += (targetStartX - currentStartX) * smoothingFactor;
+  //     currentEndY += (targetEndY - currentEndY) * smoothingFactor;
+  //
+  //     setGradientStart({ x: currentStartX, y: 0 });
+  //     setGradientEnd({ x: 1.0, y: currentEndY });
+  //   });
+  //
+  //   Gyroscope.setUpdateInterval(10);
+  //
+  //   return () => {
+  //     subscribe?.remove();
+  //   };
+  // }, []);
 
   async function signInWithPhoneNumber(phoneNumber: any) {
     try {
-      console.log(userData,"userdataa")
       const confirmation = await auth().signInWithPhoneNumber(phoneNumber);
       setConfirm(confirmation);
     } catch (error) {
-      console.error("Error signing in:", error);
       alert("Failed to send OTP. Please check the phone number.");
     }
   }
 
   async function confirmCode() {
-    console.log("Confirmation code entered:", code);
     await AsyncStorage.setItem("mustLoad", "true");
     try {
-      console.log(authInfos);
       await AsyncStorage.setItem("activePhone", phoneNumber);
       if (authInfos) {
         await AsyncStorage.setItem("activeUser", authInfos.uid);
@@ -144,9 +123,9 @@ export default function Animation({onClose}: Props) {
       await confirm.confirm(code);
       router.replace("/home");
     } catch (error) {
-      console.log("Invalid code.");
     }
   }
+
 
   if (!confirm) {
     return (
@@ -259,7 +238,7 @@ export default function Animation({onClose}: Props) {
                 <View style={{alignSelf: 'flex-start', marginBottom: 30}}>
                         <BackButton onPress={()=>{
                           setErrorDisplayed(false);
-                        setConfirm(null);}} > 
+                        setConfirm(null);}} >
                         </BackButton>
                 </View>
             <CustomTextInput
@@ -293,9 +272,9 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   backgroundImage: {
-    flex: 1, 
-    justifyContent: 'center', 
-    alignItems: 'center', 
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
 
   },
   cardWrapper: {
