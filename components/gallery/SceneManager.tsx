@@ -85,6 +85,7 @@ function createPlane({ scene, image, position }) {
         depthTest: true,
     });
     const mesh = new THREE.Mesh(geometry, material);
+    mesh.urlImage = image.url;
     loadTexture(image.url, (tex) => {
         material.uniforms.frontTexture.value = tex;
         material.needsUpdate = true;

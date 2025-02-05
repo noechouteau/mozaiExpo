@@ -1,6 +1,6 @@
 import React from 'react';
 import {GLView} from 'expo-gl';
-import {Text, View} from 'react-native';
+import {Pressable, Text, View} from 'react-native';
 import SceneManager from "@/components/gallery/SceneManager";
 import useInteractionHandlers from "@/components/gallery/useInteractionHandlers";
 import {GestureHandlerRootView, PinchGestureHandler} from "react-native-gesture-handler";
@@ -46,8 +46,8 @@ export default function App({images, children}: {
                                 </RoundButton>
                             </View>
 
-                            {/* TODO : NOAI DELETE BUTTON*/}
-                            <View style={{
+
+                            <Pressable style={{
                                 width: "49%",
                                 height: 60,
                                 display: 'flex',
@@ -55,13 +55,16 @@ export default function App({images, children}: {
                                 justifyContent: 'center',
                                 backgroundColor: 'white',
                                 borderRadius: 50,
+                            }} onPress={() => {
+                                const url = meshClick.planeClicked?.urlImage;
+                                {/* TODO : NOAI DELETE BUTTON*/}
                             }}>
                                 <Text style={{
                                     color: 'black',
                                     fontSize: 20,
                                     textAlign: 'center',
                                 }}>Delete</Text>
-                            </View>
+                            </Pressable>
                         </View>
                     </>
                 ) : children
