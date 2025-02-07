@@ -145,76 +145,60 @@ export default function GestureMosaic() {
     return positions;
   };
 
-  async function getPhotos(func:any, oldFunc:any, posFunc:any, oldPosFunc:any,passedPhotos:any,passedPositions:any) {
-      setLoadingVisible(true);
-      if (status === null) {
-        await requestPermission();
-      }
-
-      let actualTotal = total
-      if(total == 0){
-        const fetchedPhotos = await MediaLibrary.getAssetsAsync({
-          first : 1,
-        });
-        setTotal(fetchedPhotos.totalCount)
-        actualTotal = fetchedPhotos.totalCount
-      }
-
-
-      let randImages = []
-      let randIndexes = [0]
-      for(let i = 0; i< 100; i++){
-        console.log(i)
-        let tempRand = Math.floor(Math.random() * actualTotal)
-
+  async function getPhotos(func:any, oldFunc:any, posFunc:any, oldPosFunc:any, passedPhotos:any, passedPositions:any) {
+    setLoadingVisible(true);
+  
+    if (status === null) {
+      await requestPermission();
+    }
+  
+    let actualTotal = total;
+    if (total === 0) {
+      const fetchedPhotos = await MediaLibrary.getAssetsAsync({ first: 1 });
+      setTotal(fetchedPhotos.totalCount);
+      actualTotal = fetchedPhotos.totalCount;
+    }
+  
+    let randIndexes = Array.from({ length: 100 }, () => Math.floor(Math.random() * actualTotal));
+  
+    // Exécuter toutes les requêtes en parallèle
+    const randImages = await Promise.all(
+      randIndexes.map(async (tempRand) => {
         let rand = await MediaLibrary.getAssetsAsync({
-          // after: fetchedPhotos.assets[tempRand].id,
           after: tempRand.toFixed(),
           first: 1,
-        })
-        randImages.push(rand.assets[0])
-        randIndexes.push(tempRand)
-      }
-    
-      let newPhotos = [];
-      console.log("still here")
-      // if(baseIndex.value <= 0){
-
-      for (const element of randImages) {
-        let asset = element;
-    
-        let scaledWidth = asset.width;
-        let scaledHeight = asset.height;
-    
-        // Scale down if too large, but keep aspect ratio
-        if (asset.height > 150) {
-          const aspectRatio = asset.width / asset.height;
-
-            scaledHeight = 150;
-            scaledWidth = 150 * aspectRatio;
-        }
-    
-        newPhotos.push({
-          uri: asset.uri,
-          width: scaledWidth,
-          height: scaledHeight,
         });
+        return rand.assets[0];
+      })
+    );
+  
+    let newPhotos = randImages.map((asset) => {
+      let scaledWidth = asset.width;
+      let scaledHeight = asset.height;
+      
+      if (asset.height > 150) {
+        const aspectRatio = asset.width / asset.height;
+        scaledHeight = 150;
+        scaledWidth = 150 * aspectRatio;
       }
-      console.log("1")
-      oldFunc([...(passedPhotos || []), newPhotos]);
-      console.log("2")
-      func(newPhotos);
-      console.log("JUSTGOTNEW")
-      console.log(oldPhotos)
-      console.log(newPhotos)
-      console.log([...oldPhotos, newPhotos])
-
-      console.log("3")
-      posFunc(generateGridPositions(newPhotos))
-      oldPosFunc([...(passedPositions || []), generateGridPositions(newPhotos)])
-      setLoadingVisible(false);
-    // }
+  
+      return {
+        uri: asset.uri,
+        width: scaledWidth,
+        height: scaledHeight,
+      };
+    });
+  
+    oldFunc([...(passedPhotos || []), newPhotos]);
+    func(newPhotos);
+    
+    const newPositions = generateGridPositions(newPhotos);
+    posFunc(newPositions);
+    oldPosFunc([...(passedPositions || []), newPositions]);
+    
+    setLoadingVisible(false);
   }
+  
 
     useEffect(() => {
       // progress.value = withRepeat(
