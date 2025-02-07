@@ -33,6 +33,8 @@ export default function GesturePan({ searchChain, deleteFunction }: any) {
   const [isRenameModalVisible, setRenameModalVisible] = useState<boolean>(false);
   const { selectedTheme } = useUser();
 
+
+
   const MenuItems = [
     { text: 'Actions', icon: 'home', isTitle: true, onPress: () => {} },
     { text: 'Rename', icon: 'edit', onPress: async(mosaiqueId:any) => {await AsyncStorage.setItem("activeMosaic",mosaiqueId);setRenameModalVisible(true)} },
@@ -239,6 +241,21 @@ export default function GesturePan({ searchChain, deleteFunction }: any) {
 
         <Animated.View style={[styles.rightBox]}>
           <ScrollView contentContainerStyle={styles.mosaiquesContainer}>
+                <Pressable style={styles.mosaicTag}  key="solo" onPress={async() => {await AsyncStorage.setItem("activeMosaic", "solo");router.replace("/mosaic")}}>
+                  <ImageBackground source={backgroundImage} resizeMode="stretch" style={{backgroundColor:"#0D0D0D"}} imageStyle={{  borderTopLeftRadius: 15, borderTopRightRadius: 15}}>
+                    <View style={styles.mosaicPreview}>
+                      <Image source={{ uri: 'https://placehold.co/100x100' }} style={{width: 100, height: 100, position: 'absolute', top: 0, left: 0}} />
+                      <Image source={{ uri: 'https://placehold.co/100x100' }} style={{width: 100, height: 100, position: 'absolute', top: 0, left: 100}} />
+                      <Image source={{ uri: 'https://placehold.co/100x100' }} style={{width: 100, height: 100, position: 'absolute', top: 100, left: 0}} />
+                      <Image source={{ uri: 'https://placehold.co/100x100' }} style={{width: 100, height: 100, position: 'absolute', top: 100, left: 100}} />
+                    </View>
+                  </ImageBackground>
+                  <ImageBackground source={radialBg} resizeMode="cover" imageStyle={{  borderBottomLeftRadius: 15, borderBottomRightRadius: 15}} style={{backgroundColor:"#0D0D0D"}}>
+                    <View style={styles.mosaicInfo}>
+                      <Text style={styles.mosaicText}>Solo</Text>
+                    </View>
+                  </ImageBackground>
+                </Pressable>
                 {displayedMosaics
                   .filter((mosaique: any) => mosaique !== null && mosaique !== undefined) // Avoid null/undefined
                   .map((mosaique: any) => (

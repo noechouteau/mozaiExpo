@@ -17,6 +17,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import MozaiInfosModal from '@/components/MozaiInfosModal';
 import Animated, { useSharedValue } from 'react-native-reanimated';
 import {addNewImage, removeImage} from "@/components/gallery/SceneManager";
+import GestureMosaic from '@/components/GestureMosaic';
 
 type Props = PropsWithChildren<{
     user: any;
@@ -55,6 +56,8 @@ export default function Mosaic({user, mosaicId}: Props) {
                 const mosaic = mosaics.find((m: any) => m.id === tempActiveMosaic);
                 if (mosaic) {
                     setActiveMosaic(mosaic);
+                } else if (tempActiveMosaic == "solo") {
+                    setActiveMosaic("solo");
                 }
             } else if (!user && tempActiveMosaic) {
                 const mosaic = await firestore().collection("mosaiques").doc(tempActiveMosaic).get().then((doc) => doc.data());
@@ -218,6 +221,10 @@ export default function Mosaic({user, mosaicId}: Props) {
             </View>
 
 
+            {activeMosaic == "solo"&&
+                <GestureMosaic></GestureMosaic>
+            }
+
             {activeMosaic?.id && (
                 <MozaiInfosModal
                     mosaicId={activeMosaic.id}
@@ -239,7 +246,7 @@ export default function Mosaic({user, mosaicId}: Props) {
                     isMozaiInfosVisible ? {opacity: 1} : {opacity: 0}
                 ]}
             />
-            {activeMosaic?.images ? (
+            {activeMosaic?.images &&
                 <Environnement images={activeMosaic.images} delImageFunc={deleteImage}>
                     {userData ? (
                         <View style={styles.buttons}>
@@ -248,12 +255,9 @@ export default function Mosaic({user, mosaicId}: Props) {
                             </RoundButton>
                         </View>
                     ) : <View />}
-                </Environnement>
-            ) : (
-                <Text>loading</Text>
-            )}
+                </Environnement>}
+            {activeMosaic?.id && (
             <View style={styles.infoButtonContainer}>
-                {activeMosaic && (
                     <RoundButton
                         style={{zIndex: 20, width: "unset", padding: 20}}
                         onPress={() => {
@@ -266,8 +270,8 @@ export default function Mosaic({user, mosaicId}: Props) {
                             <Text style={styles.text}>{activeMosaic.name}</Text>
                         </View>
                     </RoundButton>
-                )}
             </View>
+            )}
         </View>
     );
 }

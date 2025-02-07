@@ -19,6 +19,11 @@ import {
 import { StyleSheet, Dimensions, View,Image } from 'react-native';
 import * as MediaLibrary from 'expo-media-library';
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
+import LoadingScreen from './LoadingScreen';
+import { HoldItem } from 'react-native-hold-menu';
+import BackButton from './buttons/BackButton';
+import RoundButton from './buttons/RoundButton';
+import {router} from 'expo-router';
 
 
 const { width, height } = Dimensions.get('screen');
@@ -41,6 +46,13 @@ const GridWidth = width*4;
 
 
 export default function GestureMosaic() {
+
+  const MenuItems = [
+    { text: 'Delete', icon: 'trash', isDestructive: true, onPress: ()=>{} },
+  ];
+
+  const [loadingVisible, setLoadingVisible] = React.useState<boolean>(true);
+
   const [photos, setPhotos] = React.useState<{ uri: string; width: number; height: number }[]>([]);
   const [topPhotos, setTopPhotos] = React.useState<any[]>([]);
   const [leftPhotos, setLeftPhotos] = React.useState<any[]>([]);
@@ -125,8 +137,8 @@ export default function GestureMosaic() {
     });
 
     const lastPosition = positions[positions.length-1]
-    constantHeightOffset.value = 6*150 +15
-    topOffset.value = 6*150+10
+    constantHeightOffset.value = 8*160
+    topOffset.value = 8*160
     console.log(constantHeightOffset)
     console.log(positions)
   
@@ -134,6 +146,7 @@ export default function GestureMosaic() {
   };
 
   async function getPhotos(func:any, oldFunc:any, posFunc:any, oldPosFunc:any,passedPhotos:any,passedPositions:any) {
+      setLoadingVisible(true);
       if (status === null) {
         await requestPermission();
       }
@@ -150,7 +163,7 @@ export default function GestureMosaic() {
 
       let randImages = []
       let randIndexes = [0]
-      for(let i = 0; i< 60; i++){
+      for(let i = 0; i< 100; i++){
         console.log(i)
         let tempRand = Math.floor(Math.random() * actualTotal)
 
@@ -199,6 +212,7 @@ export default function GestureMosaic() {
       console.log("3")
       posFunc(generateGridPositions(newPhotos))
       oldPosFunc([...(passedPositions || []), generateGridPositions(newPhotos)])
+      setLoadingVisible(false);
     // }
   }
 
@@ -221,8 +235,8 @@ export default function GestureMosaic() {
     const verifPos = () => {
       // console.log(currentEvent.value)
       console.log(translationY.value)
-      // console.log(-baseOffset.value, -leftOffset.value)
-      // console.log(-baseOffset.value-700, -leftOffset.value-700)
+      console.log(-baseOffset.value, -leftOffset.value)
+      console.log(-baseOffset.value-700, -leftOffset.value-700)
       // console.log(-topOffset.value, -heihtBaseOffset.value)
       // console.log(-topOffset.value-700, -heihtBaseOffset.value-700)
     
@@ -230,36 +244,36 @@ export default function GestureMosaic() {
         baseOffset.value = leftOffset.value + constantOffset
         baseIndex.value++
 
-        if(oldPhotos[baseIndex.value] == undefined){
-          console.log("BAYBAEHEHEHE")
-          runOnJS(getPhotos)(setPhotos, setOldPhotos, setPositions,setOldPositions,oldPhotos || [], positions || []);
-        } else {
-          runOnJS(setPhotos)(oldPhotos[baseIndex.value])
-          runOnJS(setPositions)(oldPositions[baseIndex.value])
-        }
+        // if(oldPhotos[baseIndex.value] == undefined){
+        //   console.log("BAYBAEHEHEHE")
+        //   runOnJS(getPhotos)(setPhotos, setOldPhotos, setPositions,setOldPositions,oldPhotos || [], positions || []);
+        // } else {
+        //   runOnJS(setPhotos)(oldPhotos[baseIndex.value])
+        //   runOnJS(setPositions)(oldPositions[baseIndex.value])
+        // }
       } else if(translationX.value > -leftOffset.value-700 && baseOffset.value > leftOffset.value){
         baseOffset.value = leftOffset.value - constantOffset
         baseIndex.value--
-        runOnJS(setPhotos)(oldPhotos[baseIndex.value])
-        runOnJS(setPositions)(oldPositions[baseIndex.value])
+        // runOnJS(setPhotos)(oldPhotos[baseIndex.value])
+        // runOnJS(setPositions)(oldPositions[baseIndex.value])
 
       } else if(translationX.value < -baseOffset.value-700 && baseOffset.value > leftOffset.value){
         leftOffset.value = baseOffset.value + constantOffset
         leftIndex.value++
 
-        if(oldLeftPhotos[leftIndex.value] == undefined){
-          console.log("BAYBAEHEHEHE LEFT")
-          runOnJS(getPhotos)(setLeftPhotos, setOldLeftPhotos,setLeftPositions,setOldLeftPositions,oldLeftPhotos, leftPositions);
-        } else {
-          runOnJS(setLeftPhotos)(oldLeftPhotos[leftIndex.value])
-          runOnJS(setLeftPositions)(oldLeftPositions[leftIndex.value])
-        }
+        // if(oldLeftPhotos[leftIndex.value] == undefined){
+        //   console.log("BAYBAEHEHEHE LEFT")
+        //   runOnJS(getPhotos)(setLeftPhotos, setOldLeftPhotos,setLeftPositions,setOldLeftPositions,oldLeftPhotos, leftPositions);
+        // } else {
+        //   runOnJS(setLeftPhotos)(oldLeftPhotos[leftIndex.value])
+        //   runOnJS(setLeftPositions)(oldLeftPositions[leftIndex.value])
+        // }
 
       } else if(translationX.value > -baseOffset.value-700 && baseOffset.value < leftOffset.value){
         leftOffset.value = baseOffset.value - constantOffset
         leftIndex.value--
-        runOnJS(setLeftPhotos)(oldLeftPhotos[leftIndex.value])
-        runOnJS(setLeftPositions)(oldLeftPositions[leftIndex.value])
+        // runOnJS(setLeftPhotos)(oldLeftPhotos[leftIndex.value])
+        // runOnJS(setLeftPositions)(oldLeftPositions[leftIndex.value])
       }
 
       if(translationY.value < -topOffset.value-700 && heihtBaseOffset.value < topOffset.value ){
@@ -369,21 +383,29 @@ export default function GestureMosaic() {
     });
 
 
-    return (
-      <GestureHandlerRootView style={styles.container}>
+    return (<>
+    <LoadingScreen text="Loading local images..." isVisible={loadingVisible}></LoadingScreen>
+    <View style={[styles.topBar, {zIndex: 950}]}>
+        <RoundButton
+            onPress={() => router.replace("/home")}
+            title="Home" icon="home" size={25}
+        />
+    </View>
+    <GestureHandlerRootView style={styles.container}>
       <GestureDetector gesture={Gesture.Simultaneous(panGesture, pinchGesture)}>
         <Animated.View style={[{display: "flex", flexDirection: "row"}, animatedScale]}>
-
         <Animated.View style={[styles.mosaicContainer, animatedStyle]}>
           {photos?.length>1? photos?.map((photo:any, index:any) => (
-            <Image
-              key={index}
-              source={{ uri: photo.uri }}
-              style={[
-                styles.image,
-                { width: photo.width, height: photo.height, left: positions[index]?.x, top: positions[index]?.y },
-              ]}
-            />
+            // <HoldItem items={MenuItems} hapticFeedback="Heavy" key={index}>
+              <Image
+                key={index}
+                source={{ uri: photo.uri }}
+                style={[
+                  styles.image,
+                  { width: photo.width, height: photo.height, left: positions[index]?.x, top: positions[index]?.y },
+                ]}
+              />
+            // </HoldItem>
           ))
           : //Loop to create 60 empty boxes
           <Animated.View style={{display: "flex", flexDirection: "column", gap: 15}}>
@@ -399,13 +421,13 @@ export default function GestureMosaic() {
         </Animated.View>
 
         <Animated.View style={[styles.mosaicContainer, leftAnimatedStyle]}>
-          {leftPhotos?.length>1? leftPhotos?.map((photo:any, index:any) => (
+        {photos?.length>1? photos?.map((photo:any, index:any) => (
             <Image
               key={index}
               source={{ uri: photo.uri }}
               style={[
                 styles.image,
-                { width: photo.width, height: photo.height, left: leftPositions[index]?.x, top: leftPositions[index]?.y },
+                { width: photo.width, height: photo.height, left: positions[index]?.x, top: positions[index]?.y },
               ]}
             />
           ))
@@ -423,15 +445,17 @@ export default function GestureMosaic() {
         </Animated.View>
 
         <Animated.View style={[styles.mosaicContainer, topAnimatedStyle]}>
-          {oldTopPhotos[topIndex.value]?.length>1? oldTopPhotos[topIndex.value]?.map((photo:any, index:any) => (
-            <Image
-              key={index}
-              source={{ uri: photo.uri }}
-              style={[
-                styles.image,
-                { width: photo.width, height: photo.height, left: topPositions[topIndex.value][index]?.x, top: topPositions[topIndex.value][index]?.y },
-              ]}
-            />
+        {photos?.length>1? photos?.map((photo:any, index:any) => (
+          // <HoldItem items={MenuItems} hapticFeedback="Heavy" key={index}>
+              <Image
+                key={index}
+                source={{ uri: photo.uri }}
+                style={[
+                  styles.image,
+                  { width: photo.width, height: photo.height, left: positions[index]?.x, top: positions[index]?.y },
+                ]}
+              />
+            // </HoldItem>
           ))
           : //Loop to create 60 empty boxes
           <View style={{display: "flex", flexDirection: "column", gap: 15}}>
@@ -447,13 +471,13 @@ export default function GestureMosaic() {
         </Animated.View>
         
         <Animated.View style={[styles.mosaicContainer, topLeftAnimatedStyle]}>
-          {oldTopLeftPhotos[topLeftIndex.value]?.length>1? oldTopLeftPhotos[topLeftIndex.value]?.map((photo:any, index:any) => (
+        {photos?.length>1? photos?.map((photo:any, index:any) => (
             <Image
               key={index}
               source={{ uri: photo.uri }}
               style={[
                 styles.image,
-                { width: photo.width, height: photo.height, left: topLeftPositions[topLeftIndex.value][index]?.x, top: topLeftPositions[topLeftIndex.value][index]?.y },
+                { width: photo.width, height: photo.height, left: positions[index]?.x, top: positions[index]?.y },
               ]}
             />
           ))
@@ -473,6 +497,7 @@ export default function GestureMosaic() {
         </Animated.View>
       </GestureDetector>
     </GestureHandlerRootView>
+    </>
     );
 }
 
@@ -481,7 +506,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'red',
+    backgroundColor: '#1a1a1a',
     width: width,
     height: height,
   },
@@ -489,7 +514,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     backgroundColor:"#1a1a1a",
     width:GridWidth, 
-    height: 6*150,
+    height: 8*160,
     overflow: "hidden",
   },
   image: {
@@ -503,5 +528,14 @@ const styles = StyleSheet.create({
     height: 145,
     borderRadius: 20,
   },
+  topBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 15,
+    paddingTop: 45,
+    position: 'absolute',
+    top: 0,
+},
 
 });

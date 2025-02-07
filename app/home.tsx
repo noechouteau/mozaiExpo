@@ -195,9 +195,6 @@ export default function Home() {
                 <Text style={{ color: '#FFF', marginTop: 20 }}>No mosaics found. Create or join one!</Text>
               )}
 
-              {/* <GestureMosaic></GestureMosaic> */}
-
-
               <TextInput style={styles.homeTextInput}></TextInput>
 
               {userData && !loadingVisible && (
